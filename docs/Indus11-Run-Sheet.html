@@ -1,0 +1,77 @@
+<meta charset="utf-8">
+<title>Indus11 Review Run Sheet</title>
+<style>
+  @page { size: Letter portrait; margin: 0.5in; }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; color: #1a2233; font-size: 10.5px; line-height: 1.4; }
+  .head { display: flex; align-items: baseline; justify-content: space-between; border-bottom: 2px solid #3B82F6; padding-bottom: 6px; margin-bottom: 10px; }
+  .head h1 { font-size: 19px; letter-spacing: 1px; color: #0f1830; }
+  .head h1 span { color: #3B82F6; }
+  .head .sub { font-size: 9.5px; color: #64748b; }
+  .note { background: #eef4fd; border: 1px solid #d3e2f6; border-radius: 5px; padding: 5px 10px; font-size: 9.5px; color: #33507a; margin-bottom: 10px; }
+  h2 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px; color: #3B82F6; margin: 12px 0 5px; }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; font-size: 8.5px; text-transform: uppercase; letter-spacing: 0.4px; color: #64748b; border-bottom: 1.5px solid #cbd5e1; padding: 4px 6px; }
+  td { padding: 5px 6px; border-bottom: 1px solid #eef2f7; vertical-align: top; }
+  td.n { color: #94a3b8; width: 16px; }
+  td.who { white-space: nowrap; font-weight: 600; }
+  .a { color: #2563eb; } .b { color: #059669; } .c { color: #b45309; }
+  .cols { display: flex; gap: 14px; margin-top: 2px; }
+  .col { flex: 1; }
+  .qa li, .say li { margin: 3px 0; list-style: none; }
+  .qa b { color: #0f1830; }
+  .say li { padding-left: 11px; text-indent: -11px; }
+  .say .lbl { font-weight: 700; color: #2563eb; }
+  .foot { margin-top: 10px; padding-top: 6px; border-top: 1px dashed #cbd5e1; font-size: 9.5px; color: #64748b; }
+</style>
+
+<div class="head">
+  <h1><span>INDUS11</span> — First Review Run Sheet</h1>
+  <div class="sub">AI Fraud Decision Engine · Joshi Om · Krish Gajera · Drashti Dedaniya</div>
+</div>
+
+<div class="note"><b>Format:</b> presentation &amp; briefing only — no live run. Deck: <b>Indus11-Mentor-Deck.pptx</b> (6 slides).</div>
+
+<h2>Who speaks what</h2>
+<table>
+  <tr><th class="n">#</th><th>Slide</th><th>Speaker</th><th>Say this</th></tr>
+  <tr><td class="n">1</td><td>Title</td><td class="who a">Joshi (opens)</td><td>"We're Joshi, Krish &amp; Drashti. Indus11 decides in real time if a transaction is fraud — and explains why in plain English."</td></tr>
+  <tr><td class="n">2</td><td>Idea &amp; domain</td><td class="who a">Joshi</td><td>Domain = fraud detection. Problem (ms decisions; rules miss new fraud, AI can't explain) → 3 engines, one 0–100 score → APPROVE / REVIEW / BLOCK.</td></tr>
+  <tr><td class="n">3</td><td>What we'll build</td><td class="who b">Krish</td><td>Four deliverables: analysis API, live dashboard, synthetic dataset, explained decisions. Scope = working prototype on synthetic data.</td></tr>
+  <tr><td class="n">4</td><td>Tools &amp; technology</td><td class="who">All — each own tools</td><td>Joshi: FastAPI · MongoDB · Redis · Docker. Krish: Neo4j. Drashti: ChromaDB · LangChain + Ollama · React.</td></tr>
+  <tr><td class="n">5</td><td>AI integration</td><td class="who c">Drashti</td><td>RAG flow: flagged → retrieve patterns (ChromaDB) → LLM (Ollama llama3) reasons → score + explanation. Capped 30/100, temperature 0.</td></tr>
+  <tr><td class="n">6</td><td>Team &amp; contributions</td><td class="who">All — each reads own column</td><td>Each member states their layer &amp; contributions — this is the task distribution.</td></tr>
+</table>
+
+<div class="cols">
+  <div class="col">
+    <h2>Q&amp;A quick hits</h2>
+    <ul class="qa">
+      <li><b>Is it actually working?</b> Yes — 8/8 tests pass, it runs end-to-end, and we've analyzed real transactions. Happy to demo live next time.</li>
+      <li><b>Why MongoDB?</b> Flexible documents, no migrations; store/query records by field.</li>
+      <li><b>Why Neo4j?</b> Fraud rings are relationships — one-line graph query vs painful recursive SQL.</li>
+      <li><b>Why 4 databases / not one?</b> Right tool per job — graph, cache, vectors are different problems. Single-DB option would be Postgres + pgvector, but graph traversal suffers.</li>
+      <li><b>How is AI integrated?</b> RAG — retrieve similar patterns from ChromaDB; LLM (Ollama llama3) scores &amp; explains; capped at 30/100.</li>
+      <li><b>How do you know it works?</b> 8 tests + we plant fraud rings in synthetic data and confirm detection. Next: precision/recall.</li>
+    </ul>
+  </div>
+  <div class="col">
+    <h2>Openers &amp; closers</h2>
+    <ul class="say">
+      <li><span class="lbl">Open:</span> "Indus11 is a real-time fraud engine that scores every transaction 0–100 and returns APPROVE, REVIEW or BLOCK — with a plain-English reason."</li>
+      <li><span class="lbl">Hand-off:</span> each member names their layer before speaking to it ("I own the graph side, so…").</li>
+      <li><span class="lbl">On scope:</span> "It's a working prototype on synthetic data — proves the approach end-to-end, not a production bank."</li>
+      <li><span class="lbl">Close:</span> "Most of the build is done; next is measuring accuracy and hardening. Questions welcome."</li>
+    </ul>
+    <h2>Remember</h2>
+    <ul class="say">
+      <li>Thresholds: <b>APPROVE 0–39 · REVIEW 40–69 · BLOCK 70–100</b>.</li>
+      <li>Don't say "the AI does it" — say <i>how</i> (retrieve → reason → explain).</li>
+      <li>If you don't know something, say so + how you'd find out.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="foot">
+  <b>Goal of this review:</b> convey the idea, the technology choices, the task split, and the plan — clearly and accurately. No system needs to run.
+</div>
