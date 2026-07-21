@@ -17,6 +17,16 @@ A real-time fraud detection system combining graph database analysis, RAG-powere
 ## Quick Start
 
 ```bash
+# One-shot local run: starts DBs, seeds data, and launches the API on :8000
+./scripts/run_local.sh
+
+# Dashboard (separate terminal), proxies /api to the FastAPI backend
+cd dashboard && npm run dev   # http://localhost:5173
+```
+
+Or manually:
+
+```bash
 # 1. Copy env file and fill in your keys
 cp .env.example .env
 
@@ -32,11 +42,11 @@ uvicorn app.main:app --reload
 python -m scripts.seed_mongo
 python -m scripts.seed_neo4j
 
-# 5. Run the dashboard (proxies /api to the FastAPI backend)
+# 5. Run the dashboard
 cd dashboard && npm install && npm run dev   # http://localhost:5173
 ```
 
-API docs available at http://localhost:8000/docs
+API docs: http://localhost:8000/docs · Dashboard: http://localhost:5173 · The RAG layer needs Ollama running locally (`llama3`) for the free/local LLM path.
 
 ## Database
 
@@ -86,6 +96,10 @@ indus11/
 | **Member B** | `core/neo4j_client.py`, `services/graph_analyzer.py`, Neo4j schema, synthetic fraud dataset |
 | **Member C** | `services/rag_pipeline.py`, `services/decision_engine.py`, ChromaDB seeding, prompt engineering, React dashboard |
 
+## Dashboard
+
+React dashboard (`dashboard/`, Vite + Recharts) with risk distribution charts, a recent-flags table, and an analyze form with an optional reason/note field. Clicking a flagged transaction opens a detail modal; `REVIEW` transactions get an inline **Approve/Block** override (`PATCH /api/v1/transactions/{tx_id}/decision`).
+
 ## Running Tests
 
 ```bash
@@ -93,6 +107,8 @@ pytest tests/ -v
 ```
 
 ## Example API Call
+
+Currency is **INR (₹)** throughout — account averages and thresholds are scaled accordingly.
 
 ```bash
 curl -X POST http://localhost:8000/api/v1/transactions/analyze \
@@ -102,7 +118,7 @@ curl -X POST http://localhost:8000/api/v1/transactions/analyze \
     "sender_account_id": "ACC-001",
     "receiver_account_id": "ACC-002",
     "amount": 9500.00,
-    "currency": "CAD",
+    "currency": "INR",
     "merchant_category": "wire_transfer",
     "device_id": "DEV-XYZ",
     "ip_address": "192.168.1.100"
@@ -115,7 +131,7 @@ Example response:
   "tx_id": "TX-2026-001",
   "decision": "REVIEW",
   "composite_score": 52,
-  "rule_engine": { "score": 20, "max_score": 40, "flags": ["AMOUNT_ANOMALY ($9500 vs avg $500)", "HIGH_RISK_MERCHANT (wire_transfer)"] },
+  "rule_engine": { "score": 20, "max_score": 40, "flags": ["AMOUNT_ANOMALY (₹9500 vs avg ₹500)", "HIGH_RISK_MERCHANT (wire_transfer)"] },
   "graph_analyzer": { "score": 15, "max_score": 30, "flags": ["SHARED_DEVICE (3 accounts on DEV-XYZ)"] },
   "rag_pipeline": { "score": 17, "max_score": 30, "flags": ["wire_fraud", "account_takeover"] },
   "explanation": "Triggered signals: AMOUNT_ANOMALY; HIGH_RISK_MERCHANT; SHARED_DEVICE. This transaction shows characteristics consistent with wire fraud patterns — a large transfer to a new recipient via a high-risk merchant category, using a device shared across multiple accounts.",
@@ -123,3 +139,8 @@ Example response:
   "timestamp": "2026-06-20T10:00:00Z"
 }
 ```
+
+## Known Limitations
+
+- RAG layer occasionally returns `RAG_PIPELINE_ERROR` (Ollama JSON parsing) — the rule engine and graph analyzer still produce a decision in that case.
+- Precision/recall have not been formally measured against the synthetic fraud dataset yet.
