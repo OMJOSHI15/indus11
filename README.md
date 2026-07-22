@@ -1,146 +1,126 @@
+<div align="center">
+
 # Indus11 — AI Financial Risk & Fraud Decision Engine
 
-A real-time fraud detection system combining graph database analysis, RAG-powered LLM decisions, and a multi-factor rule engine.
+**Real-time transaction fraud detection that scores every payment 0–100, returns APPROVE / REVIEW / BLOCK, and explains the decision in plain English.**
 
-## Tech Stack
+[![CI](https://github.com/OWNER/indus11/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/indus11/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/python-3.12-blue)
+![FastAPI](https://img.shields.io/badge/FastAPI-async-009688)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Docker](https://img.shields.io/badge/docker-compose-2496ED)
 
-| Layer | Technology |
-|-------|-----------|
-| API | Python / FastAPI |
-| Graph DB | Neo4j |
-| Document DB | MongoDB (Beanie ODM) |
-| Cache | Redis |
-| LLM / RAG | LangChain + OpenAI (or Ollama) |
-| Vector Store | ChromaDB |
-| Containers | Docker Compose |
+</div>
 
-## Quick Start
+![Dashboard](docs/screenshot-dashboard.png)
 
-```bash
-# One-shot local run: starts DBs, seeds data, and launches the API on :8000
-./scripts/run_local.sh
+---
 
-# Dashboard (separate terminal), proxies /api to the FastAPI backend
-cd dashboard && npm run dev   # http://localhost:5173
+## Why it exists
+
+Banks must approve or block a payment in milliseconds. Rule-only systems miss coordinated fraud; pure ML systems can't explain *why* they blocked a customer. **Indus11** combines three independent engines into one explainable score:
+
+| Engine | Catches | Tech |
+|--------|---------|------|
+| **Rule engine** | velocity bursts, amount anomalies, blacklists, risky merchants | Python, Redis sorted-sets |
+| **Graph analyzer** | fraud rings — shared devices/IPs, circular money-mule flows | Neo4j + Cypher |
+| **RAG + LLM** | context-aware risk + a written reason for every decision | LangChain, ChromaDB, local LLM (Ollama) |
+
+Scores combine into a **0–100 composite** → `APPROVE (0–39)` · `REVIEW (40–69)` · `BLOCK (70+)`. The LLM is capped at 30/100 so reliable rule and graph evidence stays in control.
+
+## Features
+
+- ⚡ **Real-time REST API** — all three engines run concurrently via `asyncio.gather()`
+- 🕸️ **Fraud-ring detection** — Neo4j graph traversal for shared-device and circular-flow patterns
+- 🧠 **Explainable AI** — RAG retrieves similar fraud patterns; the LLM writes the reason
+- 📊 **Live React dashboard** — risk metrics, decision mix, score distribution, flagged-transaction feed
+- 👁️ **Analyst workflow** — click any flagged transaction for full detail; approve or block a review inline; attach an optional reason to any transaction
+- 🐳 **One-command deploy** — full stack (API + dashboard + 3 databases) via `docker compose up`
+- ✅ **Tested** — pytest suite + GitHub Actions CI
+
+## Architecture
+
+```
+        React dashboard ──▶ FastAPI gateway ──▶ Redis (cache) / MongoDB (profiles)
+                                   │
+             ┌─────────────────────┼─────────────────────┐   (run concurrently)
+             ▼                     ▼                     ▼
+        Rule engine        Graph analyzer          RAG pipeline
+        (0–40)             Neo4j (0–30)            ChromaDB + LLM (0–30)
+             └─────────────────────┼─────────────────────┘
+                                   ▼
+                         Decision engine → 0–100 → APPROVE / REVIEW / BLOCK
+                                   ▼
+                          MongoDB (persist + audit)
 ```
 
-Or manually:
+## Quick start (Docker — recommended)
 
 ```bash
-# 1. Copy env file and fill in your keys
-cp .env.example .env
+git clone https://github.com/OWNER/indus11.git
+cd indus11
+docker compose up --build
+```
 
-# 2. Start all services
-docker-compose up -d
+- Dashboard → http://localhost:5173
+- API docs (Swagger) → http://localhost:8000/docs
 
-# 3. Or run locally (requires MongoDB, Neo4j, Redis running)
+The API container seeds MongoDB (20 accounts) and Neo4j (500 accounts, ~1,000 transactions with planted fraud rings) on start.
+
+> **LLM layer (optional):** set `OPENAI_API_KEY` in your environment, or run [Ollama](https://ollama.com) locally (`ollama pull llama3`) and set `LLM_PROVIDER=ollama`. Without either, the rule and graph engines still decide; only the AI reason is skipped.
+
+## Run locally (without Docker)
+
+```bash
 python3.12 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-uvicorn app.main:app --reload
-
-# 4. Seed test data (MongoDB accounts + Neo4j fraud graph)
-python -m scripts.seed_mongo
-python -m scripts.seed_neo4j
-
-# 5. Run the dashboard
-cd dashboard && npm install && npm run dev   # http://localhost:5173
+cp .env.example .env                    # fill in keys if using OpenAI
+./scripts/run_local.sh                  # starts DBs, seeds, runs API on :8000
+cd dashboard && npm install && npm run dev   # dashboard on :5173
 ```
 
-API docs: http://localhost:8000/docs · Dashboard: http://localhost:5173 · The RAG layer needs Ollama running locally (`llama3`) for the free/local LLM path.
+## API
 
-## Database
-
-MongoDB is schemaless, so there is no migration step. The Beanie document models
-declare their own indexes (unique `account_id` / `tx_id`, indexed `decision` and
-account fields), and `init_db()` creates them automatically on startup.
-
-## Project Structure
-
-```
-indus11/
-├── app/
-│   ├── main.py                  # FastAPI app entry point
-│   ├── config.py                # Settings from .env
-│   ├── api/routes/
-│   │   ├── transactions.py      # POST /api/v1/transactions/analyze  ← main endpoint
-│   │   ├── accounts.py          # Account CRUD
-│   │   ├── graph.py             # Graph exploration + fraud label propagation
-│   │   ├── stats.py             # Dashboard stats (risk distribution, recent flags)
-│   │   └── health.py            # GET /health
-│   ├── core/
-│   │   ├── database.py          # MongoDB — Motor client + Beanie init
-│   │   ├── neo4j_client.py      # Neo4j async driver
-│   │   ├── redis_client.py      # Redis cache + sorted-set velocity window
-│   │   └── rate_limit.py        # slowapi rate limiter
-│   ├── models/                  # Beanie document models
-│   ├── schemas/                 # Pydantic request/response schemas (shared contract)
-│   └── services/
-│       ├── rule_engine.py       # Layer 2 — configurable rule checks (Member A)
-│       ├── graph_analyzer.py    # Layer 3 — Neo4j fraud ring detection (Member B)
-│       ├── rag_pipeline.py      # Layer 4 — LangChain + ChromaDB + LLM (Member C)
-│       ├── fraud_kb.py          # 58-document fraud pattern knowledge base
-│       └── decision_engine.py   # Layer 5 — score aggregation (Member C)
-├── scripts/
-│   ├── seed_mongo.py            # 20 test accounts (all risk scenarios)
-│   └── seed_neo4j.py            # Synthetic fraud graph: 500 accounts, ~1000 tx, mule rings
-├── dashboard/                   # React dashboard (Vite + Recharts, proxied to the API)
-└── tests/
-    └── test_fraud.py            # pytest test suite
-```
-
-## Team Responsibilities
-
-| Member | Owns |
-|--------|------|
-| **Member A** | `core/database.py`, `core/redis_client.py`, `models/`, `routes/transactions.py` (persistence), `routes/accounts.py`, Rule Engine, Docker Compose |
-| **Member B** | `core/neo4j_client.py`, `services/graph_analyzer.py`, Neo4j schema, synthetic fraud dataset |
-| **Member C** | `services/rag_pipeline.py`, `services/decision_engine.py`, ChromaDB seeding, prompt engineering, React dashboard |
-
-## Dashboard
-
-React dashboard (`dashboard/`, Vite + Recharts) with risk distribution charts, a recent-flags table, and an analyze form with an optional reason/note field. Clicking a flagged transaction opens a detail modal; `REVIEW` transactions get an inline **Approve/Block** override (`PATCH /api/v1/transactions/{tx_id}/decision`).
-
-## Running Tests
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/v1/transactions/analyze` | Score a transaction |
+| `GET`  | `/api/v1/transactions/{tx_id}` | Retrieve a past analysis |
+| `PATCH`| `/api/v1/transactions/{tx_id}/decision` | Override a review (approve/block) |
+| `GET`  | `/api/v1/graph/account/{id}/neighbors` | Explore an account's graph |
+| `GET`  | `/api/v1/stats/risk-distribution` | Dashboard metrics |
+| `GET`  | `/api/v1/stats/recent-flags` | Recent REVIEW/BLOCK transactions |
 
 ```bash
-pytest tests/ -v
+curl -X POST http://localhost:8000/api/v1/transactions/analyze -H "Content-Type: application/json" -d '{
+  "tx_id": "TX-001", "sender_account_id": "ACC-013", "receiver_account_id": "ACC-451",
+  "amount": 704000, "currency": "INR", "merchant_category": "wire_transfer",
+  "device_id": "DEV-FRAUD-A", "ip_address": "203.0.113.66"
+}'
 ```
 
-## Example API Call
-
-Currency is **INR (₹)** throughout — account averages and thresholds are scaled accordingly.
+## Tests
 
 ```bash
-curl -X POST http://localhost:8000/api/v1/transactions/analyze \
-  -H "Content-Type: application/json" \
-  -d '{
-    "tx_id": "TX-2026-001",
-    "sender_account_id": "ACC-001",
-    "receiver_account_id": "ACC-002",
-    "amount": 9500.00,
-    "currency": "INR",
-    "merchant_category": "wire_transfer",
-    "device_id": "DEV-XYZ",
-    "ip_address": "192.168.1.100"
-  }'
+pytest -q
 ```
 
-Example response:
-```json
-{
-  "tx_id": "TX-2026-001",
-  "decision": "REVIEW",
-  "composite_score": 52,
-  "rule_engine": { "score": 20, "max_score": 40, "flags": ["AMOUNT_ANOMALY (₹9500 vs avg ₹500)", "HIGH_RISK_MERCHANT (wire_transfer)"] },
-  "graph_analyzer": { "score": 15, "max_score": 30, "flags": ["SHARED_DEVICE (3 accounts on DEV-XYZ)"] },
-  "rag_pipeline": { "score": 17, "max_score": 30, "flags": ["wire_fraud", "account_takeover"] },
-  "explanation": "Triggered signals: AMOUNT_ANOMALY; HIGH_RISK_MERCHANT; SHARED_DEVICE. This transaction shows characteristics consistent with wire fraud patterns — a large transfer to a new recipient via a high-risk merchant category, using a device shared across multiple accounts.",
-  "processing_time_ms": 183.4,
-  "timestamp": "2026-06-20T10:00:00Z"
-}
-```
+## Tech stack
 
-## Known Limitations
+Python 3.12 · FastAPI · MongoDB (Beanie) · Neo4j · Redis · ChromaDB · LangChain · Ollama/OpenAI · React + Vite + Recharts · Docker Compose · pytest
 
-- RAG layer occasionally returns `RAG_PIPELINE_ERROR` (Ollama JSON parsing) — the rule engine and graph analyzer still produce a decision in that case.
-- Precision/recall have not been formally measured against the synthetic fraud dataset yet.
+## Roadmap
+
+- [x] 5-layer analysis pipeline, live dashboard, Dockerised deploy
+- [x] Analyst review workflow (detail view, approve/block override, reason notes)
+- [ ] Accuracy evaluation on the synthetic dataset (precision / recall)
+- [ ] Trained ML classifier as a fourth scoring signal
+- [ ] Fraud-ring visualisation in the dashboard
+- [ ] API authentication + hardening
+
+## Team
+
+Joshi Om · Krish Gajera · Drashti Dedaniya — CHARUSAT / DEPSTAR
+
+## License
+
+MIT — see [LICENSE](LICENSE).
