@@ -9,6 +9,8 @@ __pycache__/
 
 # Data
 data/chroma/
+dump.rdb
+*.rdb
 
 # Node
 dashboard/node_modules/
