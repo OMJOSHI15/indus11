@@ -18,3 +18,7 @@ dashboard/dist/
 .DS_Store
 .idea/
 .vscode/
+
+# Local AI assistant config (not for repo)
+.claude/
+CLAUDE.md
