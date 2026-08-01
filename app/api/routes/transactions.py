@@ -8,6 +8,7 @@ from datetime import datetime
 
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
+from pymongo.errors import DuplicateKeyError
 
 from app.core.rate_limit import limiter
 from app.core.redis_client import cache_get, cache_set
@@ -103,7 +104,15 @@ async def analyze_transaction(request: Request, tx: TransactionRequest):
         note=tx.note,
         created_at=datetime.utcnow(),
     )
-    await db_tx.insert()
+    # tx_id is uniquely indexed: a retry of an already-scored transaction is a
+    # client conflict, not a server fault. Overwriting would destroy the audit trail.
+    try:
+        await db_tx.insert()
+    except DuplicateKeyError:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Transaction {tx.tx_id} has already been analysed",
+        )
 
     return response
 

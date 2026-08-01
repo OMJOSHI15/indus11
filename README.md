@@ -89,6 +89,7 @@ cd dashboard && npm install && npm run dev   # dashboard on :5173
 | `GET`  | `/api/v1/graph/account/{id}/neighbors` | Explore an account's graph |
 | `GET`  | `/api/v1/stats/risk-distribution` | Dashboard metrics |
 | `GET`  | `/api/v1/stats/recent-flags` | Recent REVIEW/BLOCK transactions |
+| `GET`  | `/api/v1/stats/accuracy` | Latest evaluation: precision, recall, confusion matrix |
 
 ```bash
 curl -X POST http://localhost:8000/api/v1/transactions/analyze -H "Content-Type: application/json" -d '{
@@ -104,6 +105,24 @@ curl -X POST http://localhost:8000/api/v1/transactions/analyze -H "Content-Type:
 pytest -q
 ```
 
+## Accuracy
+
+With the stack running, replay a labelled synthetic dataset through the full pipeline:
+
+```bash
+python -m scripts.evaluate
+```
+
+It prints precision / recall / F1 and a confusion matrix, reports how many planted
+mule-ring hops the graph layer caught, and sweeps the decision bands to suggest the
+`REVIEW_THRESHOLD` / `BLOCK_THRESHOLD` pair with the best F1. Results are written to
+`docs/eval-results.json` and shown in the dashboard's accuracy panel.
+
+> Ground truth is the fraud planted by `scripts/seed_neo4j.py` (mule rings, shared-device
+> and shared-IP identity clusters). Fraud is far denser in this set than in a real payment
+> feed, so the precision figure is optimistic — it measures the engines' separation, not
+> production performance.
+
 ## Tech stack
 
 Python 3.12 · FastAPI · MongoDB (Beanie) · Neo4j · Redis · ChromaDB · LangChain · Ollama/OpenAI · React + Vite + Recharts · Docker Compose · pytest
@@ -112,7 +131,7 @@ Python 3.12 · FastAPI · MongoDB (Beanie) · Neo4j · Redis · ChromaDB · Lang
 
 - [x] 5-layer analysis pipeline, live dashboard, Dockerised deploy
 - [x] Analyst review workflow (detail view, approve/block override, reason notes)
-- [ ] Accuracy evaluation on the synthetic dataset (precision / recall)
+- [x] Accuracy evaluation on the synthetic dataset (precision / recall / confusion matrix)
 - [ ] Trained ML classifier as a fourth scoring signal
 - [ ] Fraud-ring visualisation in the dashboard
 - [ ] API authentication + hardening
