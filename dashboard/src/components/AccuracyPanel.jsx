@@ -109,9 +109,12 @@ export default function AccuracyPanel() {
 
       <p className="accuracy-footnote">
         Block-only view: precision {pct(blocked.precision)}, recall{" "}
-        {pct(blocked.recall)}. Best bands by F1 — review ≥ {suggested.review_threshold},
-        block ≥ {suggested.block_threshold}. Measured on synthetic data, where fraud is
-        far denser than a real payment feed, so precision here is optimistic.
+        {pct(blocked.recall)}. Best bands by F1 — review ≥ {suggested.review_threshold},{" "}
+        {suggested.block_threshold === null
+          ? "block band never fires at these scores"
+          : `block ≥ ${suggested.block_threshold}`}
+        . Measured on synthetic data, where fraud is far denser than a real payment
+        feed, so precision here is optimistic.
       </p>
     </div>
   );

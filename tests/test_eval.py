@@ -119,6 +119,36 @@ def test_sweep_finds_bands_that_separate_the_classes():
     assert 20 <= best["review_threshold"] <= 45
 
 
+def test_sweep_reports_no_block_threshold_when_nothing_reaches_it():
+    """
+    Flagged-F1 ties across every block threshold (REVIEW and BLOCK both count as
+    flagged), so with scores below the lowest candidate band the winner would be an
+    arbitrary tie-break. Report None instead of a number nothing can reach.
+    """
+    rows = [make_row(s, "fraud") for s in (20, 22, 24)]
+    rows += [make_row(s, "legit") for s in (2, 4, 6)]
+    best = sweep_thresholds(rows)
+    assert best["block_threshold"] is None
+    assert "never fires" in best["block_note"]
+
+
+def test_sweep_prefers_a_block_band_that_separates_fraud_when_one_exists():
+    """Tie-break on blocked-F1: block >= 25 auto-blocks all fraud and no legit."""
+    rows = [make_row(s, "fraud") for s in (45, 50, 55)]
+    rows += [make_row(s, "legit") for s in (5, 10, 15)]
+    best = sweep_thresholds(rows)
+    assert best["block_threshold"] == 25
+    assert best["blocked_f1"] == 1.0
+
+
+def test_sweep_keeps_a_block_threshold_that_transactions_actually_reach():
+    rows = [make_row(s, "fraud") for s in (80, 85, 90)]
+    rows += [make_row(s, "legit") for s in (5, 10, 15)]
+    best = sweep_thresholds(rows)
+    assert best["block_threshold"] is not None
+    assert best["blocked_f1"] == 1.0
+
+
 # ── graph ring recall ─────────────────────────────────────────────────────────
 
 def test_ring_recall_counts_only_ring_rows_with_a_graph_score():

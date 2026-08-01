@@ -118,6 +118,27 @@ mule-ring hops the graph layer caught, and sweeps the decision bands to suggest 
 `REVIEW_THRESHOLD` / `BLOCK_THRESHOLD` pair with the best F1. Results are written to
 `docs/eval-results.json` and shown in the dashboard's accuracy panel.
 
+Latest run — 208 transactions (52 fraud / 156 legitimate), thresholds 40 / 70:
+
+| Metric | Value |
+|--------|-------|
+| Precision (flagged) | **93.8%** |
+| Recall (flagged) | **86.5%** |
+| F1 | **90.0%** |
+| Mule-ring hops caught by the graph layer | **36 / 36** |
+
+|  | Actually fraud | Actually legitimate |
+|--|---------------|---------------------|
+| **APPROVE** | 7 | 153 |
+| **REVIEW** | 45 | 3 |
+| **BLOCK** | 0 | 0 |
+
+**The block band never fires.** Every detected fraud lands in REVIEW — no transaction
+reached 70, so nothing is auto-blocked and all 45 catches need an analyst. The sweep
+suggests review ≥ 35 / block ≥ 40 for the same F1, which would auto-block most fraud
+at the cost of auto-blocking the 3 false positives too. Choosing that trade-off is the
+next piece of work, not a setting to change blindly.
+
 > Ground truth is the fraud planted by `scripts/seed_neo4j.py` (mule rings, shared-device
 > and shared-IP identity clusters). Fraud is far denser in this set than in a real payment
 > feed, so the precision figure is optimistic — it measures the engines' separation, not
