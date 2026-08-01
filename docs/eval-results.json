@@ -1,0 +1,49 @@
+{
+  "generated_at": "2026-08-01T08:30:47.305964Z",
+  "dataset": "synthetic (seeded mule rings, device/IP clusters, normal traffic)",
+  "thresholds": {
+    "review": 40,
+    "block": 70
+  },
+  "counts": {
+    "total": 208,
+    "fraud": 52,
+    "legit": 156
+  },
+  "metrics": {
+    "confusion": {
+      "APPROVE": {
+        "fraud": 7,
+        "legit": 153
+      },
+      "REVIEW": {
+        "fraud": 45,
+        "legit": 3
+      },
+      "BLOCK": {
+        "fraud": 0,
+        "legit": 0
+      }
+    },
+    "flagged": {
+      "precision": 0.9375,
+      "recall": 0.8654,
+      "f1": 0.9
+    },
+    "blocked": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    }
+  },
+  "graph": {
+    "ring_transactions": 36,
+    "graph_flagged": 36,
+    "recall": 1.0
+  },
+  "suggested_thresholds": {
+    "review_threshold": 35,
+    "block_threshold": 40,
+    "f1": 0.9
+  }
+}

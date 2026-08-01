@@ -176,16 +176,38 @@ def metrics_at(scored: list[dict], review_threshold: int, block_threshold: int) 
 def sweep_thresholds(scored: list[dict]) -> dict:
     """
     Re-derive decisions from the recorded scores across candidate bands and return the
-    pair with the best flagged-F1. No re-run needed: the composite score is fixed, only
-    the mapping to a decision changes.
+    best pair. No re-run needed: the composite score is fixed, only the mapping to a
+    decision changes.
+
+    Flagged-F1 alone cannot choose a block threshold — moving the block band shuffles
+    transactions between REVIEW and BLOCK, and both count as "flagged", so every block
+    value ties. Ties are therefore broken on blocked-F1, and when no transaction reaches
+    any candidate block band the suggestion is reported as None rather than an arbitrary
+    number: recommending one would silently turn every review into an auto-block.
     """
     best = None
     for review_threshold in range(20, 65, 5):
         for block_threshold in range(review_threshold + 5, 95, 5):
-            f1 = metrics_at(scored, review_threshold, block_threshold)["flagged"]["f1"]
-            if best is None or f1 > best["f1"]:
-                best = {"review_threshold": review_threshold,
-                        "block_threshold": block_threshold, "f1": f1}
+            metrics = metrics_at(scored, review_threshold, block_threshold)
+            candidate = {
+                "review_threshold": review_threshold,
+                "block_threshold": block_threshold,
+                "f1": metrics["flagged"]["f1"],
+                "blocked_f1": metrics["blocked"]["f1"],
+            }
+            better = best is None or (
+                (candidate["f1"], candidate["blocked_f1"]) > (best["f1"], best["blocked_f1"])
+            )
+            if better:
+                best = candidate
+
+    highest_score = max((row["composite_score"] for row in scored), default=0)
+    if best is not None and highest_score < best["block_threshold"]:
+        best["block_threshold"] = None
+        best["block_note"] = (
+            f"no transaction scored above {highest_score} — the block band never fires "
+            "on this dataset"
+        )
     return best
 
 
@@ -261,7 +283,12 @@ def render(report: dict) -> str:
         "ring transactions flagged)",
         "",
         f"  Best bands by F1           REVIEW >= {best['review_threshold']}, "
-        f"BLOCK >= {best['block_threshold']}  (F1 {best['f1']:.3f})",
+        + (
+            f"BLOCK >= {best['block_threshold']}"
+            if best["block_threshold"] is not None
+            else "BLOCK n/a — " + best["block_note"]
+        )
+        + f"  (F1 {best['f1']:.3f})",
         "=" * 62,
         "",
     ]
@@ -301,6 +328,9 @@ async def main() -> None:
         "metrics": metrics_at(scored, args.review_threshold, args.block_threshold),
         "graph": ring_recall(scored),
         "suggested_thresholds": sweep_thresholds(scored),
+        # Per-row scores, so thresholds can be re-swept offline instead of
+        # re-running the pipeline (an LLM-bound run takes over an hour).
+        "scored": scored,
     }
 
     RESULTS_PATH.parent.mkdir(parents=True, exist_ok=True)
