@@ -13,6 +13,7 @@ async function request(path, options = {}) {
 }
 
 export const getRiskDistribution = () => request("/stats/risk-distribution");
+export const getAccuracy = () => request("/stats/accuracy");
 export const getRecentFlags = (limit = 20) => request(`/stats/recent-flags?limit=${limit}`);
 export const analyzeTransaction = (tx) =>
   request("/transactions/analyze", { method: "POST", body: JSON.stringify(tx) });

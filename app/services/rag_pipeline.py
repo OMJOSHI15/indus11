@@ -7,7 +7,6 @@ a risk score (0-30) with natural-language explanation.
 """
 import json
 import logging
-import re
 
 import chromadb
 from langchain_openai import ChatOpenAI
@@ -211,13 +210,24 @@ async def _invoke_with_fallback(prompt: ChatPromptTemplate, inputs: dict) -> str
 
 def _parse_llm_json(content: str) -> dict:
     """
-    Extract the first JSON object from an LLM response. Tolerates markdown
-    code fences and surrounding prose, which local models emit routinely.
+    Extract the first JSON object from an LLM response. Tolerates markdown code
+    fences and surrounding prose, which local models emit routinely.
+
+    Scans for a balanced object with raw_decode instead of a greedy `\\{.*\\}`
+    regex: llama3 often echoes one of the few-shot examples before its own answer,
+    and a greedy match spans both objects and dies on "Extra data".
     """
-    match = re.search(r"\{.*\}", content, re.DOTALL)
-    if not match:
-        raise ValueError(f"No JSON object found in LLM response: {content[:200]!r}")
-    return json.loads(match.group(0))
+    decoder = json.JSONDecoder()
+    for index, char in enumerate(content):
+        if char != "{":
+            continue
+        try:
+            parsed, _ = decoder.raw_decode(content[index:])
+        except json.JSONDecodeError:
+            continue
+        if isinstance(parsed, dict):
+            return parsed
+    raise ValueError(f"No JSON object found in LLM response: {content[:200]!r}")
 
 
 async def seed_knowledge_base() -> None:

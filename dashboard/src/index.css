@@ -466,6 +466,82 @@ form.analyze button:disabled { opacity: 0.55; cursor: progress; }
 
 .error-text { color: var(--danger); font-size: 13px; margin-top: var(--space-3); }
 
+/* ── Accuracy panel ───────────────────────────────────────────────────────── */
+.metric-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.metric {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-4);
+}
+
+.metric-label {
+  font-size: 12px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.metric-value {
+  font-family: var(--font-data);
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--primary-strong);
+  margin-top: var(--space-1);
+}
+
+.metric-note {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: var(--space-1);
+}
+
+.confusion {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.confusion caption {
+  caption-side: top;
+  text-align: left;
+  font-size: 13px;
+  color: var(--text-dim);
+  padding-bottom: var(--space-3);
+}
+
+.confusion th,
+.confusion td {
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+
+.confusion thead th {
+  font-size: 12px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 500;
+}
+
+.confusion tbody td {
+  font-family: var(--font-data);
+  font-size: 16px;
+}
+
+.accuracy-footnote {
+  margin-top: var(--space-4);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-dim);
+}
+
 /* ── Responsive ───────────────────────────────────────────────────────────── */
 @media (max-width: 1024px) {
   .grid { grid-template-columns: 1fr 1fr; }
@@ -476,6 +552,7 @@ form.analyze button:disabled { opacity: 0.55; cursor: progress; }
   .kpi-row { grid-template-columns: 1fr 1fr; }
   .grid { grid-template-columns: 1fr; }
   form.analyze { grid-template-columns: 1fr; }
+  .metric-row { grid-template-columns: 1fr 1fr; }
 }
 
 /* ── Reduced motion ───────────────────────────────────────────────────────── */

@@ -1,9 +1,15 @@
 """Dashboard statistics routes. Owner: Member C"""
-from fastapi import APIRouter, Query
+import json
+from pathlib import Path
+
+from fastapi import APIRouter, HTTPException, Query
 
 from app.models.transaction import Transaction
 
 router = APIRouter(prefix="/stats", tags=["stats"])
+
+# Written by scripts/evaluate.py; absent until an evaluation has been run.
+EVAL_RESULTS_PATH = Path(__file__).resolve().parents[3] / "docs" / "eval-results.json"
 
 # (low, high) inclusive score bands for the histogram
 SCORE_BUCKETS = [(0, 19), (20, 39), (40, 59), (60, 79), (80, 100)]
@@ -50,6 +56,21 @@ async def risk_distribution():
         ],
         "total": sum(decisions.values()),
     }
+
+
+@router.get("/accuracy", summary="Latest accuracy evaluation results")
+async def accuracy():
+    """
+    Precision, recall, F1 and the confusion matrix from the most recent run of
+    scripts/evaluate.py. 404s until an evaluation has been run, so the dashboard
+    can show an explanatory empty state rather than a broken panel.
+    """
+    if not EVAL_RESULTS_PATH.exists():
+        raise HTTPException(
+            status_code=404,
+            detail="No evaluation results yet — run: python -m scripts.evaluate",
+        )
+    return json.loads(EVAL_RESULTS_PATH.read_text())
 
 
 @router.get("/recent-flags", summary="Recent REVIEW and BLOCK transactions")

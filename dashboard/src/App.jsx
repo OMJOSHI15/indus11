@@ -4,6 +4,7 @@ import ScoreHistogram from "./components/ScoreHistogram.jsx";
 import RecentFlags from "./components/RecentFlags.jsx";
 import AnalyzeForm from "./components/AnalyzeForm.jsx";
 import TxModal from "./components/TxModal.jsx";
+import AccuracyPanel from "./components/AccuracyPanel.jsx";
 import { getRecentFlags, getRiskDistribution } from "./api.js";
 import { SAMPLE_DISTRIBUTION, SAMPLE_FLAGS } from "./sampleData.js";
 import {
@@ -123,6 +124,11 @@ export default function App() {
         <section className="panel">
           <h2>Analyze a transaction</h2>
           <AnalyzeForm onAnalyzed={refresh} />
+        </section>
+
+        <section className="panel wide">
+          <h2>Detection accuracy — synthetic benchmark</h2>
+          <AccuracyPanel />
         </section>
 
         <section className="panel wide" aria-busy={flags === null}>

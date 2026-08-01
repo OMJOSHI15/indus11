@@ -33,5 +33,9 @@ class Settings(BaseSettings):
     review_threshold: int = 40
     block_threshold: int = 70
 
+    # Rate limiting — disable only for local benchmarking (scripts/evaluate.py),
+    # which would otherwise trip the per-IP limit against its own machine.
+    rate_limit_enabled: bool = True
+
 
 settings = Settings()
