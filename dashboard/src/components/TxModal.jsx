@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getTransaction, updateDecision } from "../api.js";
+import { DEMO, getTransaction, updateDecision } from "../api.js";
 
 const S = {
   overlay: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex",
@@ -70,7 +70,12 @@ export default function TxModal({ txId, onClose, onUpdated }) {
             </dl>
             {tx.note && <p style={S.note}><b>Submitted reason:</b> {tx.note}</p>}
             <p style={S.expl}>{tx.explanation || "No explanation recorded."}</p>
-            {tx.decision === "REVIEW" ? (
+            {tx.decision === "REVIEW" && DEMO ? (
+              <p style={S.final}>
+                Awaiting analyst review. Overriding a decision writes to the
+                database, so it is disabled in this static demo.
+              </p>
+            ) : tx.decision === "REVIEW" ? (
               <div style={S.actions}>
                 <button style={S.approve} disabled={busy} onClick={() => decide("APPROVE")}>Approve</button>
                 <button style={S.block} disabled={busy} onClick={() => decide("BLOCK")}>Block</button>
