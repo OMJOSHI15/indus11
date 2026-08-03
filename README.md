@@ -4,7 +4,7 @@
 
 **Real-time transaction fraud detection that scores every payment 0–100, returns APPROVE / REVIEW / BLOCK, and explains the decision in plain English.**
 
-[![CI](https://github.com/OWNER/indus11/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/indus11/actions/workflows/ci.yml)
+[![CI](https://github.com/OMJOSHI15/indus11/actions/workflows/ci.yml/badge.svg)](https://github.com/OMJOSHI15/indus11/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.12-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-async-009688)
 ![License](https://img.shields.io/badge/license-MIT-green)
@@ -57,7 +57,7 @@ Scores combine into a **0–100 composite** → `APPROVE (0–39)` · `REVIEW (4
 ## Quick start (Docker — recommended)
 
 ```bash
-git clone https://github.com/OWNER/indus11.git
+git clone https://github.com/OMJOSHI15/indus11.git
 cd indus11
 docker compose up --build
 ```
