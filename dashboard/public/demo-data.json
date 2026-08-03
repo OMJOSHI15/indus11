@@ -1,0 +1,324 @@
+{
+  "_note": "Static snapshot of a real local run. Used when VITE_DEMO=1 so the deployed dashboard renders without a backend.",
+  "risk_distribution": {
+    "decisions": {
+      "APPROVE": 171,
+      "REVIEW": 56,
+      "BLOCK": 4
+    },
+    "score_histogram": [
+      {
+        "bucket": "0-19",
+        "count": 105
+      },
+      {
+        "bucket": "20-39",
+        "count": 66
+      },
+      {
+        "bucket": "40-59",
+        "count": 32
+      },
+      {
+        "bucket": "60-79",
+        "count": 24
+      },
+      {
+        "bucket": "80-100",
+        "count": 4
+      }
+    ],
+    "total": 231
+  },
+  "accuracy": {
+    "generated_at": "2026-08-01T08:30:47.305964Z",
+    "dataset": "synthetic (seeded mule rings, device/IP clusters, normal traffic)",
+    "thresholds": {
+      "review": 40,
+      "block": 70
+    },
+    "counts": {
+      "total": 208,
+      "fraud": 52,
+      "legit": 156
+    },
+    "metrics": {
+      "confusion": {
+        "APPROVE": {
+          "fraud": 7,
+          "legit": 153
+        },
+        "REVIEW": {
+          "fraud": 45,
+          "legit": 3
+        },
+        "BLOCK": {
+          "fraud": 0,
+          "legit": 0
+        }
+      },
+      "flagged": {
+        "precision": 0.9375,
+        "recall": 0.8654,
+        "f1": 0.9
+      },
+      "blocked": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      }
+    },
+    "graph": {
+      "ring_transactions": 36,
+      "graph_flagged": 36,
+      "recall": 1.0
+    },
+    "suggested_thresholds": {
+      "review_threshold": 35,
+      "block_threshold": 40,
+      "f1": 0.9
+    }
+  },
+  "recent_flags": [
+    {
+      "tx_id": "SRS-LAT-1785748507",
+      "sender_account_id": "ACC-451",
+      "receiver_account_id": "ACC-452",
+      "amount": 680000.0,
+      "currency": "INR",
+      "merchant_category": "wire_transfer",
+      "composite_score": 69,
+      "decision": "REVIEW",
+      "explanation": "Triggered signals: HIGH_RISK_MERCHANT (wire_transfer); ELEVATED_RISK_SENDER_TIER; SHARED_DEVICE (8 accounts on device DEV-FRAUD-A); CIRCULAR_FLOW (cycle detected within 4 hops); MONEY_MULE_PATTERN (49 fee-skimming cycles); SHARED_IP (12 accounts on IP 203.0.113.66); FRAUD_CLUSTER_PROXIMITY (3 fraud neighbors); wire_fraud. A massive wire transfer from an elevated-risk account with no prior spending history, to an unknown receiver. This matches wire fraud patterns strongly, with the high amount and rapid fund movement being red flags.",
+      "created_at": "2026-08-03T09:15:21.954000"
+    },
+    {
+      "tx_id": "EVAL-0801074752-0091",
+      "sender_account_id": "ACC-069",
+      "receiver_account_id": "ACC-136",
+      "amount": 5059.43,
+      "currency": "INR",
+      "merchant_category": "groceries",
+      "composite_score": 42,
+      "decision": "REVIEW",
+      "explanation": "Triggered signals: ELEVATED_RISK_SENDER_TIER; CIRCULAR_FLOW (cycle detected within 4 hops); account_takeover; serial_disputer. A large grocery purchase from a new, elevated-risk account with no prior spending history, using an unusual device fingerprint not seen before in their activity log. This matches account takeover and serial disputer patterns strongly.",
+      "created_at": "2026-08-01T08:29:57.095000"
+    },
+    {
+      "tx_id": "EVAL-0801074752-0049",
+      "sender_account_id": "ACC-471",
+      "receiver_account_id": "ACC-394",
+      "amount": 205199.98,
+      "currency": "INR",
+      "merchant_category": "money_service",
+      "composite_score": 40,
+      "decision": "REVIEW",
+      "explanation": "Triggered signals: HIGH_RISK_MERCHANT (money_service); ELEVATED_RISK_SENDER_TIER; CIRCULAR_FLOW (cycle detected within 4 hops); MONEY_MULE_PATTERN (33 fee-skimming cycles); SHARED_IP (12 accounts on IP 203.0.113.66). A small grocery purchase well within the sender's normal monthly spending, from a standard-risk account. Nothing about the amount, merchant, or device suggests fraud.",
+      "created_at": "2026-08-01T08:29:26.352000"
+    },
+    {
+      "tx_id": "EVAL-0801074752-0036",
+      "sender_account_id": "ACC-473",
+      "receiver_account_id": "ACC-471",
+      "amount": 256760.96,
+      "currency": "INR",
+      "merchant_category": "wire_transfer",
+      "composite_score": 68,
+      "decision": "REVIEW",
+      "explanation": "Triggered signals: HIGH_RISK_MERCHANT (wire_transfer); ELEVATED_RISK_SENDER_TIER; CIRCULAR_FLOW (cycle detected within 4 hops); MONEY_MULE_PATTERN (10 fee-skimming cycles); FRAUD_CLUSTER_PROXIMITY (8 fraud neighbors); wire_fraud. A large and unusual wire transfer from an elevated-risk account, with no prior transactions recorded. This matches wire fraud patterns strongly.",
+      "created_at": "2026-08-01T08:27:11.952000"
+    },
+    {
+      "tx_id": "EVAL-0801074752-0025",
+      "sender_account_id": "ACC-463",
+      "receiver_account_id": "ACC-464",
+      "amount": 293404.93,
+      "currency": "INR",
+      "merchant_category": "wire_transfer",
+      "composite_score": 49,
+      "decision": "REVIEW",
+      "explanation": "Triggered signals: HIGH_RISK_MERCHANT (wire_transfer); ELEVATED_RISK_SENDER_TIER; FRAUD_CLUSTER_PROXIMITY (1 fraud neighbors); wire_fraud; CEO_fraud. A massive and unexplained wire transfer from an account with no prior activity, matching wire fraud and CEO fraud patterns strongly.",
+      "created_at": "2026-08-01T08:26:58.983000"
+    },
+    {
+      "tx_id": "EVAL-0801074752-0011",
+      "sender_account_id": "ACC-453",
+      "receiver_account_id": "ACC-454",
+      "amount": 312765.53,
+      "currency": "INR",
+      "merchant_category": "wire_transfer",
+      "composite_score": 68,
+      "decision": "REVIEW",
+      "explanation": "Triggered signals: HIGH_RISK_MERCHANT (wire_transfer); ELEVATED_RISK_SENDER_TIER; CIRCULAR_FLOW (cycle detected within 4 hops); MONEY_MULE_PATTERN (16 fee-skimming cycles); FRAUD_CLUSTER_PROXIMITY (3 fraud neighbors); wire_fraud; account_takeover. A massive wire transfer from an elevated-risk account with no prior spending history, to a recipient account without any context or information available. This matches wire fraud and account takeover patterns strongly.",
+      "created_at": "2026-08-01T08:26:16.164000"
+    },
+    {
+      "tx_id": "EVAL-0801074752-0009",
+      "sender_account_id": "ACC-451",
+      "receiver_account_id": "ACC-452",
+      "amount": 387455.19,
+      "currency": "INR",
+      "merchant_category": "wire_transfer",
+      "composite_score": 69,
+      "decision": "REVIEW",
+      "explanation": "Triggered signals: HIGH_RISK_MERCHANT (wire_transfer); ELEVATED_RISK_SENDER_TIER; CIRCULAR_FLOW (cycle detected within 4 hops); MONEY_MULE_PATTERN (44 fee-skimming cycles); SHARED_IP (12 accounts on IP 203.0.113.66); FRAUD_CLUSTER_PROXIMITY (3 fraud neighbors); wire_fraud. A massive and unusual transfer from an elevated-risk account with no prior spending history, matches wire fraud patterns strongly.",
+      "created_at": "2026-08-01T08:25:42.451000"
+    },
+    {
+      "tx_id": "EVAL-0801074752-0034",
+      "sender_account_id": "ACC-471",
+      "receiver_account_id": "ACC-472",
+      "amount": 318329.75,
+      "currency": "INR",
+      "merchant_category": "wire_transfer",
+      "composite_score": 69,
+      "decision": "REVIEW",
+      "explanation": "Triggered signals: HIGH_RISK_MERCHANT (wire_transfer); ELEVATED_RISK_SENDER_TIER; CIRCULAR_FLOW (cycle detected within 4 hops); MONEY_MULE_PATTERN (32 fee-skimming cycles); SHARED_IP (12 accounts on IP 203.0.113.66); FRAUD_CLUSTER_PROXIMITY (4 fraud neighbors); wire_fraud. A massive wire transfer from an elevated-risk account with no history of spending, and a very unusual amount well above any legitimate business transaction. This matches high-risk wire fraud patterns strongly.",
+      "created_at": "2026-08-01T08:25:04.031000"
+    },
+    {
+      "tx_id": "EVAL-0801074752-0024",
+      "sender_account_id": "ACC-462",
+      "receiver_account_id": "ACC-463",
+      "amount": 318136.61,
+      "currency": "INR",
+      "merchant_category": "wire_transfer",
+      "composite_score": 48,
+      "decision": "REVIEW",
+      "explanation": "Triggered signals: HIGH_RISK_MERCHANT (wire_transfer); ELEVATED_RISK_SENDER_TIER; FRAUD_CLUSTER_PROXIMITY (2 fraud neighbors); wire_fraud. A large wire transfer from an elevated-risk account with no prior spending history, which matches wire fraud patterns strongly.",
+      "created_at": "2026-08-01T08:24:57.103000"
+    },
+    {
+      "tx_id": "EVAL-0801074752-0052",
+      "sender_account_id": "ACC-486",
+      "receiver_account_id": "ACC-034",
+      "amount": 92196.57,
+      "currency": "INR",
+      "merchant_category": "money_service",
+      "composite_score": 46,
+      "decision": "REVIEW",
+      "explanation": "Triggered signals: HIGH_RISK_MERCHANT (money_service); ELEVATED_RISK_SENDER_TIER; SHARED_IP (12 accounts on IP 203.0.113.66); account_takeover; card_not_present_fraud. A massive amount transferred from an elevated-risk account with no prior monthly spending average. The unusual merchant category and foreign currency (INR) also raise concerns.",
+      "created_at": "2026-08-01T08:23:40.665000"
+    },
+    {
+      "tx_id": "EVAL-0801074752-0030",
+      "sender_account_id": "ACC-473",
+      "receiver_account_id": "ACC-471",
+      "amount": 573968.04,
+      "currency": "INR",
+      "merchant_category": "wire_transfer",
+      "composite_score": 69,
+      "decision": "REVIEW",
+      "explanation": "Triggered signals: HIGH_RISK_MERCHANT (wire_transfer); ELEVATED_RISK_SENDER_TIER; CIRCULAR_FLOW (cycle detected within 4 hops); MONEY_MULE_PATTERN (10 fee-skimming cycles); FRAUD_CLUSTER_PROXIMITY (8 fraud neighbors); wire_fraud; account_takeover. A massive wire transfer with no average monthly spend recorded, from an elevated-risk account, and matches high-risk patterns like wire fraud and account takeover strongly.",
+      "created_at": "2026-08-01T08:20:49.258000"
+    },
+    {
+      "tx_id": "EVAL-0801074752-0020",
+      "sender_account_id": "ACC-463",
+      "receiver_account_id": "ACC-464",
+      "amount": 466414.53,
+      "currency": "INR",
+      "merchant_category": "wire_transfer",
+      "composite_score": 48,
+      "decision": "REVIEW",
+      "explanation": "Triggered signals: HIGH_RISK_MERCHANT (wire_transfer); ELEVATED_RISK_SENDER_TIER; FRAUD_CLUSTER_PROXIMITY (1 fraud neighbors); wire_fraud; account_takeover. A massive wire transfer from an account with no regular transactions and an elevated risk tier, with no identifiable device or IP address. This matches wire fraud patterns strongly.",
+      "created_at": "2026-08-01T08:20:29.272000"
+    },
+    {
+      "tx_id": "EVAL-0801074752-0037",
+      "sender_account_id": "ACC-451",
+      "receiver_account_id": "ACC-120",
+      "amount": 357274.77,
+      "currency": "INR",
+      "merchant_category": "crypto_exchange",
+      "composite_score": 42,
+      "decision": "REVIEW",
+      "explanation": "Triggered signals: HIGH_RISK_MERCHANT (crypto_exchange); ELEVATED_RISK_SENDER_TIER; SHARED_DEVICE (8 accounts on device DEV-FRAUD-A); CIRCULAR_FLOW (cycle detected within 4 hops); MONEY_MULE_PATTERN (44 fee-skimming cycles). A small grocery purchase well within the sender's normal monthly spending, from a standard-risk account. Nothing about the amount, merchant, or device suggests fraud.",
+      "created_at": "2026-08-01T08:20:23.662000"
+    },
+    {
+      "tx_id": "EVAL-0801074752-0158",
+      "sender_account_id": "ACC-363",
+      "receiver_account_id": "ACC-274",
+      "amount": 5500.03,
+      "currency": "INR",
+      "merchant_category": "groceries",
+      "composite_score": 42,
+      "decision": "REVIEW",
+      "explanation": "Triggered signals: ELEVATED_RISK_SENDER_TIER; CIRCULAR_FLOW (cycle detected within 4 hops); account_takeover; serial_disputer. A large and unusual amount from an elevated-risk account with no established purchasing history, matched by patterns of account takeover and serial disputing.",
+      "created_at": "2026-08-01T08:18:25.337000"
+    },
+    {
+      "tx_id": "EVAL-0801074752-0004",
+      "sender_account_id": "ACC-454",
+      "receiver_account_id": "ACC-451",
+      "amount": 394683.55,
+      "currency": "INR",
+      "merchant_category": "wire_transfer",
+      "composite_score": 68,
+      "decision": "REVIEW",
+      "explanation": "Triggered signals: HIGH_RISK_MERCHANT (wire_transfer); ELEVATED_RISK_SENDER_TIER; CIRCULAR_FLOW (cycle detected within 4 hops); MONEY_MULE_PATTERN (12 fee-skimming cycles); FRAUD_CLUSTER_PROXIMITY (5 fraud neighbors); wire_fraud. A massive wire transfer from an elevated-risk account, which matches wire fraud patterns strongly. The lack of any normal spending activity prior to this transaction also raises concerns.",
+      "created_at": "2026-08-01T08:18:19.052000"
+    },
+    {
+      "tx_id": "EVAL-0801074752-0032",
+      "sender_account_id": "ACC-472",
+      "receiver_account_id": "ACC-473",
+      "amount": 514738.31,
+      "currency": "INR",
+      "merchant_category": "wire_transfer",
+      "composite_score": 69,
+      "decision": "REVIEW",
+      "explanation": "Triggered signals: HIGH_RISK_MERCHANT (wire_transfer); ELEVATED_RISK_SENDER_TIER; CIRCULAR_FLOW (cycle detected within 4 hops); MONEY_MULE_PATTERN (3 fee-skimming cycles); FRAUD_CLUSTER_PROXIMITY (4 fraud neighbors); wire_fraud. A massive wire transfer, over $500k, from an elevated-risk account with no prior spending activity. This matches wire fraud patterns strongly.",
+      "created_at": "2026-08-01T08:17:50.466000"
+    },
+    {
+      "tx_id": "EVAL-0801074752-0028",
+      "sender_account_id": "ACC-471",
+      "receiver_account_id": "ACC-472",
+      "amount": 689246.31,
+      "currency": "INR",
+      "merchant_category": "wire_transfer",
+      "composite_score": 68,
+      "decision": "REVIEW",
+      "explanation": "Triggered signals: HIGH_RISK_MERCHANT (wire_transfer); ELEVATED_RISK_SENDER_TIER; CIRCULAR_FLOW (cycle detected within 4 hops); MONEY_MULE_PATTERN (30 fee-skimming cycles); SHARED_IP (12 accounts on IP 203.0.113.66); FRAUD_CLUSTER_PROXIMITY (4 fraud neighbors); wire_fraud; account_takeover. A large and unusual transaction from an elevated-risk account with no established spending pattern. The merchant category is wire transfer, and the device ID is unavailable. This matches wire fraud patterns strongly.",
+      "created_at": "2026-08-01T08:16:42.559000"
+    },
+    {
+      "tx_id": "EVAL-0801074752-0007",
+      "sender_account_id": "ACC-453",
+      "receiver_account_id": "ACC-454",
+      "amount": 476571.14,
+      "currency": "INR",
+      "merchant_category": "wire_transfer",
+      "composite_score": 67,
+      "decision": "REVIEW",
+      "explanation": "Triggered signals: HIGH_RISK_MERCHANT (wire_transfer); ELEVATED_RISK_SENDER_TIER; CIRCULAR_FLOW (cycle detected within 4 hops); MONEY_MULE_PATTERN (12 fee-skimming cycles); FRAUD_CLUSTER_PROXIMITY (3 fraud neighbors); wire_fraud. A large wire transfer from an elevated-risk account with no prior transaction history, matching wire fraud patterns strongly.",
+      "created_at": "2026-08-01T08:15:30.933000"
+    },
+    {
+      "tx_id": "EVAL-0801074752-0017",
+      "sender_account_id": "ACC-465",
+      "receiver_account_id": "ACC-461",
+      "amount": 352377.51,
+      "currency": "INR",
+      "merchant_category": "wire_transfer",
+      "composite_score": 48,
+      "decision": "REVIEW",
+      "explanation": "Triggered signals: HIGH_RISK_MERCHANT (wire_transfer); ELEVATED_RISK_SENDER_TIER; FRAUD_CLUSTER_PROXIMITY (8 fraud neighbors); wire_fraud; CEO_fraud. A massive wire transfer from an elevated-risk account, no clear merchant or device context, and no average monthly spend. This matches high-risk wire fraud patterns strongly.",
+      "created_at": "2026-08-01T08:14:55.827000"
+    },
+    {
+      "tx_id": "EVAL-0801074752-0012",
+      "sender_account_id": "ACC-454",
+      "receiver_account_id": "ACC-451",
+      "amount": 279586.94,
+      "currency": "INR",
+      "merchant_category": "wire_transfer",
+      "composite_score": 68,
+      "decision": "REVIEW",
+      "explanation": "Triggered signals: HIGH_RISK_MERCHANT (wire_transfer); ELEVATED_RISK_SENDER_TIER; CIRCULAR_FLOW (cycle detected within 4 hops); MONEY_MULE_PATTERN (12 fee-skimming cycles); FRAUD_CLUSTER_PROXIMITY (5 fraud neighbors); wire_fraud; CEO_fraud. A large, wire transfer from an elevated-risk account with no prior spending history, matching wire fraud and CEO fraud patterns strongly.",
+      "created_at": "2026-08-01T08:13:57.264000"
+    }
+  ]
+}

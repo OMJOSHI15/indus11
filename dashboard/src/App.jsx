@@ -5,7 +5,7 @@ import RecentFlags from "./components/RecentFlags.jsx";
 import AnalyzeForm from "./components/AnalyzeForm.jsx";
 import TxModal from "./components/TxModal.jsx";
 import AccuracyPanel from "./components/AccuracyPanel.jsx";
-import { getRecentFlags, getRiskDistribution } from "./api.js";
+import { DEMO, getRecentFlags, getRiskDistribution } from "./api.js";
 import { SAMPLE_DISTRIBUTION, SAMPLE_FLAGS } from "./sampleData.js";
 import {
   ActivityIcon,
@@ -71,18 +71,30 @@ export default function App() {
           <div className="subtitle">AI Financial Risk &amp; Fraud Decision Engine</div>
         </div>
         <div className="spacer" />
-        <span className={`status-pill${offline ? " offline" : ""}`}>
+        <span className={`status-pill${offline || DEMO ? " offline" : ""}`}>
           <span className="dot" aria-hidden="true" />
-          {offline ? "API offline" : "Live"}
+          {DEMO ? "Demo data" : offline ? "API offline" : "Live"}
         </span>
       </header>
 
-      {offline && (
+      {DEMO ? (
         <div className="banner" role="status">
           <WifiOffIcon size={15} />
-          Backend unreachable — showing sample data. Start the API and databases to
-          see live results.
+          <span>
+            Static demo — real results captured from a local run of the full stack.
+            The backend needs four databases and a local language model, so scoring
+            a new transaction is disabled here. Run it yourself with{" "}
+            <code>docker compose up</code>.
+          </span>
         </div>
+      ) : (
+        offline && (
+          <div className="banner" role="status">
+            <WifiOffIcon size={15} />
+            Backend unreachable — showing sample data. Start the API and databases to
+            see live results.
+          </div>
+        )
       )}
 
       <div className="kpi-row">

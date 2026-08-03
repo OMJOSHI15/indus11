@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { analyzeTransaction } from "../api.js";
+import { DEMO, analyzeTransaction } from "../api.js";
 import {
   AlertTriangleIcon,
   BanIcon,
@@ -145,9 +145,13 @@ export default function AnalyzeForm({ onAnalyzed }) {
             autoComplete="off"
           />
         </label>
-        <button type="submit" disabled={busy}>
+        <button
+          type="submit"
+          disabled={busy || DEMO}
+          title={DEMO ? "Scoring needs the live backend — run the stack locally to try it" : undefined}
+        >
           {busy ? <span className="spinner" aria-hidden="true" /> : <ScanSearchIcon size={15} />}
-          {busy ? "Analyzing…" : "Analyze"}
+          {busy ? "Analyzing…" : DEMO ? "Analyze (needs live backend)" : "Analyze"}
         </button>
       </form>
 

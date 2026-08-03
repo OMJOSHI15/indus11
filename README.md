@@ -69,6 +69,27 @@ The API container seeds MongoDB (20 accounts) and Neo4j (500 accounts, ~1,000 tr
 
 > **LLM layer (optional):** set `OPENAI_API_KEY` in your environment, or run [Ollama](https://ollama.com) locally (`ollama pull llama3`) and set `LLM_PROVIDER=ollama`. Without either, the rule and graph engines still decide; only the AI reason is skipped.
 
+## Static demo (Vercel)
+
+The full stack cannot run on a static host — it needs four databases and a local
+language model, and one analysis takes ~14 s. So the deployed build runs in **demo
+mode**: it reads `dashboard/public/demo-data.json`, a committed snapshot of a real
+local run, and disables the actions that would write.
+
+```bash
+cd dashboard && VITE_DEMO=1 npm run build   # dist/ is a self-contained static site
+```
+
+To deploy: import the repo on Vercel and set **Root Directory** to `dashboard`.
+`dashboard/vercel.json` supplies the framework, build command and `VITE_DEMO=1`.
+The demo is labelled as such in the UI — the numbers are real, the interactivity is not.
+
+Refresh the snapshot any time from a running stack:
+
+```bash
+python -m scripts.snapshot_demo
+```
+
 ## Run locally (without Docker)
 
 ```bash
