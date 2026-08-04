@@ -2,7 +2,7 @@
 skinparam dpi 200
 skinparam backgroundColor white
 skinparam shadowing false
-skinparam defaultFontName Helvetica
+skinparam defaultFontName Times New Roman
 title Data Flow Diagram — Level 1
 rectangle "Client" as C #E8F0FE
 usecase "1.0\nValidate\nRequest" as P1

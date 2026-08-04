@@ -2,7 +2,7 @@
 skinparam dpi 200
 skinparam backgroundColor white
 skinparam shadowing false
-skinparam defaultFontName Helvetica
+skinparam defaultFontName Times New Roman
 title Deployment Diagram — Docker Compose Topology
 node "Client Device" as CD {
   artifact "Web Browser" as BR

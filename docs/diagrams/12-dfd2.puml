@@ -2,7 +2,7 @@
 skinparam dpi 200
 skinparam backgroundColor white
 skinparam shadowing false
-skinparam defaultFontName Helvetica
+skinparam defaultFontName Times New Roman
 title Data Flow Diagram — Level 2 (Process 3.0, Rule Engine)
 rectangle "transaction +\nsender & receiver profiles" as IN #E8F0FE
 usecase "3.1\nCheck\nblacklist" as A

@@ -2,7 +2,7 @@
 skinparam dpi 200
 skinparam backgroundColor white
 skinparam shadowing false
-skinparam defaultFontName Helvetica
+skinparam defaultFontName Times New Roman
 skinparam usecase {
   BorderColor #2F4F6F
   BackgroundColor #F4F7FB

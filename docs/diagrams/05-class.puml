@@ -2,101 +2,96 @@
 skinparam dpi 200
 skinparam backgroundColor white
 skinparam shadowing false
-skinparam defaultFontName Helvetica
+skinparam defaultFontName Times New Roman
+skinparam defaultFontSize 13
+skinparam linetype ortho
 skinparam class {
   BorderColor #2F4F6F
-  BackgroundColor #F4F7FB
+  BackgroundColor #F7FAFF
+  FontName Times New Roman
+  AttributeFontName Times New Roman
+  AttributeFontSize 12
 }
-title Class Diagram — Schemas, Models and Services
+title Class Diagram — Core Domain and Service Classes
 enum Decision {
   APPROVE
   REVIEW
   BLOCK
 }
-class TransactionRequest <<Pydantic>> {
-  + tx_id : str
-  + sender_account_id : str
-  + receiver_account_id : str
-  + amount : float {gt 0}
-  + currency : str = "INR"
-  + merchant_category : str?
-  + merchant_id : str?
-  + device_id : str?
-  + ip_address : str?
-  + note : str?
-  + timestamp : datetime
+class TransactionRequest {
+  - tx_id : String
+  - sender_account_id : String
+  - receiver_account_id : String
+  - amount : Float
+  - currency : String
+  - merchant_category : String
+  - device_id : String
+  - ip_address : String
+  + validate() : Boolean
 }
-class LayerScore <<Pydantic>> {
-  + score : int
-  + max_score : int
-  + flags : list[str]
+class LayerScore {
+  - score : Integer
+  - max_score : Integer
+  - flags : List<String>
+  + is_maximum() : Boolean
 }
-class AnalysisResponse <<Pydantic>> {
-  + tx_id : str
-  + decision : Decision
-  + composite_score : int {0..100}
-  + rule_engine : LayerScore
-  + graph_analyzer : LayerScore
-  + rag_pipeline : LayerScore
-  + explanation : str
-  + processing_time_ms : float
-  + timestamp : datetime
+class AnalysisResponse {
+  - tx_id : String
+  - decision : Decision
+  - composite_score : Integer
+  - explanation : String
+  - processing_time_ms : Float
 }
-class AccountProfile <<Pydantic>> {
-  + account_id : str
-  + owner_name : str
-  + avg_monthly_transaction : float
-  + is_blacklisted : bool
-  + country_code : str
-  + risk_tier : str
+class Account {
+  - account_id : String
+  - owner_name : String
+  - country_code : String
+  - avg_monthly_transaction : Float
+  - is_blacklisted : Boolean
+  - risk_tier : String
+  + is_high_risk() : Boolean
 }
-class RuleEngine <<service>> {
-  + run_rule_engine(tx, sender, receiver) : LayerScore
-  - HIGH_RISK_MERCHANTS : set
-  - VELOCITY_LIMIT : int = 5
-  - AMOUNT_ANOMALY_MULTIPLIER : float = 3.0
+class Transaction {
+  - tx_id : String
+  - amount : Float
+  - composite_score : Integer
+  - decision : String
+  - explanation : String
+  - created_at : DateTime
+  + override_decision(d : Decision) : void
 }
-class GraphAnalyzer <<service>> {
-  + run_graph_analyzer(tx) : LayerScore
-  + propagate_fraud_labels() : dict
-  + get_account_neighbors(id, depth) : dict
+abstract class AnalysisLayer {
+  # max_score : Integer
+  + {abstract} analyse(tx : TransactionRequest) : LayerScore
 }
-class RagPipeline <<service>> {
-  + run_rag_pipeline(tx, sender) : tuple
-  + seed_knowledge_base() : None
+class RuleEngine {
+  - VELOCITY_LIMIT : Integer
+  - AMOUNT_MULTIPLIER : Float
+  + analyse(tx : TransactionRequest) : LayerScore
 }
-class DecisionEngine <<service>> {
-  + make_decision(tx, rule, graph, rag, reason, elapsed) : AnalysisResponse
+class GraphAnalyzer {
+  + analyse(tx : TransactionRequest) : LayerScore
+  + propagate_fraud_labels() : Integer
 }
-class Transaction <<Beanie Document>> {
-  + tx_id : str {unique index}
-  + sender_account_id : str {index}
-  + receiver_account_id : str
-  + amount : float
-  + currency : str
-  + composite_score : int
-  + decision : str {index}
-  + explanation : str
-  + note : str?
-  + created_at : datetime {index}
+class RagPipeline {
+  + analyse(tx : TransactionRequest) : LayerScore
+  + build_explanation() : String
 }
-class Account <<Beanie Document>> {
-  + account_id : str {unique index}
-  + owner_name : str
-  + country_code : str
-  + avg_monthly_transaction : float
-  + is_blacklisted : bool
-  + risk_tier : str
+class DecisionEngine {
+  - review_threshold : Integer
+  - block_threshold : Integer
+  + make_decision(scores : List<LayerScore>) : AnalysisResponse
 }
-AnalysisResponse *-- "3" LayerScore
-AnalysisResponse --> Decision
-RuleEngine ..> LayerScore : produces
-GraphAnalyzer ..> LayerScore : produces
-RagPipeline ..> LayerScore : produces
-DecisionEngine ..> AnalysisResponse : produces
-DecisionEngine ..> LayerScore : consumes
-RuleEngine ..> TransactionRequest : reads
-RuleEngine ..> AccountProfile : reads
-Account "1" --> "N" Transaction : sends / receives
-AccountProfile ..> Account : projected from
+AnalysisLayer <|-- RuleEngine
+AnalysisLayer <|-- GraphAnalyzer
+AnalysisLayer <|-- RagPipeline
+AnalysisLayer ..> LayerScore : creates
+DecisionEngine o-- "3" LayerScore : aggregates
+DecisionEngine ..> AnalysisResponse : creates
+AnalysisResponse --> Decision : has
+DecisionEngine ..> TransactionRequest : reads
+Account "1" -- "0..*" Transaction : sends
+Account "1" -- "0..*" Transaction : receives
+TransactionRequest ..> Transaction : persisted as
+RuleEngine ..> Account : reads profile
 @enduml

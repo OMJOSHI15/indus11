@@ -2,41 +2,57 @@
 skinparam dpi 200
 skinparam backgroundColor white
 skinparam shadowing false
-skinparam defaultFontName Helvetica
-title Activity Diagram — Transaction Analysis
+skinparam defaultFontName Times New Roman
+skinparam defaultFontSize 13
+skinparam ArrowColor #333333
+skinparam activity {
+  BorderColor #2F4F6F
+  BackgroundColor #F7FAFF
+  DiamondBorderColor #2F4F6F
+  DiamondBackgroundColor #FBFBF4
+}
+title Activity Diagram — Transaction Analysis Workflow
+|Payment Client|
 start
-:Receive transaction request;
-if (Schema valid?) then (no)
-  :Return HTTP 422\nUnprocessable Entity;
+:Submit transaction;
+|API Gateway|
+:Validate request format;
+if (Request well formed?) then (no)
+  :Report validation failure;
+  |Payment Client|
+  :Receive rejection;
   stop
 else (yes)
 endif
-if (Transaction ID already exists?) then (yes)
-  :Return HTTP 409\nConflict;
-  stop
-else (no)
-endif
-:Load sender and receiver profiles\n(Redis → MongoDB → elevated default);
+|API Gateway|
+:Retrieve sender and receiver profiles;
+|Analysis Layers|
 fork
-  :Rule Engine\nvelocity, amount, blacklist,\nmerchant, risk tier;
-  :score 0–40 + flags;
+  :Evaluate business rules;
 fork again
-  :Graph Analyzer\nshared device/IP, circular flow,\nfee-skimming chains;
-  :score 0–30 + flags;
+  :Analyse account relationships;
 fork again
-  :RAG Pipeline\nretrieve patterns, query LLM;
-  :score 0–30 + explanation;
+  :Retrieve similar fraud patterns;
 end fork
-:composite = min(rule + graph + rag, 100);
-if (composite >= 70?) then (yes)
-  :Decision = BLOCK;
-elseif (composite >= 40?) then (yes)
-  :Decision = REVIEW;
-else (no)
-  :Decision = APPROVE;
+|Decision Engine|
+:Combine layer scores;
+if (Risk level?) then (high)
+  :Mark as blocked;
+elseif (moderate) then
+  :Mark for review;
+else (low)
+  :Mark as approved;
 endif
-:Build explanation from\ntriggered signals + LLM reasoning;
-:Persist analysis to MongoDB;
-:Return JSON response;
+:Compose explanation;
+:Store analysis record;
+|Payment Client|
+:Receive decision and explanation;
+|Fraud Analyst|
+if (Marked for review?) then (yes)
+  :Examine transaction detail;
+  :Approve or block manually;
+  :Record final outcome;
+else (no)
+endif
 stop
 @enduml

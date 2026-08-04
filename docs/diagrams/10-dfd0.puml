@@ -2,7 +2,7 @@
 skinparam dpi 200
 skinparam backgroundColor white
 skinparam shadowing false
-skinparam defaultFontName Helvetica
+skinparam defaultFontName Times New Roman
 title Data Flow Diagram — Level 0 (Context)
 rectangle "Payment Client\n/ Dashboard" as PC #E8F0FE
 rectangle "Fraud Analyst" as FA #E8F0FE

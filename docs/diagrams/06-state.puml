@@ -2,29 +2,32 @@
 skinparam dpi 200
 skinparam backgroundColor white
 skinparam shadowing false
-skinparam defaultFontName Helvetica
-title State Diagram — Lifecycle of a Transaction
-[*] --> Submitted
-Submitted --> Validating : request received
-Validating --> Rejected : schema invalid (HTTP 422)
-Validating --> Conflicted : duplicate tx_id (HTTP 409)
-Validating --> Scoring : payload valid
-Scoring : rule, graph and RAG layers
-Scoring : execute concurrently
-Scoring --> Decided : all layer scores returned
-Decided --> Approved : composite 0–39
-Decided --> InReview : composite 40–69
-Decided --> Blocked : composite 70+
-InReview : held for a human analyst
-InReview --> Approved : analyst override (PATCH)
-InReview --> Blocked : analyst override (PATCH)
-Rejected --> [*]
-Conflicted --> [*]
+skinparam defaultFontName Times New Roman
+skinparam defaultFontSize 13
+skinparam state {
+  BorderColor #2F4F6F
+  BackgroundColor #F7FAFF
+  FontName Times New Roman
+}
+title State Diagram — Transaction Lifecycle
+[*] --> Received : transaction submitted
+Received --> Rejected : validation fails
+Received --> UnderAnalysis : validation succeeds
+state UnderAnalysis {
+  [*] --> Scoring
+  Scoring : rule, graph and AI layers
+  Scoring : evaluate concurrently
+  Scoring --> Aggregated : all scores returned
+  Aggregated : composite risk score computed
+  Aggregated --> [*]
+}
+UnderAnalysis --> Approved : score below review threshold
+UnderAnalysis --> UnderReview : score within review band
+UnderAnalysis --> Blocked : score at or above block threshold
+UnderReview : awaiting analyst judgement
+UnderReview --> Approved : analyst approves
+UnderReview --> Blocked : analyst blocks
 Approved --> [*]
 Blocked --> [*]
-note bottom of Decided
-  Every transition is persisted, so the
-  audit trail records both the automatic
-  decision and any later analyst override.
-end note
+Rejected --> [*]
 @enduml

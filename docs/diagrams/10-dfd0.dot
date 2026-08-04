@@ -1,0 +1,16 @@
+digraph DFD0 {
+  graph [rankdir=LR, fontname="Times-Roman", fontsize=14, labelloc=t,
+         label="Figure 4.4  Data Flow Diagram — Level 0 (Context Diagram)", nodesep=0.8, ranksep=1.4];
+  node  [fontname="Times-Roman", fontsize=12];
+  edge  [fontname="Times-Roman", fontsize=11];
+
+  PC  [shape=box, style=filled, fillcolor="#EEF3FA", width=1.6, height=0.9, label="Payment Client"];
+  FA  [shape=box, style=filled, fillcolor="#EEF3FA", width=1.6, height=0.9, label="Fraud Analyst"];
+  SYS [shape=circle, style=filled, fillcolor="#F7FAFF", width=1.9, fixedsize=true,
+       label="0\nIndus11\nFraud Detection\nSystem"];
+
+  PC -> SYS [label="  transaction details"];
+  SYS -> PC [label="  decision, risk score,\l  explanation\l"];
+  SYS -> FA [label="  flagged transactions"];
+  FA -> SYS [label="  override decision"];
+}
