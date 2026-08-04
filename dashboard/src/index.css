@@ -563,3 +563,177 @@ form.analyze button:disabled { opacity: 0.55; cursor: progress; }
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Motion and interaction
+   Entrances are staggered so the eye lands on the KPIs first, then the
+   panels. Every animation is disabled under prefers-reduced-motion at the
+   bottom of this block — motion here is decoration, not information.
+   ────────────────────────────────────────────────────────────────────────── */
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.kpi,
+.panel {
+  animation: rise 460ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.kpi:nth-child(1) { animation-delay: 40ms; }
+.kpi:nth-child(2) { animation-delay: 90ms; }
+.kpi:nth-child(3) { animation-delay: 140ms; }
+.kpi:nth-child(4) { animation-delay: 190ms; }
+
+.grid .panel:nth-child(1) { animation-delay: 220ms; }
+.grid .panel:nth-child(2) { animation-delay: 265ms; }
+.grid .panel:nth-child(3) { animation-delay: 310ms; }
+.grid .panel:nth-child(4) { animation-delay: 355ms; }
+.grid .panel:nth-child(5) { animation-delay: 400ms; }
+
+.kpi,
+.panel {
+  transition: transform 180ms ease, border-color 180ms ease,
+              box-shadow 180ms ease;
+}
+
+.kpi:hover {
+  transform: translateY(-2px);
+  border-color: rgba(120, 150, 200, 0.42);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.32);
+}
+
+.kpi .value {
+  font-variant-numeric: tabular-nums;   /* digits keep width while counting */
+}
+
+/* ── flagged-transaction table controls ── */
+.table-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.filter-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(120, 150, 200, 0.22);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--muted, #9aa6b8);
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
+}
+
+.chip:hover { background: rgba(255, 255, 255, 0.07); color: #dbe4f0; }
+
+.chip.active {
+  background: rgba(96, 141, 255, 0.16);
+  border-color: rgba(96, 141, 255, 0.5);
+  color: #cfe0ff;
+}
+
+.chip-count {
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  opacity: 0.75;
+}
+
+.table-search {
+  flex: 0 1 280px;
+  padding: 7px 11px;
+  border-radius: 8px;
+  border: 1px solid rgba(120, 150, 200, 0.22);
+  background: rgba(255, 255, 255, 0.03);
+  color: inherit;
+  font-size: 13px;
+  transition: border-color 160ms ease, background 160ms ease;
+}
+
+.table-search:focus {
+  outline: none;
+  border-color: rgba(96, 141, 255, 0.6);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.th-sort {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  letter-spacing: inherit;
+  text-transform: inherit;
+}
+
+.th-sort:hover { color: #cfe0ff; }
+
+/* ── score cell with proportional bar ── */
+.score-cell { display: grid; gap: 4px; min-width: 66px; }
+
+.score-value {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.score-track {
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.09);
+  overflow: hidden;
+}
+
+.score-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  transform-origin: left center;
+  animation: grow 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+.score-fill.approve { background: #34d399; }
+.score-fill.review  { background: #fbbf24; }
+.score-fill.block   { background: #f87171; }
+
+/* ── table rows ── */
+tbody tr.row-enter { animation: fade 320ms ease both; }
+
+tbody tr {
+  transition: background 140ms ease;
+}
+
+tbody tr:hover { background: rgba(255, 255, 255, 0.045); }
+
+tbody tr:focus-visible {
+  outline: 2px solid rgba(96, 141, 255, 0.75);
+  outline-offset: -2px;
+}
+
+/* ── respect the user's motion preference ── */
+@media (prefers-reduced-motion: reduce) {
+  .kpi,
+  .panel,
+  tbody tr.row-enter,
+  .score-fill {
+    animation: none !important;
+  }
+  .kpi:hover { transform: none; }
+  * { transition-duration: 1ms !important; }
+}

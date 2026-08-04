@@ -6,6 +6,7 @@ import AnalyzeForm from "./components/AnalyzeForm.jsx";
 import TxModal from "./components/TxModal.jsx";
 import AccuracyPanel from "./components/AccuracyPanel.jsx";
 import { DEMO, getRecentFlags, getRiskDistribution } from "./api.js";
+import useCountUp from "./useCountUp.js";
 import { SAMPLE_DISTRIBUTION, SAMPLE_FLAGS } from "./sampleData.js";
 import {
   ActivityIcon,
@@ -17,6 +18,12 @@ import {
 } from "./icons.jsx";
 
 const REFRESH_MS = 10000;
+
+/** KPI figure that counts up when the value changes. */
+function KpiValue({ value }) {
+  const shown = useCountUp(value);
+  return <div className="value">{shown.toLocaleString()}</div>;
+}
 
 const KPIS = [
   { key: "total", label: "Analyzed", icon: ActivityIcon },
@@ -99,7 +106,7 @@ export default function App() {
                 <div className="skeleton" style={{ width: 56, height: 28 }} />
               ) : (
                 <>
-                  <div className="value">{kpiValue(key).toLocaleString()}</div>
+                  <KpiValue value={kpiValue(key)} />
                   {key !== "total" && total > 0 && (
                     <div className="pct">
                       {((kpiValue(key) / total) * 100).toFixed(1)}%
