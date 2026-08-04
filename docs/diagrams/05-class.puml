@@ -1,0 +1,102 @@
+@startuml
+skinparam dpi 200
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam class {
+  BorderColor #2F4F6F
+  BackgroundColor #F4F7FB
+}
+title Class Diagram — Schemas, Models and Services
+enum Decision {
+  APPROVE
+  REVIEW
+  BLOCK
+}
+class TransactionRequest <<Pydantic>> {
+  + tx_id : str
+  + sender_account_id : str
+  + receiver_account_id : str
+  + amount : float {gt 0}
+  + currency : str = "INR"
+  + merchant_category : str?
+  + merchant_id : str?
+  + device_id : str?
+  + ip_address : str?
+  + note : str?
+  + timestamp : datetime
+}
+class LayerScore <<Pydantic>> {
+  + score : int
+  + max_score : int
+  + flags : list[str]
+}
+class AnalysisResponse <<Pydantic>> {
+  + tx_id : str
+  + decision : Decision
+  + composite_score : int {0..100}
+  + rule_engine : LayerScore
+  + graph_analyzer : LayerScore
+  + rag_pipeline : LayerScore
+  + explanation : str
+  + processing_time_ms : float
+  + timestamp : datetime
+}
+class AccountProfile <<Pydantic>> {
+  + account_id : str
+  + owner_name : str
+  + avg_monthly_transaction : float
+  + is_blacklisted : bool
+  + country_code : str
+  + risk_tier : str
+}
+class RuleEngine <<service>> {
+  + run_rule_engine(tx, sender, receiver) : LayerScore
+  - HIGH_RISK_MERCHANTS : set
+  - VELOCITY_LIMIT : int = 5
+  - AMOUNT_ANOMALY_MULTIPLIER : float = 3.0
+}
+class GraphAnalyzer <<service>> {
+  + run_graph_analyzer(tx) : LayerScore
+  + propagate_fraud_labels() : dict
+  + get_account_neighbors(id, depth) : dict
+}
+class RagPipeline <<service>> {
+  + run_rag_pipeline(tx, sender) : tuple
+  + seed_knowledge_base() : None
+}
+class DecisionEngine <<service>> {
+  + make_decision(tx, rule, graph, rag, reason, elapsed) : AnalysisResponse
+}
+class Transaction <<Beanie Document>> {
+  + tx_id : str {unique index}
+  + sender_account_id : str {index}
+  + receiver_account_id : str
+  + amount : float
+  + currency : str
+  + composite_score : int
+  + decision : str {index}
+  + explanation : str
+  + note : str?
+  + created_at : datetime {index}
+}
+class Account <<Beanie Document>> {
+  + account_id : str {unique index}
+  + owner_name : str
+  + country_code : str
+  + avg_monthly_transaction : float
+  + is_blacklisted : bool
+  + risk_tier : str
+}
+AnalysisResponse *-- "3" LayerScore
+AnalysisResponse --> Decision
+RuleEngine ..> LayerScore : produces
+GraphAnalyzer ..> LayerScore : produces
+RagPipeline ..> LayerScore : produces
+DecisionEngine ..> AnalysisResponse : produces
+DecisionEngine ..> LayerScore : consumes
+RuleEngine ..> TransactionRequest : reads
+RuleEngine ..> AccountProfile : reads
+Account "1" --> "N" Transaction : sends / receives
+AccountProfile ..> Account : projected from
+@enduml

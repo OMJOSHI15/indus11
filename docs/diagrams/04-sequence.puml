@@ -1,0 +1,41 @@
+@startuml
+skinparam dpi 200
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+title Sequence Diagram — POST /api/v1/transactions/analyze
+actor Client
+participant "FastAPI\nGateway" as GW
+database Redis
+database MongoDB
+participant "Rule\nEngine" as RULE
+participant "Graph Analyzer\n(Neo4j)" as GRAPH
+participant "RAG Pipeline\n(Chroma + LLM)" as RAG
+participant "Decision\nEngine" as DEC
+Client -> GW : POST transaction
+activate GW
+GW -> Redis : GET account:<id>
+Redis --> GW : cache miss
+GW -> MongoDB : find_one(account_id)
+MongoDB --> GW : account profile
+GW -> Redis : SETEX (TTL 300 s)
+group asyncio.gather() — the three layers run concurrently
+  GW -> RULE : run_rule_engine(tx, sender, receiver)
+  GW -> GRAPH : run_graph_analyzer(tx)
+  GW -> RAG : run_rag_pipeline(tx, sender)
+  RULE --> GW : LayerScore (0–40)
+  GRAPH --> GW : LayerScore (0–30)
+  RAG --> GW : LayerScore (0–30) + explanation
+end
+GW -> DEC : make_decision(rule, graph, rag)
+DEC --> GW : AnalysisResponse
+GW -> MongoDB : insert transaction
+alt duplicate tx_id
+  MongoDB --> GW : DuplicateKeyError
+  GW --> Client : HTTP 409 Conflict
+else stored
+  GW --> Client : HTTP 200 + decision, score, explanation
+end
+deactivate GW
+note over RAG : If no language model is reachable,\nRAG returns score 0 with a stated\nreason; the pipeline still decides.
+@enduml

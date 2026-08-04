@@ -1,0 +1,52 @@
+@startuml
+skinparam dpi 200
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam component {
+  BorderColor #2F4F6F
+  BackgroundColor #F4F7FB
+}
+title Component Diagram — Indus11
+component "Dashboard\n(React + Vite)" as UI
+component "API Gateway\n(FastAPI)" as API {
+  component "Transaction\nController" as TC
+  component "Stats\nController" as SC
+  component "Graph\nController" as GC
+}
+component "Rule Engine" as RE
+component "Graph Analyzer" as GA
+component "RAG Pipeline" as RP
+component "Decision Engine" as DE
+component "Repository\n(Beanie ODM)" as REPO
+database "MongoDB" as M
+database "Neo4j" as N
+database "Redis" as R
+database "ChromaDB" as C
+component "Ollama\n(local LLM)" as OL <<external>>
+interface "IRestApi" as I1
+interface "IRules" as I2
+interface "IGraph" as I3
+interface "IRag" as I4
+interface "IPersist" as I5
+interface "ILlm" as I6
+UI -down- I1
+I1 -down- API
+TC -down- I2
+I2 -down- RE
+TC -down- I3
+I3 -down- GA
+TC -down- I4
+I4 -down- RP
+TC -down- I5
+I5 -down- REPO
+RE -down-> R : velocity + cache
+GA -down-> N : Cypher / Bolt
+RP -down-> C : vector search
+RP -down- I6
+I6 -down- OL
+REPO -down-> M
+SC -down-> REPO
+GC -down-> GA
+TC -right-> DE : aggregate scores
+@enduml

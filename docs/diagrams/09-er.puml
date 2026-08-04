@@ -1,0 +1,52 @@
+@startuml
+skinparam dpi 200
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam class {
+  BorderColor #2F4F6F
+  BackgroundColor #F4F7FB
+}
+title Entity Relationship Diagram
+entity ACCOUNT {
+  * account_id : string <<PK>>
+  --
+  owner_name : string
+  country_code : string
+  avg_monthly_transaction : float
+  is_blacklisted : boolean
+  risk_tier : string
+}
+entity TRANSACTION {
+  * tx_id : string <<PK>>
+  --
+  * sender_account_id : string <<FK>>
+  * receiver_account_id : string <<FK>>
+  amount : float
+  currency : string
+  merchant_category : string
+  device_id : string <<FK>>
+  ip_address : string <<FK>>
+  composite_score : int
+  decision : string
+  explanation : text
+  note : text
+  created_at : datetime
+}
+entity DEVICE {
+  * device_id : string <<PK>>
+}
+entity IP_ADDRESS {
+  * address : string <<PK>>
+}
+ACCOUNT ||--o{ TRANSACTION : sends
+ACCOUNT ||--o{ TRANSACTION : receives
+ACCOUNT }o--o{ DEVICE : USED_DEVICE
+ACCOUNT }o--o{ IP_ADDRESS : USED_IP
+ACCOUNT }o--o{ ACCOUNT : CONNECTED_TO
+note bottom
+  ACCOUNT and TRANSACTION are MongoDB collections.
+  DEVICE, IP_ADDRESS and the association edges are
+  Neo4j nodes and relationships used by the graph layer.
+end note
+@enduml

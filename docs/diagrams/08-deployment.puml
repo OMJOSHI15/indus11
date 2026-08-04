@@ -1,0 +1,41 @@
+@startuml
+skinparam dpi 200
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+title Deployment Diagram — Docker Compose Topology
+node "Client Device" as CD {
+  artifact "Web Browser" as BR
+}
+node "Docker Host" as DH {
+  node "container: dashboard" as CDash {
+    artifact "nginx :80\nstatic React build\nproxies /api" as NG
+  }
+  node "container: api" as CApi {
+    artifact "uvicorn :8000\nFastAPI\n5-layer pipeline" as UV
+  }
+  node "container: mongo" as CM {
+    database "MongoDB 7 :27017" as M
+    artifact "volume mongo_data" as VM
+  }
+  node "container: neo4j" as CN {
+    database "Neo4j 5.20 :7687" as N
+    artifact "volume neo4j_data" as VN
+  }
+  node "container: redis" as CR {
+    database "Redis 7.2 :6379" as R
+    artifact "volume redis_data" as VR
+  }
+  artifact "bind mount\n./data/chroma" as CH
+}
+node "Host Machine" as HM {
+  artifact "Ollama :11434\nllama3" as OL
+}
+BR --> NG : HTTP :5173
+NG --> UV : proxy /api
+UV --> M : :27017
+UV --> N : bolt :7687
+UV --> R : :6379
+UV --> CH : file I/O
+UV --> OL : host.docker.internal:11434
+@enduml

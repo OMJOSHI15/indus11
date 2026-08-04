@@ -1,0 +1,30 @@
+@startuml
+skinparam dpi 200
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+title State Diagram — Lifecycle of a Transaction
+[*] --> Submitted
+Submitted --> Validating : request received
+Validating --> Rejected : schema invalid (HTTP 422)
+Validating --> Conflicted : duplicate tx_id (HTTP 409)
+Validating --> Scoring : payload valid
+Scoring : rule, graph and RAG layers
+Scoring : execute concurrently
+Scoring --> Decided : all layer scores returned
+Decided --> Approved : composite 0–39
+Decided --> InReview : composite 40–69
+Decided --> Blocked : composite 70+
+InReview : held for a human analyst
+InReview --> Approved : analyst override (PATCH)
+InReview --> Blocked : analyst override (PATCH)
+Rejected --> [*]
+Conflicted --> [*]
+Approved --> [*]
+Blocked --> [*]
+note bottom of Decided
+  Every transition is persisted, so the
+  audit trail records both the automatic
+  decision and any later analyst override.
+end note
+@enduml

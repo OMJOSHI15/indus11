@@ -1,0 +1,42 @@
+@startuml
+skinparam dpi 200
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam usecase {
+  BorderColor #2F4F6F
+  BackgroundColor #F4F7FB
+}
+left to right direction
+title Use Case Diagram — Indus11
+actor "Payment Client\n(external system)" as PC
+actor "Fraud Analyst" as FA
+actor "System Administrator" as SA
+rectangle "Indus11 Fraud Detection System" {
+  usecase "Submit transaction\nfor analysis" as UC1
+  usecase "Validate request" as UC1a
+  usecase "Score transaction" as UC1b
+  usecase "Retrieve a past analysis" as UC2
+  usecase "View live risk dashboard" as UC3
+  usecase "Inspect flagged transaction" as UC4
+  usecase "Override review decision" as UC5
+  usecase "Explore account graph" as UC6
+  usecase "Seed datasets" as UC7
+  usecase "Run accuracy evaluation" as UC8
+  usecase "Tune decision thresholds" as UC9
+  usecase "Manage accounts / blacklist" as UC10
+}
+PC --> UC1
+PC --> UC2
+FA --> UC3
+FA --> UC4
+FA --> UC5
+FA --> UC6
+SA --> UC7
+SA --> UC8
+SA --> UC9
+SA --> UC10
+UC1 ..> UC1a : <<include>>
+UC1 ..> UC1b : <<include>>
+UC5 ..> UC4 : <<extend>>
+@enduml

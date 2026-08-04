@@ -1,0 +1,42 @@
+@startuml
+skinparam dpi 200
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+title Activity Diagram — Transaction Analysis
+start
+:Receive transaction request;
+if (Schema valid?) then (no)
+  :Return HTTP 422\nUnprocessable Entity;
+  stop
+else (yes)
+endif
+if (Transaction ID already exists?) then (yes)
+  :Return HTTP 409\nConflict;
+  stop
+else (no)
+endif
+:Load sender and receiver profiles\n(Redis → MongoDB → elevated default);
+fork
+  :Rule Engine\nvelocity, amount, blacklist,\nmerchant, risk tier;
+  :score 0–40 + flags;
+fork again
+  :Graph Analyzer\nshared device/IP, circular flow,\nfee-skimming chains;
+  :score 0–30 + flags;
+fork again
+  :RAG Pipeline\nretrieve patterns, query LLM;
+  :score 0–30 + explanation;
+end fork
+:composite = min(rule + graph + rag, 100);
+if (composite >= 70?) then (yes)
+  :Decision = BLOCK;
+elseif (composite >= 40?) then (yes)
+  :Decision = REVIEW;
+else (no)
+  :Decision = APPROVE;
+endif
+:Build explanation from\ntriggered signals + LLM reasoning;
+:Persist analysis to MongoDB;
+:Return JSON response;
+stop
+@enduml

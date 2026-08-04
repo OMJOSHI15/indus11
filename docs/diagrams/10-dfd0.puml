@@ -1,0 +1,16 @@
+@startuml
+skinparam dpi 200
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+title Data Flow Diagram — Level 0 (Context)
+rectangle "Payment Client\n/ Dashboard" as PC #E8F0FE
+rectangle "Fraud Analyst" as FA #E8F0FE
+usecase "0\nINDUS11\nFraud Detection\nSystem" as SYS #F4F7FB
+database "Mongo · Neo4j\nRedis · ChromaDB" as DS
+PC -right-> SYS : transaction\n(sender, receiver, amount, device, IP)
+SYS -right-> FA : decision, score, explanation
+FA -left-> SYS : override decision\n(approve / block)
+SYS -down-> DS : store analysis
+DS -up-> SYS : profiles, graph history,\nfraud patterns
+@enduml
