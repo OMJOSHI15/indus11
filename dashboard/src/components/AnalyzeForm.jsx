@@ -148,10 +148,10 @@ export default function AnalyzeForm({ onAnalyzed }) {
         <button
           type="submit"
           disabled={busy || DEMO}
-          title={DEMO ? "Scoring needs the live backend — run the stack locally to try it" : undefined}
+          title={DEMO ? "Scoring runs against the live backend — clone the repo and run the stack to try it" : undefined}
         >
           {busy ? <span className="spinner" aria-hidden="true" /> : <ScanSearchIcon size={15} />}
-          {busy ? "Analyzing…" : DEMO ? "Analyze (needs live backend)" : "Analyze"}
+          {busy ? "Analyzing…" : DEMO ? "Analyze — live backend only" : "Analyze"}
         </button>
       </form>
 

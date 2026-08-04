@@ -71,23 +71,13 @@ export default function App() {
           <div className="subtitle">AI Financial Risk &amp; Fraud Decision Engine</div>
         </div>
         <div className="spacer" />
-        <span className={`status-pill${offline || DEMO ? " offline" : ""}`}>
+        <span className={`status-pill${offline ? " offline" : ""}`}>
           <span className="dot" aria-hidden="true" />
-          {DEMO ? "Demo data" : offline ? "API offline" : "Live"}
+          {DEMO ? "Sample data" : offline ? "API offline" : "Live"}
         </span>
       </header>
 
-      {DEMO ? (
-        <div className="banner" role="status">
-          <WifiOffIcon size={15} />
-          <span>
-            Static demo — real results captured from a local run of the full stack.
-            The backend needs four databases and a local language model, so scoring
-            a new transaction is disabled here. Run it yourself with{" "}
-            <code>docker compose up</code>.
-          </span>
-        </div>
-      ) : (
+      {DEMO ? null : (
         offline && (
           <div className="banner" role="status">
             <WifiOffIcon size={15} />
