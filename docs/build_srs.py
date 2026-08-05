@@ -35,7 +35,7 @@ from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.enum.text import WD_TAB_ALIGNMENT, WD_TAB_LEADER
 from docx.shared import Inches, Pt, RGBColor
-from PIL import Image
+from PIL import Image, ImageFont
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DIAGRAMS = os.path.join(HERE, "diagrams")
@@ -54,6 +54,9 @@ USABLE_W = 6.0            # 8.5in page, 1.5in left + 1.0in right margin
 MAX_FIG_H = 7.0
 
 figures, tables = [], []   # (label, title) for the front-matter lists
+# label -> (first cell of the first row, first cell of the last row). The PDF
+# driver checks both land on one page, i.e. that no table straddles a break.
+table_spans = {}
 contents = []              # (level, title) for the table of contents
 
 # Page numbers for the contents, produced by a first pass over the rendered PDF
@@ -231,8 +234,9 @@ def table(title, headers, rows, widths=None, size=10.5):
     global _tbl_n
     _tbl_n += 1
     label = f"Table {_chapter}.{_tbl_n}"
-    para(f"{label}: {title}", size=11, bold=True,
-         align=WD_ALIGN_PARAGRAPH.CENTER, after=4, spacing=1.0)
+    caption = para(f"{label}: {title}", size=11, bold=True,
+                   align=WD_ALIGN_PARAGRAPH.CENTER, after=4, spacing=1.0)
+    caption.paragraph_format.keep_with_next = True
     t = doc.add_table(rows=1, cols=len(headers))
     t.style = "Table Grid"
     t.alignment = WD_TABLE_ALIGNMENT.CENTER
@@ -258,12 +262,36 @@ def table(title, headers, rows, widths=None, size=10.5):
             r = p.add_run(str(v))
             r.font.size, r.font.name = Pt(size), FONT
     _apply_widths(t, _column_widths(headers, rows, size))
+    keep_on_one_page(t)
     para("", after=10, spacing=1.0)
     tables.append((label, title))
+    if rows:
+        # The longest word of each end row: a whole word survives the wrapping
+        # that the PDF text extractor applies, where a whole cell may not.
+        table_spans[label] = [_longest_word(rows[0]), _longest_word(rows[-1])]
     return t
 
 
-MIN_COL, MAX_COL = 0.55, 3.1     # inches
+MAX_COL = 3.1                    # inches
+CELL_PADDING = 0.17              # Word's default left+right cell margins
+FONT_FILES = {
+    False: "/System/Library/Fonts/Supplemental/Times New Roman.ttf",
+    True: "/System/Library/Fonts/Supplemental/Times New Roman Bold.ttf",
+}
+_MEASURED = 200                  # measure at a large size, then scale down
+_fonts = {}
+
+
+def text_width(text, size, bold=False):
+    """Width of `text` in inches, measured from the font rather than guessed.
+
+    Estimating from a character count put "IPAddress" and "Transaction" in
+    columns too narrow to hold them, and Word broke the words in half.
+    """
+    font = _fonts.get(bold)
+    if font is None:
+        font = _fonts[bold] = ImageFont.truetype(FONT_FILES[bold], _MEASURED)
+    return font.getlength(text) / _MEASURED * size / 72
 
 
 def _column_widths(headers, rows, size):
@@ -272,15 +300,18 @@ def _column_widths(headers, rows, size):
 
     Word's own autofit is advisory — LibreOffice renders the columns evenly
     regardless — so the widths are computed here and written as fixed values.
+    Each column's floor is its longest single word, so nothing is ever broken
+    mid-word; only the slack above that floor is given up when a table is wider
+    than the text column.
     """
-    columns = list(zip(*([list(headers)] + [[str(c) for c in r] for r in rows])))
-    char = 0.47 * size / 72          # rough average advance of Times, in inches
     bounds = []
-    for column in columns:
-        longest_word = max((len(w) for cell in column for w in cell.split()), default=1)
-        longest_cell = max(len(cell) for cell in column)
-        low = max(longest_word * char, MIN_COL)
-        bounds.append((low, min(max(longest_cell * char, low), MAX_COL)))
+    for i, header in enumerate(headers):
+        cells = [str(r[i]) for r in rows]
+        words = [w for cell in cells for w in cell.split()] or [""]
+        low = max([text_width(w, size) for w in words]
+                  + [text_width(header, size, bold=True)]) + CELL_PADDING
+        high = max([text_width(cell, size) for cell in cells] + [low - CELL_PADDING])
+        bounds.append((low, min(max(high + CELL_PADDING, low), max(MAX_COL, low))))
 
     total = sum(high for _, high in bounds)
     if total <= USABLE_W:
@@ -290,6 +321,28 @@ def _column_widths(headers, rows, size):
         return [USABLE_W * high / total for _, high in bounds]
     over = min(total - USABLE_W, room)
     return [high - (high - low) * over / room for low, high in bounds]
+
+
+def _longest_word(row):
+    return max((w for cell in row for w in str(cell).split()), key=len, default="")
+
+
+def keep_on_one_page(t):
+    """Stop a table being split across a page boundary.
+
+    Word has no "keep this table together" property, so the effect is built from
+    the two that do exist: no row may break internally, and every row but the
+    last is kept with the row after it. If a table is taller than the text area
+    it must still break somewhere — the header row is marked to repeat so that
+    the continuation is at least readable.
+    """
+    for row in t.rows:
+        row._tr.get_or_add_trPr().append(OxmlElement("w:cantSplit"))
+    for row in t.rows[:-1]:
+        for cell in row.cells:
+            for p in cell.paragraphs:
+                p.paragraph_format.keep_with_next = True
+    t.rows[0]._tr.get_or_add_trPr().append(OxmlElement("w:tblHeader"))
 
 
 def _apply_widths(t, widths):
@@ -554,8 +607,11 @@ for a in ["The four data stores are reachable. If a store is unavailable the aff
 # ───────────────────────── CHAPTER 3 ─────────────────────────
 chapter("System Requirements")
 section("3.1 Functional Requirements")
-para("Each requirement is traceable to the module that implements it.")
-table("Functional requirements", ["ID", "Requirement", "Module"],
+para("Each requirement is traceable to the module that implements it. The requirements "
+     "are given in two tables, covering the analysis pipeline and then the surrounding "
+     "services, so that neither table has to run across a page break.")
+table("Functional requirements — transaction analysis",
+      ["ID", "Requirement", "Module"],
       [["FR-1", "Accept a transaction over HTTP POST carrying identifier, sender, receiver, amount, currency and optional merchant, device, address and note fields.", "routes/transactions"],
        ["FR-2", "Validate every request against a schema and reject a malformed or non-positive amount before any analysis is performed.", "schemas/transaction"],
        ["FR-3", "Reject a duplicate transaction identifier with a conflict response so that a retried request does not produce a server error.", "routes/transactions"],
@@ -574,8 +630,11 @@ table("Functional requirements", ["ID", "Requirement", "Module"],
        ["FR-16", "Persist every analysed transaction with its score, decision, explanation and note.", "models/transaction"],
        ["FR-17", "Return a previously analysed transaction by identifier, or a not-found response.", "routes/transactions"],
        ["FR-18", "List recent transactions, optionally filtered by decision.", "routes/transactions"],
-       ["FR-19", "Allow an analyst to override a decision and reject any invalid value.", "routes/transactions"],
-       ["FR-20", "Support creating and listing accounts and toggling blacklist status.", "routes/accounts"],
+       ["FR-19", "Allow an analyst to override a decision and reject any invalid value.", "routes/transactions"]],
+      widths=[0.5, 4.2, 1.3], size=9)
+table("Functional requirements — accounts, graph, reporting and operations",
+      ["ID", "Requirement", "Module"],
+      [["FR-20", "Support creating and listing accounts and toggling blacklist status.", "routes/accounts"],
        ["FR-21", "Return the graph neighbourhood of an account to a depth of one to three hops.", "routes/graph"],
        ["FR-22", "Propagate fraud labels to accounts within two hops and assign a cluster identifier.", "services/graph_analyzer"],
        ["FR-23", "Report graph statistics for accounts, devices, addresses, transactions and labels.", "routes/graph"],
@@ -929,6 +988,7 @@ for term, definition in [
         r = p.add_run(v)
         r.font.size, r.font.name = Pt(10.5), FONT
     cells[0].width, cells[1].width = Inches(1.6), Inches(4.4)
+keep_on_one_page(_t)
 
 chapter("Appendix", numbered=False)
 section("Appendix A — Application Screen")
@@ -999,9 +1059,12 @@ fill(LOT_ANCHOR, "LIST OF TABLES", tables)
 fill(LOF_ANCHOR, "LIST OF FIGURES", figures)
 fill_contents(TOC_ANCHOR)
 
-# The PDF driver needs the heading list to look each page number up.
+# The PDF driver needs the heading list to look each page number up, and the
+# table spans to check no table was split across a page break.
 with open(os.path.join(HERE, "toc-entries.json"), "w") as f:
     json.dump(FRONT_MATTER + [t for _, t in contents], f, indent=2)
+with open(os.path.join(HERE, "table-spans.json"), "w") as f:
+    json.dump(table_spans, f, indent=2)
 
 page_numbers()
 refresh_fields_on_open()

@@ -1,0 +1,58 @@
+{
+  "Table 2.1": [
+    "transactions.",
+    "specification"
+  ],
+  "Table 2.2": [
+    "approximately",
+    "greater."
+  ],
+  "Table 3.1": [
+    "routes/transactions",
+    "routes/transactions"
+  ],
+  "Table 3.2": [
+    "routes/accounts",
+    "distribution,"
+  ],
+  "Table 3.3": [
+    "in-memory",
+    "transactions"
+  ],
+  "Table 3.4": [
+    "Reliability",
+    "transactions;"
+  ],
+  "Table 5.1": [
+    "browser",
+    "machine"
+  ],
+  "Table 6.1": [
+    "transactions",
+    "receiver_account_id,"
+  ],
+  "Table 6.2": [
+    "account_id",
+    "risk_tier"
+  ],
+  "Table 6.3": [
+    "duplicate",
+    "recent-first"
+  ],
+  "Table 6.4": [
+    "fraud_adjacent",
+    "Shared-address"
+  ],
+  "Table 6.5": [
+    "Circular-flow",
+    "CONNECTED_TO"
+  ],
+  "Table 6.6": [
+    "account:<account_id>",
+    "velocity:<account_id>"
+  ],
+  "Table 6.7": [
+    "fraud_patterns",
+    "metadata.severity"
+  ]
+}

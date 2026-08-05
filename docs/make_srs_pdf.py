@@ -79,6 +79,28 @@ def roman(n):
     return out
 
 
+def check_tables_are_not_split():
+    """Report any table whose first and last row land on different pages."""
+    with open(os.path.join(HERE, "table-spans.json")) as f:
+        spans = json.load(f)
+    text = subprocess.run(["pdftotext", "-layout", PDF, "-"],
+                          check=True, capture_output=True, text=True).stdout
+    pages = text.split("\f")
+    # A cell's text may be wrapped by the extractor, so compare with all
+    # whitespace stripped out rather than line by line.
+    flat = [re.sub(r"\s+", "", page) for page in pages]
+    split = []
+    for label, (first, last) in spans.items():
+        on = [n for n, page in enumerate(flat, start=1)
+              if re.sub(r"\s+", "", label) in page]
+        if not on:
+            continue
+        caption_page = on[-1]              # the list of tables comes earlier
+        if re.sub(r"\s+", "", last) not in flat[caption_page - 1]:
+            split.append(label)
+    return split
+
+
 if __name__ == "__main__":
     if os.path.exists(PAGES_JSON):
         os.remove(PAGES_JSON)
@@ -89,4 +111,6 @@ if __name__ == "__main__":
         json.dump(pages, f, indent=2, sort_keys=True)
     build()
     convert()
+    split = check_tables_are_not_split()
     print(f"Saved {PDF}   ({len(pages)} contents entries numbered)")
+    print("  tables split across a page break: " + (", ".join(split) if split else "none"))
