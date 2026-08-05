@@ -1,0 +1,39 @@
+@startuml
+' Part 2 of the workflow: score aggregation, the decision bands, the response
+' returned to the client and the analyst review path.
+skinparam dpi 200
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Times New Roman
+skinparam defaultFontSize 13
+skinparam ArrowColor #333333
+skinparam activity {
+  BorderColor #2F4F6F
+  BackgroundColor #F7FAFF
+  DiamondBorderColor #2F4F6F
+  DiamondBackgroundColor #FBFBF4
+}
+|Decision Engine|
+start
+:Combine layer scores;
+if (Composite score?) then (70 or above)
+  :Mark blocked;
+elseif (40 to 69) then
+  :Mark for review;
+else (below 40)
+  :Mark approved;
+endif
+:Compose explanation;
+:Store analysis record;
+|Payment Client|
+:Receive decision
+and explanation;
+|Fraud Analyst|
+if (Marked for review?) then (yes)
+  :Examine detail;
+  :Override decision;
+  :Record outcome;
+else (no)
+endif
+stop
+@enduml

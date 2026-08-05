@@ -1,0 +1,50 @@
+@startuml
+' Service half of the class model — the abstract analysis layer, its three
+' concrete implementations and the decision engine that aggregates their scores.
+skinparam dpi 200
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Times New Roman
+skinparam defaultFontSize 13
+skinparam linetype ortho
+skinparam class {
+  BorderColor #2F4F6F
+  BackgroundColor #F7FAFF
+  FontName Times New Roman
+  AttributeFontName Times New Roman
+  AttributeFontSize 12
+}
+abstract class AnalysisLayer {
+  # max_score : Integer
+  + {abstract} analyse(tx) : LayerScore
+}
+class RuleEngine {
+  - VELOCITY_LIMIT : Integer
+  - AMOUNT_MULTIPLIER : Float
+  + analyse(tx) : LayerScore
+}
+class GraphAnalyzer {
+  + analyse(tx) : LayerScore
+  + propagate_fraud_labels() : Integer
+}
+class RagPipeline {
+  + analyse(tx) : LayerScore
+  + build_explanation() : String
+}
+class LayerScore {
+  - score : Integer
+  - max_score : Integer
+  - flags : List<String>
+  + is_maximum() : Boolean
+}
+class DecisionEngine {
+  - review_threshold : Integer
+  - block_threshold : Integer
+  + make_decision(scores) : AnalysisResponse
+}
+AnalysisLayer <|-- RuleEngine
+AnalysisLayer <|-- GraphAnalyzer
+AnalysisLayer <|-- RagPipeline
+AnalysisLayer ..> LayerScore : creates
+DecisionEngine o-- "3" LayerScore : aggregates
+@enduml

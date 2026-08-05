@@ -2,19 +2,26 @@
 Build the Indus11 SRS document.
 
 Structure and formatting follow the department template and the internal
-guide's review comments of 03 Aug 2026:
+guide's review comments:
 
-  - single line spacing, no stray space before/after paragraphs
-  - every chapter starts on a new page; chapter titles centred at 16 pt
+  - running text at 1.5 line spacing and justified (latest review); tables stay
+    at single spacing, since a 32-row requirements table at 1.5 is unreadable
+  - no stray space before/after paragraphs
+  - only chapters start on a new page; chapter titles centred at 16 pt
   - figures numbered per chapter (Figure 4.1, 5.3, ...), no repeated titles
+  - every store is given its own data-dictionary table
   - Conclusion, References and Definitions appear last, unnumbered
   - References begin on their own page
-  - diagrams rendered by PlantUML/Graphviz in the document's own typeface
+  - diagrams rendered by PlantUML/Graphviz in the document's own typeface, and
+    kept small enough in content that none of their text falls below roughly
+    8 pt once scaled to the page
 
 Regenerate the diagrams first if they changed:
 
     plantuml -tpng docs/diagrams/*.puml
-    dot -Tpng -Gdpi=200 docs/diagrams/10-dfd0.dot -o docs/diagrams/10-dfd0.png
+    for f in 10-dfd0 11-dfd1 12-dfd2; do
+        dot -Tpng -Gdpi=200 docs/diagrams/$f.dot -o docs/diagrams/$f.png
+    done
     python docs/build_srs.py
 """
 import json
@@ -25,6 +32,7 @@ from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_BREAK
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
+from docx.enum.text import WD_TAB_ALIGNMENT, WD_TAB_LEADER
 from docx.shared import Inches, Pt, RGBColor
 from PIL import Image
 
@@ -39,11 +47,22 @@ FLAGGED, GRAPH, COUNTS = EVAL["metrics"]["flagged"], EVAL["graph"], EVAL["counts
 
 FONT = "Times New Roman"
 BODY, SUB, CHAP = 12, 14, 16
+LINE = 1.5                # running text; tables and captions stay single-spaced
 INK = RGBColor(0, 0, 0)
 USABLE_W = 6.0            # 8.5in page, 1.5in left + 1.0in right margin
 MAX_FIG_H = 7.0
 
 figures, tables = [], []   # (label, title) for the front-matter lists
+contents = []              # (level, title) for the table of contents
+
+# Page numbers for the contents, produced by a first pass over the rendered PDF
+# (docs/make_srs_pdf.py). Absent on the first pass, which is why the entries are
+# laid out identically either way — the pagination must not shift between passes.
+try:
+    with open(os.path.join(HERE, "toc-pages.json")) as f:
+        TOC_PAGES = json.load(f)
+except FileNotFoundError:
+    TOC_PAGES = {}
 _chapter = 0
 _fig_n = _tbl_n = 0
 
@@ -52,7 +71,8 @@ _normal = doc.styles["Normal"]
 _normal.font.name = FONT
 _normal.font.size = Pt(BODY)
 _normal.element.rPr.rFonts.set(qn("w:eastAsia"), FONT)
-_normal.paragraph_format.line_spacing = 1.0
+_normal.paragraph_format.line_spacing = LINE
+_normal.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
 _normal.paragraph_format.space_after = Pt(0)
 _normal.paragraph_format.space_before = Pt(0)
 
@@ -92,12 +112,12 @@ def refresh_fields_on_open():
 
 
 def para(text="", size=BODY, bold=False, align=WD_ALIGN_PARAGRAPH.JUSTIFY,
-         after=6, italic=False, indent=0.0):
+         after=6, italic=False, indent=0.0, spacing=LINE):
     p = doc.add_paragraph()
     p.alignment = align
     p.paragraph_format.space_after = Pt(after)
     p.paragraph_format.space_before = Pt(0)
-    p.paragraph_format.line_spacing = 1.0
+    p.paragraph_format.line_spacing = spacing
     if indent:
         p.paragraph_format.left_indent = Inches(indent)
     if text:
@@ -127,6 +147,7 @@ def chapter(title, numbered=True):
     p.paragraph_format.line_spacing = 1.0
     r = p.add_run(text)
     r.font.size, r.bold, r.font.color.rgb, r.font.name = Pt(CHAP), True, INK, FONT
+    contents.append((1, text))
     return p
 
 
@@ -139,15 +160,17 @@ def section(title):
     p.paragraph_format.keep_with_next = True
     r = p.add_run(title)
     r.font.size, r.bold, r.font.color.rgb, r.font.name = Pt(SUB), True, INK, FONT
+    contents.append((2, title))
     return p
 
 
 def bullet(text, indent=0.35):
-    p = doc.add_paragraph(style="List Paragraph")
+    # "List Bullet" carries the bullet glyph; "List Paragraph" is just an indent.
+    p = doc.add_paragraph(style="List Bullet")
     p.paragraph_format.left_indent = Inches(indent)
     p.paragraph_format.space_after = Pt(3)
     p.paragraph_format.space_before = Pt(0)
-    p.paragraph_format.line_spacing = 1.0
+    p.paragraph_format.line_spacing = LINE
     p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
     r = p.add_run(text)
     r.font.size, r.font.name = Pt(BODY), FONT
@@ -171,7 +194,7 @@ def figure(png, title):
     pic.paragraph_format.space_before = Pt(6)
     pic.paragraph_format.space_after = Pt(2)
     para(f"{label}: {title}", size=11, bold=True,
-         align=WD_ALIGN_PARAGRAPH.CENTER, after=10)
+         align=WD_ALIGN_PARAGRAPH.CENTER, after=10, spacing=1.0)
     figures.append((label, title))
 
 
@@ -209,7 +232,7 @@ def table(title, headers, rows, widths=None, size=10.5):
             for row in t.rows:
                 row.cells[i].width = Inches(w)
     para(f"{label}: {title}", size=11, bold=True,
-         align=WD_ALIGN_PARAGRAPH.CENTER, after=10)
+         align=WD_ALIGN_PARAGRAPH.CENTER, after=10, spacing=1.0)
     tables.append((label, title))
     return t
 
@@ -276,14 +299,28 @@ para("Date: ______________                    Place: Changa")
 
 new_page()
 para("ACKNOWLEDGEMENT", CHAP, True, WD_ALIGN_PARAGRAPH.CENTER, 18)
-para("We express our sincere gratitude to our internal guide, Dr. Deven Gol, for the "
-     "guidance and detailed review comments that shaped this project and this document.")
-para("We thank the Department of Computer Engineering, DEPSTAR, and Charotar "
-     "University of Science and Technology for providing the environment and resources "
-     "for this work.")
-para("We also acknowledge the open-source projects the system is built on — FastAPI, "
-     "MongoDB, Neo4j, Redis, ChromaDB, LangChain, Ollama and React — and the authors "
-     "of the research referenced in this document.", after=24)
+para("The satisfaction that accompanies the successful completion of any task would be "
+     "incomplete without mentioning the people who made it possible, and whose constant "
+     "guidance and encouragement crowned our effort with success.", after=10)
+para("We are deeply indebted to our internal guide, Dr. Deven Gol, Assistant Professor, "
+     "Department of Computer Engineering, DEPSTAR, for his valuable guidance, his "
+     "patience with our drafts and the detailed review comments that shaped both this "
+     "project and this document. His insistence on measured results rather than claims "
+     "has improved our work considerably.", after=10)
+para("We extend our sincere thanks to the Head of the Department of Computer "
+     "Engineering and to the Principal of Devang Patel Institute of Advance Technology "
+     "and Research (DEPSTAR) for providing us with the laboratory facilities, the "
+     "academic environment and the freedom to pursue this problem.", after=10)
+para("We are thankful to the faculty members of the Department of Computer Engineering "
+     "for the foundation in databases, software engineering and machine learning on "
+     "which this project rests, and to our classmates for their review and testing of "
+     "our early prototypes.", after=10)
+para("We also acknowledge the open-source communities behind FastAPI, MongoDB, Neo4j, "
+     "Redis, ChromaDB, LangChain, Ollama and React, and the authors of the research "
+     "cited in this report, whose work made a project of this scope possible within a "
+     "single semester.", after=10)
+para("Finally, we thank our parents and families for their constant support and "
+     "encouragement throughout the course of this work.", after=24)
 for n, sid in [("Joshi Om", "24DCE052"), ("Krish Gajera", "24DCE040"),
                ("Drashti Dedaniya", "24DCE029")]:
     para(f"{n} ({sid})", align=WD_ALIGN_PARAGRAPH.RIGHT, after=2)
@@ -318,18 +355,15 @@ para("", after=8)
 para("Keywords: ______________________________________________", italic=True)
 
 new_page()
-para("TABLE OF CONTENTS", CHAP, True, WD_ALIGN_PARAGRAPH.CENTER, 14)
-_toc = doc.add_paragraph()
-_toc.paragraph_format.line_spacing = 1.0
-_toc.paragraph_format.space_after = Pt(0)
-_field(_toc, r'TOC \o "1-2" \h \z \u')
-para("", after=8)
-para("(Open in Word, select all and press F9 to populate the page numbers.)",
-     size=10, italic=True, align=WD_ALIGN_PARAGRAPH.CENTER)
+TOC_ANCHOR = doc.add_paragraph()
 
 new_page()
 LOF_ANCHOR = doc.add_paragraph()
 LOT_ANCHOR = doc.add_paragraph()
+
+# Front matter is not produced by chapter()/section(), so it is listed by hand.
+FRONT_MATTER = ["CERTIFICATE", "ACKNOWLEDGEMENT", "ABSTRACT",
+                "LIST OF FIGURES", "LIST OF TABLES"]
 
 # ───────────────────────── CHAPTER 1 ─────────────────────────
 chapter("Introduction")
@@ -546,18 +580,27 @@ section("5.1 Use Case Diagram")
 para("The use case diagram identifies the three actors and the services each may invoke.")
 figure("02-usecase.png", "Use case diagram")
 section("5.2 Activity Diagram")
-para("The activity diagram shows the workflow of a transaction across the participants, "
-     "including the concurrent evaluation of the three scoring layers and the manual "
-     "review path.")
-figure("03-activity.png", "Activity diagram — transaction analysis workflow")
+para("The workflow is presented as two diagrams. The first covers intake, schema "
+     "validation and the concurrent evaluation of the three scoring layers; the second "
+     "covers score aggregation, the three decision bands, the response returned to the "
+     "client and the analyst review path. Splitting the workflow keeps each diagram "
+     "large enough on the page for its text to be read without magnification.")
+figure("03-activity.png",
+       "Activity diagram (1 of 2) — intake and concurrent scoring")
+figure("03b-activity-decision.png",
+       "Activity diagram (2 of 2) — decision, response and analyst review")
 section("5.3 Sequence Diagram")
 para("The sequence diagram shows the order of interaction between the components while "
      "a single transaction is analysed.")
 figure("04-sequence.png", "Sequence diagram — transaction analysis")
 section("5.4 Class Diagram")
-para("The class diagram shows the domain classes, the abstract analysis layer with its "
-     "three concrete implementations, and the relationships between them.")
-figure("05-class.png", "Class diagram — core domain and service classes")
+para("The class model is presented in two parts, for the same reason of legibility. The "
+     "first part shows the domain classes — the request accepted at the interface, the "
+     "account and transaction records that are persisted, the response returned and the "
+     "decision enumeration. The second part shows the abstract analysis layer, its three "
+     "concrete implementations and the decision engine that aggregates the layer scores.")
+figure("05-class.png", "Class diagram (1 of 2) — domain classes")
+figure("05b-class-services.png", "Class diagram (2 of 2) — analysis service classes")
 section("5.5 State Diagram")
 para("The state diagram shows the states a transaction passes through from submission "
      "to a final outcome, including the analyst override path.")
@@ -587,9 +630,20 @@ section("6.1 Entity Relationship Diagram")
 para("The entity relationship diagram shows the stored entities and the relationships "
      "between them across the document store and the graph store.")
 figure("09-er.png", "Entity relationship diagram")
-section("6.2 Collections")
-para("The document store is schemaless. Indexes are declared on the models and created "
-     "when the application starts, so no migration step is required.")
+section("6.2 Logical Data Schema")
+para("The document store is schemaless, so the schema below is the logical one enforced "
+     "by the application: the Beanie document models declare the fields, their types and "
+     "their indexes, and those indexes are created when the application starts, so no "
+     "migration step is required. The two collections and their keys are given first, "
+     "followed by the field-level definition of each.")
+table("Collections, keys and indexes",
+      ["Collection", "Primary key", "Unique index", "Secondary indexes", "Referenced by"],
+      [["accounts", "_id (ObjectId)", "account_id", "—",
+        "transactions (sender and receiver); Neo4j Account"],
+       ["transactions", "_id (ObjectId)", "tx_id",
+        "sender_account_id, receiver_account_id, decision",
+        "Neo4j Transaction"]],
+      widths=[0.9, 1.0, 0.9, 1.5, 1.7], size=9.5)
 table("Accounts collection", ["Field", "Type", "Constraint", "Description"],
       [["account_id", "String", "Unique index", "Primary business key."],
        ["owner_name", "String", "Required", "Account holder name (synthetic)."],
@@ -601,7 +655,7 @@ table("Accounts collection", ["Field", "Type", "Constraint", "Description"],
 table("Transactions collection", ["Field", "Type", "Constraint", "Description"],
       [["tx_id", "String", "Unique index", "A duplicate insert is rejected."],
        ["sender_account_id", "String", "Indexed", "Supports per-account history."],
-       ["receiver_account_id", "String", "Required", "Counterparty account."],
+       ["receiver_account_id", "String", "Indexed", "Counterparty account."],
        ["amount", "Float", "Greater than 0", "Transaction value."],
        ["currency", "String", "Default INR", "Currency code."],
        ["merchant_category", "String", "Optional", "Drives the merchant rule."],
@@ -611,18 +665,58 @@ table("Transactions collection", ["Field", "Type", "Constraint", "Description"],
        ["decision", "String", "Indexed", "APPROVE, REVIEW or BLOCK."],
        ["explanation", "String", "Bounded length", "Signals and model reasoning."],
        ["note", "String", "Optional", "Free text supplied at submission."],
-       ["created_at", "DateTime", "Indexed", "Supports recent-first listing."]],
+       ["created_at", "DateTime", "Default now", "Supports recent-first listing."]],
       widths=[1.6, 0.9, 1.2, 2.3], size=10)
 section("6.3 Data Dictionary")
-table("Cache, graph and vector stores",
-      ["Store", "Structure", "Purpose", "Lifetime"],
-      [["Redis", "account:<identifier>", "Cached account profile", "300 seconds"],
-       ["Redis", "velocity:<identifier>", "Sorted set scored by timestamp", "600 second window"],
-       ["ChromaDB", "fraud_patterns collection", "58 pattern documents with embeddings", "Persistent"],
-       ["Neo4j", "Account node", "Unique indexed account identifier", "Persistent"],
-       ["Neo4j", "SENT relationship", "Money movement with amount and timestamp", "Persistent"],
-       ["Neo4j", "risk_label property", "Marks fraud and fraud-adjacent accounts", "Persistent"]],
-      widths=[0.9, 1.9, 2.3, 0.9], size=10)
+para("Every entity held outside the document store is defined below, one table per "
+     "store. Together with the two collection tables above these cover all persisted "
+     "data in the system.")
+table("Graph node types (Neo4j)",
+      ["Node label", "Properties", "Key", "Purpose"],
+      [["Account", "account_id, risk_label, fraud_cluster", "account_id",
+        "One vertex per party. risk_label carries fraud or fraud_adjacent and "
+        "fraud_cluster names the seed account of the cluster."],
+       ["Transaction", "tx_id, amount, timestamp", "tx_id",
+        "One vertex per analysed transfer, retained as the graph-side record."],
+       ["Device", "device_id", "device_id",
+        "Shared-device identity signal, used to link otherwise unrelated accounts."],
+       ["IPAddress", "address", "address",
+        "Shared-address identity signal, used in the same way as Device."]],
+      widths=[0.9, 1.7, 1.2, 2.2], size=9.5)
+table("Graph relationship types (Neo4j)",
+      ["Relationship", "From", "To", "Properties", "Purpose"],
+      [["SENT", "Account", "Account", "tx_id, amount",
+        "One money movement. Circular-flow and fee-skimming patterns are found "
+        "by traversing two to four of these."],
+       ["USED_DEVICE", "Account", "Device", "—",
+        "Supports shared-device cluster detection."],
+       ["USED_IP", "Account", "IPAddress", "—",
+        "Supports shared-address cluster detection."],
+       ["CONNECTED_TO", "Account", "Account", "—",
+        "Materialised from a shared device or address; traversed by fraud label "
+        "propagation to a depth of two."]],
+      widths=[1.1, 0.9, 0.9, 1.1, 2.0], size=9.5)
+table("Cache keys (Redis)",
+      ["Key pattern", "Type", "Value", "Lifetime"],
+      [["account:<account_id>", "String (JSON)", "Serialised account profile", "300 seconds"],
+       ["velocity:<account_id>", "Sorted set",
+        "Transaction timestamps scored by epoch second", "600 second rolling window"],
+       ["velocity:<account_id> member", "String",
+        "Event timestamp with a random suffix, so simultaneous events are distinct",
+        "Aged out with its window"]],
+      widths=[1.6, 1.1, 2.3, 1.0], size=9.5)
+table("Vector store (ChromaDB)",
+      ["Collection", "Field", "Type", "Description"],
+      [["fraud_patterns", "id", "String", "Stable identifier of the pattern document."],
+       ["fraud_patterns", "document", "Text",
+        "Description of one fraud typology; 58 documents are seeded on startup."],
+       ["fraud_patterns", "embedding", "Vector",
+        "Embedding used for similarity retrieval by the RAG layer."],
+       ["fraud_patterns", "metadata.category", "String",
+        "Typology group, for example mule ring, card testing or account takeover."],
+       ["fraud_patterns", "metadata.severity", "String",
+        "Indicative severity, used to weight the retrieved context."]],
+      widths=[1.2, 1.4, 0.9, 2.5], size=9.5)
 para("Transaction records are retained indefinitely to preserve the audit trail, and no "
      "deletion path is exposed through the interface. Referential integrity between "
      "accounts and transactions is enforced by the application, since the document "
@@ -690,7 +784,7 @@ for i, r in enumerate([
     p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
     p.paragraph_format.left_indent = Inches(0.4)
     p.paragraph_format.first_line_indent = Inches(-0.4)
-    p.paragraph_format.line_spacing = 1.0
+    p.paragraph_format.line_spacing = LINE
     p.paragraph_format.space_after = Pt(6)
     run = p.add_run(f"[{i}]  {r}")
     run.font.size, run.font.name = Pt(BODY), FONT
@@ -749,7 +843,7 @@ if os.path.exists(SHOT):
     doc.paragraphs[-1].alignment = WD_ALIGN_PARAGRAPH.CENTER
     para("Figure A.1: Analyst dashboard showing risk metrics, decision mix, score "
          "distribution, accuracy results and flagged transactions", size=11, bold=True,
-         align=WD_ALIGN_PARAGRAPH.CENTER, after=10)
+         align=WD_ALIGN_PARAGRAPH.CENTER, after=10, spacing=1.0)
 section("Appendix B — Reproducing the Measured Results")
 code_block("""# 1. Start the complete stack
 docker compose up --build
@@ -766,6 +860,30 @@ pytest -q""")
 
 
 # ────────────────── back-fill lists of figures and tables ──────────────────
+def fill_contents(anchor):
+    """Write the table of contents with dot leaders and real page numbers."""
+    anchor.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    anchor.paragraph_format.space_after = Pt(14)
+    anchor.paragraph_format.line_spacing = 1.0
+    r = anchor.add_run("TABLE OF CONTENTS")
+    r.bold, r.font.size, r.font.name = True, Pt(CHAP), FONT
+    cursor = anchor
+    entries = [(1, t) for t in FRONT_MATTER] + contents
+    for level, title in entries:
+        p = doc.add_paragraph()
+        p.alignment = WD_ALIGN_PARAGRAPH.LEFT
+        p.paragraph_format.line_spacing = 1.0
+        p.paragraph_format.space_after = Pt(4 if level == 1 else 2)
+        p.paragraph_format.left_indent = Inches(0 if level == 1 else 0.3)
+        p.paragraph_format.tab_stops.add_tab_stop(
+            Inches(USABLE_W), WD_TAB_ALIGNMENT.RIGHT, WD_TAB_LEADER.DOTS)
+        run = p.add_run(f"{title}\t{TOC_PAGES.get(title, '')}")
+        run.bold = level == 1
+        run.font.size, run.font.name = Pt(BODY), FONT
+        cursor._p.addnext(p._p)
+        cursor = p
+
+
 def fill(anchor, heading_text, items):
     anchor.alignment = WD_ALIGN_PARAGRAPH.CENTER
     anchor.paragraph_format.space_after = Pt(12)
@@ -785,9 +903,16 @@ def fill(anchor, heading_text, items):
 
 fill(LOT_ANCHOR, "LIST OF TABLES", tables)
 fill(LOF_ANCHOR, "LIST OF FIGURES", figures)
+fill_contents(TOC_ANCHOR)
+
+# The PDF driver needs the heading list to look each page number up.
+with open(os.path.join(HERE, "toc-entries.json"), "w") as f:
+    json.dump(FRONT_MATTER + [t for _, t in contents], f, indent=2)
 
 page_numbers()
 refresh_fields_on_open()
 doc.save(OUT)
 print(f"Saved {OUT}")
-print(f"  figures: {len(figures)}   tables: {len(tables)}")
+print(f"  figures: {len(figures)}   tables: {len(tables)}   "
+      f"contents entries: {len(FRONT_MATTER) + len(contents)}"
+      f"{'' if TOC_PAGES else '   (page numbers not filled in yet)'}")

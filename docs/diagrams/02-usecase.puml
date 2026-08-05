@@ -8,7 +8,6 @@ skinparam usecase {
   BackgroundColor #F4F7FB
 }
 left to right direction
-title Use Case Diagram — Indus11
 actor "Payment Client\n(external system)" as PC
 actor "Fraud Analyst" as FA
 actor "System Administrator" as SA

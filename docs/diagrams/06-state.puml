@@ -9,7 +9,6 @@ skinparam state {
   BackgroundColor #F7FAFF
   FontName Times New Roman
 }
-title State Diagram — Transaction Lifecycle
 [*] --> Received : transaction submitted
 Received --> Rejected : validation fails
 Received --> UnderAnalysis : validation succeeds

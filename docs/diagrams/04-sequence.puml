@@ -3,7 +3,6 @@ skinparam dpi 200
 skinparam backgroundColor white
 skinparam shadowing false
 skinparam defaultFontName Times New Roman
-title Sequence Diagram — POST /api/v1/transactions/analyze
 actor Client
 participant "FastAPI\nGateway" as GW
 database Redis

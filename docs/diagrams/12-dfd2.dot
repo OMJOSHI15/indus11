@@ -1,33 +1,32 @@
 digraph DFD2 {
-  graph [rankdir=TB, fontname="Times-Roman", fontsize=14, labelloc=t,
-         label="Figure 4.6  Data Flow Diagram — Level 2 (Process 3.0, Rule Evaluation)",
-         nodesep=0.5, ranksep=0.6];
+  graph [rankdir=TB, fontname="Times-Roman", fontsize=14,
+         nodesep=0.45, ranksep=0.3];
   node  [fontname="Times-Roman", fontsize=11];
   edge  [fontname="Times-Roman", fontsize=10];
 
   IN  [shape=box, style=filled, fillcolor="#EEF3FA", label="From 2.0\nLoad Account Profiles"];
   OUT [shape=box, style=filled, fillcolor="#EEF3FA", label="To 6.0\nDetermine Decision"];
 
-  P31 [shape=box, style="rounded,filled", fillcolor="#F7FAFF", label="3.1\nCheck\nBlacklist"];
-  P32 [shape=box, style="rounded,filled", fillcolor="#F7FAFF", label="3.2\nCheck\nVelocity"];
-  P33 [shape=box, style="rounded,filled", fillcolor="#F7FAFF", label="3.3\nCheck Amount\nAnomaly"];
-  P34 [shape=box, style="rounded,filled", fillcolor="#F7FAFF", label="3.4\nCheck Merchant\nCategory"];
-  P35 [shape=box, style="rounded,filled", fillcolor="#F7FAFF", label="3.5\nCheck Sender\nRisk Tier"];
-  P36 [shape=box, style="rounded,filled", fillcolor="#F7FAFF", label="3.6\nAggregate\nRule Score"];
+  P31 [shape=box, style="rounded,filled", fillcolor="#F7FAFF", label="3.1\nCheck Blacklist"];
+  P32 [shape=box, style="rounded,filled", fillcolor="#F7FAFF", label="3.2\nCheck Velocity"];
+  P33 [shape=box, style="rounded,filled", fillcolor="#F7FAFF", label="3.3\nCheck Amount Anomaly"];
+  P34 [shape=box, style="rounded,filled", fillcolor="#F7FAFF", label="3.4\nCheck Merchant Category"];
+  P35 [shape=box, style="rounded,filled", fillcolor="#F7FAFF", label="3.5\nCheck Sender Risk Tier"];
+  P36 [shape=box, style="rounded,filled", fillcolor="#F7FAFF", label="3.6\nAggregate Rule Score"];
 
   D1 [shape=record, style=filled, fillcolor="#FBFBF4", label="{D1|Account Store}"];
   D2 [shape=record, style=filled, fillcolor="#FBFBF4", label="{D2|Velocity Window}"];
 
-  IN -> P31 [label=" transaction + profiles"];
+  IN -> P31 [label=" tx + profiles"];
   D1 -> P31 [label=" blacklist status"];
   P31 -> P36 [label=" 40 points (immediate)"];
   P31 -> P32 [label=" not blacklisted"];
-  D2 -> P32 [label=" recent transaction count"];
+  D2 -> P32 [label=" recent count"];
   P32 -> D2 [label=" new timestamp"];
   P32 -> P33 [label=" 15 points if exceeded"];
   D1 -> P33 [label=" monthly average"];
   P33 -> P34 [label=" 12 points if anomalous"];
   P34 -> P35 [label=" 8 points if high risk"];
   P35 -> P36 [label=" 5 or 2 points by tier"];
-  P36 -> OUT [label=" rule score, triggered flags"];
+  P36 -> OUT [label=" rule score + flags"];
 }

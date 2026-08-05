@@ -1,4 +1,7 @@
 @startuml
+' Part 1 of the workflow: intake, validation and concurrent scoring. The
+' workflow is drawn as two diagrams because a single five-lane version has to be
+' scaled so far down to fit the page width that its text stops being readable.
 skinparam dpi 200
 skinparam backgroundColor white
 skinparam shadowing false
@@ -11,48 +14,28 @@ skinparam activity {
   DiamondBorderColor #2F4F6F
   DiamondBackgroundColor #FBFBF4
 }
-title Activity Diagram — Transaction Analysis Workflow
 |Payment Client|
 start
 :Submit transaction;
 |API Gateway|
-:Validate request format;
+:Validate request;
 if (Request well formed?) then (no)
-  :Report validation failure;
+  :Reject request;
   |Payment Client|
   :Receive rejection;
   stop
 else (yes)
 endif
 |API Gateway|
-:Retrieve sender and receiver profiles;
+:Load account profiles;
 |Analysis Layers|
 fork
-  :Evaluate business rules;
+  :Rule scoring;
 fork again
-  :Analyse account relationships;
+  :Graph scoring;
 fork again
-  :Retrieve similar fraud patterns;
+  :RAG scoring;
 end fork
-|Decision Engine|
-:Combine layer scores;
-if (Risk level?) then (high)
-  :Mark as blocked;
-elseif (moderate) then
-  :Mark for review;
-else (low)
-  :Mark as approved;
-endif
-:Compose explanation;
-:Store analysis record;
-|Payment Client|
-:Receive decision and explanation;
-|Fraud Analyst|
-if (Marked for review?) then (yes)
-  :Examine transaction detail;
-  :Approve or block manually;
-  :Record final outcome;
-else (no)
-endif
+:Emit three layer scores;
 stop
 @enduml

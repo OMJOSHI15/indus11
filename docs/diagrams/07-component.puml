@@ -7,7 +7,6 @@ skinparam component {
   BorderColor #2F4F6F
   BackgroundColor #F4F7FB
 }
-title Component Diagram — Indus11
 component "Dashboard\n(React + Vite)" as UI
 component "API Gateway\n(FastAPI)" as API {
   component "Transaction\nController" as TC

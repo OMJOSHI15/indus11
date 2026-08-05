@@ -7,7 +7,6 @@ skinparam class {
   BorderColor #2F4F6F
   BackgroundColor #F4F7FB
 }
-title Entity Relationship Diagram
 entity ACCOUNT {
   * account_id : string <<PK>>
   --

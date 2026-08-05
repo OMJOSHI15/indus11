@@ -3,13 +3,12 @@ skinparam dpi 200
 skinparam backgroundColor white
 skinparam shadowing false
 skinparam defaultFontName Times New Roman
-title Deployment Diagram — Docker Compose Topology
 node "Client Device" as CD {
   artifact "Web Browser" as BR
 }
 node "Docker Host" as DH {
   node "container: dashboard" as CDash {
-    artifact "nginx :80\nstatic React build\nproxies /api" as NG
+    artifact "nginx :80\nReact build\nproxies /api" as NG
   }
   node "container: api" as CApi {
     artifact "uvicorn :8000\nFastAPI\n5-layer pipeline" as UV
@@ -37,5 +36,9 @@ UV --> M : :27017
 UV --> N : bolt :7687
 UV --> R : :6379
 UV --> CH : file I/O
-UV --> OL : host.docker.internal:11434
+UV --> OL : :11434
+' Chain three of the store containers vertically: this keeps the host cluster
+' narrow enough that the diagram stays legible when scaled to the page.
+CM -[hidden]down- CN
+CN -[hidden]down- CR
 @enduml

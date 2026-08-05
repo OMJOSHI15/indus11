@@ -1,8 +1,7 @@
 digraph DFD1 {
-  graph [rankdir=TB, fontname="Times-Roman", fontsize=14, labelloc=t,
-         label="Figure 4.5  Data Flow Diagram — Level 1", nodesep=0.5, ranksep=0.75];
-  node  [fontname="Times-Roman", fontsize=11];
-  edge  [fontname="Times-Roman", fontsize=10];
+  graph [rankdir=TB, fontname="Times-Roman", fontsize=14, nodesep=0.5, ranksep=0.75];
+  node  [fontname="Times-Roman", fontsize=15];
+  edge  [fontname="Times-Roman", fontsize=13];
 
   CL  [shape=box, style=filled, fillcolor="#EEF3FA", label="Payment Client"];
   AN  [shape=box, style=filled, fillcolor="#EEF3FA", label="Fraud Analyst"];
@@ -22,22 +21,22 @@ digraph DFD1 {
   D5 [shape=record, style=filled, fillcolor="#FBFBF4", label="{D5|Analysis Records}"];
 
   CL -> P1 [label=" transaction"];
-  P1 -> P2 [label=" validated transaction"];
+  P1 -> P2 [label=" validated tx"];
   D2 -> P2 [label=" cached profile"];
   D1 -> P2 [label=" stored profile"];
-  P2 -> D2 [label=" refreshed profile"];
-  P2 -> P3 [label=" transaction + profiles"];
+  P2 -> D2 [label=" profile"];
+  P2 -> P3 [label=" tx + profiles"];
   P2 -> P4 [label=" transaction"];
-  P2 -> P5 [label=" transaction + profiles"];
+  P2 -> P5 [label=" tx + profiles"];
   D3 -> P4 [label=" related accounts"];
-  P4 -> D3 [label=" new relationships"];
-  D4 -> P5 [label=" similar patterns"];
-  P3 -> P6 [label=" rule score (0-40)"];
-  P4 -> P6 [label=" graph score (0-30)"];
-  P5 -> P6 [label=" AI score (0-30)"];
-  P6 -> P7 [label=" decision + explanation"];
+  P4 -> D3 [label=" relationships"];
+  D4 -> P5 [label=" patterns"];
+  P3 -> P6 [label=" 0-40"];
+  P4 -> P6 [label=" 0-30"];
+  P5 -> P6 [label=" 0-30"];
+  P6 -> P7 [label=" decision"];
   P7 -> D5 [label=" analysis record"];
-  P6 -> CL [label=" decision, score,\l explanation\l"];
-  D5 -> AN [label=" flagged transactions"];
+  P6 -> CL [label=" decision,\l score,\l explanation\l"];
+  D5 -> AN [label=" flagged tx"];
   AN -> P7 [label=" override decision"];
 }

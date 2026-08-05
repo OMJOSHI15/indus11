@@ -1,4 +1,6 @@
 @startuml
+' Domain half of the class model. Split from the service half so that neither
+' diagram has to be scaled far enough down to make its text unreadable in print.
 skinparam dpi 200
 skinparam backgroundColor white
 skinparam shadowing false
@@ -12,7 +14,6 @@ skinparam class {
   AttributeFontName Times New Roman
   AttributeFontSize 12
 }
-title Class Diagram — Core Domain and Service Classes
 enum Decision {
   APPROVE
   REVIEW
@@ -28,12 +29,6 @@ class TransactionRequest {
   - device_id : String
   - ip_address : String
   + validate() : Boolean
-}
-class LayerScore {
-  - score : Integer
-  - max_score : Integer
-  - flags : List<String>
-  + is_maximum() : Boolean
 }
 class AnalysisResponse {
   - tx_id : String
@@ -60,38 +55,8 @@ class Transaction {
   - created_at : DateTime
   + override_decision(d : Decision) : void
 }
-abstract class AnalysisLayer {
-  # max_score : Integer
-  + {abstract} analyse(tx : TransactionRequest) : LayerScore
-}
-class RuleEngine {
-  - VELOCITY_LIMIT : Integer
-  - AMOUNT_MULTIPLIER : Float
-  + analyse(tx : TransactionRequest) : LayerScore
-}
-class GraphAnalyzer {
-  + analyse(tx : TransactionRequest) : LayerScore
-  + propagate_fraud_labels() : Integer
-}
-class RagPipeline {
-  + analyse(tx : TransactionRequest) : LayerScore
-  + build_explanation() : String
-}
-class DecisionEngine {
-  - review_threshold : Integer
-  - block_threshold : Integer
-  + make_decision(scores : List<LayerScore>) : AnalysisResponse
-}
-AnalysisLayer <|-- RuleEngine
-AnalysisLayer <|-- GraphAnalyzer
-AnalysisLayer <|-- RagPipeline
-AnalysisLayer ..> LayerScore : creates
-DecisionEngine o-- "3" LayerScore : aggregates
-DecisionEngine ..> AnalysisResponse : creates
+TransactionRequest ..> Transaction : persisted as
 AnalysisResponse --> Decision : has
-DecisionEngine ..> TransactionRequest : reads
 Account "1" -- "0..*" Transaction : sends
 Account "1" -- "0..*" Transaction : receives
-TransactionRequest ..> Transaction : persisted as
-RuleEngine ..> Account : reads profile
 @enduml

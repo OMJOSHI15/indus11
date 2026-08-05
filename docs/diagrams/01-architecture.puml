@@ -7,7 +7,6 @@ skinparam rectangle {
   BorderColor #2F4F6F
   BackgroundColor #F4F7FB
 }
-title Indus11 — Five-Layer Analysis Pipeline
 rectangle "React Dashboard\n(analyst UI)" as UI #E8F0FE
 rectangle "**LAYER 1** — FastAPI Gateway\nvalidate payload · load account profile\n(Redis → MongoDB)" as L1 #DCEEF5
 rectangle "**LAYER 2**\nRule Engine\nvelocity · amount · blacklist\nmerchant · risk tier\n**score 0–40**" as L2
