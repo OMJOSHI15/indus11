@@ -60,7 +60,23 @@ def page_of_each_heading():
     missing = [h for h in headings if h not in found]
     if missing:
         raise SystemExit(f"could not locate in the PDF: {missing}")
-    return found
+
+    body_start = found["CHAPTER 1: INTRODUCTION"]
+    return {h: (roman(n) if n < body_start else str(n - body_start + 1))
+            for h, n in found.items()}
+
+
+ROMAN = [(10, "x"), (9, "ix"), (5, "v"), (4, "iv"), (1, "i")]
+
+
+def roman(n):
+    """Lower-case roman numeral, for the front matter's page labels."""
+    out = ""
+    for value, digit in ROMAN:
+        while n >= value:
+            out += digit
+            n -= value
+    return out
 
 
 if __name__ == "__main__":

@@ -28,6 +28,7 @@ import json
 import os
 
 from docx import Document
+from docx.enum.section import WD_SECTION
 from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_BREAK
 from docx.oxml import OxmlElement
@@ -94,8 +95,33 @@ def _field(paragraph, instr):
         r._r.append(el)
 
 
+def _page_number_format(section, fmt, start):
+    sect_pr = section._sectPr
+    el = sect_pr.find(qn("w:pgNumType"))
+    if el is None:
+        el = OxmlElement("w:pgNumType")
+        sect_pr.append(el)
+    el.set(qn("w:fmt"), fmt)
+    el.set(qn("w:start"), str(start))
+
+
+def start_body_numbering():
+    """Front matter runs i, ii, iii...; the body restarts at 1 in Arabic."""
+    sec = doc.add_section(WD_SECTION.NEW_PAGE)
+    sec.left_margin, sec.right_margin = Inches(1.5), Inches(1.0)
+    sec.top_margin, sec.bottom_margin = Inches(1.5), Inches(1.5)
+    _page_number_format(sec, "decimal", 1)
+    return sec
+
+
 def page_numbers():
-    for s in doc.sections:
+    _page_number_format(doc.sections[0], "lowerRoman", 1)
+    # The title page carries no number, which is what a separate first-page
+    # footer gives us — it is left empty.
+    doc.sections[0].different_first_page_header_footer = True
+    for i, s in enumerate(doc.sections):
+        if i:
+            s.footer.is_linked_to_previous = False
         p = s.footer.paragraphs[0]
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
         p.paragraph_format.line_spacing = 1.0
@@ -130,10 +156,11 @@ def new_page():
     doc.add_paragraph().add_run().add_break(WD_BREAK.PAGE)
 
 
-def chapter(title, numbered=True):
+def chapter(title, numbered=True, new_page_first=True):
     """Chapter heading: own page, centred, 16 pt bold."""
     global _chapter, _fig_n, _tbl_n
-    new_page()
+    if new_page_first:      # a section break has already turned the page
+        new_page()
     if numbered:
         _chapter += 1
         _fig_n = _tbl_n = 0
@@ -199,19 +226,22 @@ def figure(png, title):
 
 
 def table(title, headers, rows, widths=None, size=10.5):
+    """Caption above the table, centred bold headers, no fill, and columns sized
+    to their contents so a narrow column does not hold a gap open beside it."""
     global _tbl_n
     _tbl_n += 1
     label = f"Table {_chapter}.{_tbl_n}"
+    para(f"{label}: {title}", size=11, bold=True,
+         align=WD_ALIGN_PARAGRAPH.CENTER, after=4, spacing=1.0)
     t = doc.add_table(rows=1, cols=len(headers))
     t.style = "Table Grid"
     t.alignment = WD_TABLE_ALIGNMENT.CENTER
+    t.autofit = True
     for i, h in enumerate(headers):
         c = t.rows[0].cells[i]
         c.text = ""
-        shade = OxmlElement("w:shd")
-        shade.set(qn("w:fill"), "E8EEF7")
-        c._tc.get_or_add_tcPr().append(shade)
         p = c.paragraphs[0]
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
         p.paragraph_format.line_spacing = 1.0
         p.paragraph_format.space_after = Pt(2)
         p.paragraph_format.space_before = Pt(2)
@@ -227,14 +257,60 @@ def table(title, headers, rows, widths=None, size=10.5):
             p.paragraph_format.space_before = Pt(2)
             r = p.add_run(str(v))
             r.font.size, r.font.name = Pt(size), FONT
-    if widths:
-        for i, w in enumerate(widths):
-            for row in t.rows:
-                row.cells[i].width = Inches(w)
-    para(f"{label}: {title}", size=11, bold=True,
-         align=WD_ALIGN_PARAGRAPH.CENTER, after=10, spacing=1.0)
+    _apply_widths(t, _column_widths(headers, rows, size))
+    para("", after=10, spacing=1.0)
     tables.append((label, title))
     return t
+
+
+MIN_COL, MAX_COL = 0.55, 3.1     # inches
+
+
+def _column_widths(headers, rows, size):
+    """Width each column by what it holds, so a column of short values takes
+    only the room it needs and the column beside it starts further left.
+
+    Word's own autofit is advisory — LibreOffice renders the columns evenly
+    regardless — so the widths are computed here and written as fixed values.
+    """
+    columns = list(zip(*([list(headers)] + [[str(c) for c in r] for r in rows])))
+    char = 0.47 * size / 72          # rough average advance of Times, in inches
+    bounds = []
+    for column in columns:
+        longest_word = max((len(w) for cell in column for w in cell.split()), default=1)
+        longest_cell = max(len(cell) for cell in column)
+        low = max(longest_word * char, MIN_COL)
+        bounds.append((low, min(max(longest_cell * char, low), MAX_COL)))
+
+    total = sum(high for _, high in bounds)
+    if total <= USABLE_W:
+        return [high for _, high in bounds]       # narrower than the page: fine
+    room = sum(high - low for low, high in bounds)
+    if room <= 0:                                  # nothing left to give back
+        return [USABLE_W * high / total for _, high in bounds]
+    over = min(total - USABLE_W, room)
+    return [high - (high - low) * over / room for low, high in bounds]
+
+
+def _apply_widths(t, widths):
+    t.autofit = False
+    tbl_pr = t._tbl.tblPr
+    for tag in ("w:tblW", "w:tblLayout"):
+        el = tbl_pr.find(qn(tag))
+        if el is not None:
+            tbl_pr.remove(el)
+    total = OxmlElement("w:tblW")
+    total.set(qn("w:w"), str(int(sum(widths) * 1440)))
+    total.set(qn("w:type"), "dxa")
+    tbl_pr.append(total)
+    layout = OxmlElement("w:tblLayout")
+    layout.set(qn("w:type"), "fixed")
+    tbl_pr.append(layout)
+    for col, width in zip(t._tbl.tblGrid.findall(qn("w:gridCol")), widths):
+        col.set(qn("w:w"), str(int(width * 1440)))
+    for i, width in enumerate(widths):
+        for row in t.rows:
+            row.cells[i].width = Inches(width)
 
 
 def code_block(lines, size=9):
@@ -359,6 +435,7 @@ TOC_ANCHOR = doc.add_paragraph()
 
 new_page()
 LOF_ANCHOR = doc.add_paragraph()
+new_page()                      # the list of tables starts on its own page
 LOT_ANCHOR = doc.add_paragraph()
 
 # Front matter is not produced by chapter()/section(), so it is listed by hand.
@@ -366,7 +443,8 @@ FRONT_MATTER = ["CERTIFICATE", "ACKNOWLEDGEMENT", "ABSTRACT",
                 "LIST OF FIGURES", "LIST OF TABLES"]
 
 # ───────────────────────── CHAPTER 1 ─────────────────────────
-chapter("Introduction")
+start_body_numbering()
+chapter("Introduction", new_page_first=False)
 section("1.1 Purpose")
 para("This document specifies the software requirements for Indus11, a real-time "
      "financial fraud detection and decision engine. It states what the system must "
@@ -375,7 +453,8 @@ para("This document specifies the software requirements for Indus11, a real-time
 para("The intended readers are the project team, the internal guide and the evaluation "
      "panel, and any developer who later integrates with or extends the system. Every "
      "measured figure quoted in this document comes from an executed benchmark run "
-     "rather than an estimate.")
+     "rather than an estimate. The arrangement of the sections follows the structure "
+     "recommended for a software requirements specification in IEEE Std 830-1998 [1].")
 section("1.2 Scope")
 para("Indus11 accepts one financial transaction over a REST interface, analyses it "
      "with three independent detection engines and returns a composite risk score from "
@@ -399,11 +478,15 @@ section("2.1 Product Perspective")
 para("Indus11 is a new, self-contained decision service rather than a replacement for "
      "an existing product. In a production setting it would sit beside a payment "
      "processor: the processor submits a transaction and acts on the returned "
-     "decision.")
-para("The system comprises a FastAPI application, a React dashboard and four data "
+     "decision. Commercial platforms occupy the same position in a payment flow — FICO "
+     "Falcon Fraud Manager [6], the Feedzai RiskOps platform [7] and Featurespace ARIC "
+     "Risk Hub [8] — and the distinguishing aim here is that the reasons for a decision "
+     "are returned with it rather than held inside the model.")
+para("The system comprises a FastAPI application [10], a React dashboard and four data "
      "stores, each with a distinct role — MongoDB for account profiles and the audit "
-     "trail, Neo4j for the transaction graph, Redis for caching and the velocity "
-     "window, and ChromaDB for the fraud-pattern knowledge base.")
+     "trail, reached through the Beanie object-document mapper [11]; Neo4j for the "
+     "transaction graph; Redis for caching and the velocity window; and ChromaDB for "
+     "the fraud-pattern knowledge base, retrieved through LangChain [12].")
 section("2.2 Product Functions")
 for fn in ["Accept and validate a transaction over a documented REST interface.",
            "Load account profiles from cache, falling back to the document store.",
@@ -560,6 +643,14 @@ para("The system is organised as a five-layer pipeline. The first layer validate
      "request and loads context, the second, third and fourth layers score the "
      "transaction concurrently, and the fifth layer aggregates the scores and "
      "determines the decision.")
+para("Two of the scoring layers are adapted from published work. The graph layer takes "
+     "the network-based view of card-fraud detection set out by Van Vlasselaer and "
+     "others [2] and the semi-supervised propagation of fraud labels across a "
+     "transaction graph described by Lebichot and others [3]; the Cypher patterns "
+     "themselves follow the fraud-detection recipes in the Neo4j developer "
+     "documentation [9]. The fourth layer applies retrieval-augmented generation, in "
+     "which documents retrieved from a knowledge base are supplied to a language model "
+     "as context for its answer [5].")
 figure("01-architecture.png", "System architecture — five-layer pipeline")
 section("4.2 Context Diagram")
 para("The context diagram shows the system as a single process together with the "
@@ -725,8 +816,9 @@ para("Transaction records are retained indefinitely to preserve the audit trail,
 # ────────────────── UNNUMBERED CLOSING SECTIONS ──────────────────
 chapter("Conclusion and Future Enhancements", numbered=False)
 para("Indus11 shows that detection capability and explainability need not be traded "
-     "against one another. Combining deterministic rules, graph traversal and a "
-     "retrieval-augmented language model produced "
+     "against one another, which is the trade-off reported for explainable ensemble "
+     "methods in financial fraud detection [4]. Combining deterministic rules, graph "
+     "traversal and a retrieval-augmented language model produced "
      f"{FLAGGED['precision']*100:.1f} per cent precision at "
      f"{FLAGGED['recall']*100:.1f} per cent recall on a labelled synthetic dataset of "
      f"{COUNTS['total']} transactions, while every decision carries the list of signals "
@@ -750,6 +842,8 @@ for e in ["Resolve the block-threshold trade-off using the recorded transaction 
     bullet(e)
 
 chapter("References", numbered=False)
+para("Sources are listed in IEEE style and are referred to in the text by their number "
+     "in square brackets.", after=10)
 for i, r in enumerate([
     "IEEE, “IEEE Recommended Practice for Software Requirements Specifications,” "
     "IEEE Std 830-1998, Institute of Electrical and Electronics Engineers, 1998.",
