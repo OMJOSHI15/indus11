@@ -5,6 +5,7 @@ digraph DFD0 {
 
   PC  [shape=box, style=filled, fillcolor="#EEF3FA", width=1.6, height=0.9, label="Payment Client"];
   FA  [shape=box, style=filled, fillcolor="#EEF3FA", width=1.6, height=0.9, label="Fraud Analyst"];
+  AD  [shape=box, style=filled, fillcolor="#EEF3FA", width=1.6, height=0.9, label="System\nAdministrator"];
   SYS [shape=circle, style=filled, fillcolor="#F7FAFF", width=1.9, fixedsize=true,
        label="0\nIndus11\nFraud Detection\nSystem"];
 
@@ -12,4 +13,6 @@ digraph DFD0 {
   SYS -> PC [label="  decision, score,\l  explanation\l"];
   SYS -> FA [label="  flagged transactions"];
   FA -> SYS [label="  override decision"];
+  AD -> SYS [label="  account and seed\l  management\l"];
+  SYS -> AD [label="  account and graph\l  statistics\l"];
 }

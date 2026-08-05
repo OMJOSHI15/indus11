@@ -616,41 +616,41 @@ table("Functional requirements — transaction analysis",
        ["FR-2", "Validate every request against a schema and reject a malformed or non-positive amount before any analysis is performed.", "schemas/transaction"],
        ["FR-3", "Reject a duplicate transaction identifier with a conflict response so that a retried request does not produce a server error.", "routes/transactions"],
        ["FR-4", "Load sender and receiver profiles from cache, falling back to the document store, treating an unknown account as elevated risk.", "routes/transactions"],
-       ["FR-5", "Score from 0 to 40 using blacklist, velocity, amount-anomaly, merchant and risk-tier rules, returning the reason for each rule that fired.", "services/rule_engine"],
-       ["FR-6", "Return the maximum rule score immediately when either party is blacklisted.", "services/rule_engine"],
-       ["FR-7", "Count transactions for an account within an exact ten-minute rolling window and flag more than five.", "core/redis_client"],
-       ["FR-8", "Score from 0 to 30 by detecting shared devices, circular flows within four hops, fee-skimming chains and proximity to a known fraud cluster.", "services/graph_analyzer"],
-       ["FR-9", "Record the transaction, its accounts, device and address in the graph so later transactions can be evaluated against it.", "services/graph_analyzer"],
-       ["FR-10", "Retrieve similar fraud patterns and obtain a score from 0 to 30 with an explanation from the language model.", "services/rag_pipeline"],
-       ["FR-11", "Degrade to a zero score with a stated reason when no language model is reachable.", "services/rag_pipeline"],
-       ["FR-12", "Execute the three scoring layers concurrently.", "routes/transactions"],
-       ["FR-13", "Compute the composite score as the sum of the layer scores, clamped to 100.", "services/decision_engine"],
-       ["FR-14", "Map the composite score to APPROVE, REVIEW or BLOCK using configured thresholds.", "services/decision_engine"],
-       ["FR-15", "Include the triggered signals and the model's reasoning in every response.", "services/decision_engine"],
-       ["FR-16", "Persist every analysed transaction with its score, decision, explanation and note.", "models/transaction"],
-       ["FR-17", "Return a previously analysed transaction by identifier, or a not-found response.", "routes/transactions"],
-       ["FR-18", "List recent transactions, optionally filtered by decision.", "routes/transactions"],
-       ["FR-19", "Allow an analyst to override a decision and reject any invalid value.", "routes/transactions"]],
+       ["FR-5", "Score from 0 to 40 using blacklist, velocity, amount-anomaly, merchant and risk-tier rules, returning the reason for each rule that fired; return the maximum score immediately when either party is blacklisted.", "services/rule_engine"],
+       ["FR-6", "Count transactions for an account within an exact ten-minute rolling window and flag more than five.", "core/redis_client"],
+       ["FR-7", "Score from 0 to 30 by detecting shared devices, circular flows within four hops, fee-skimming chains and proximity to a known fraud cluster.", "services/graph_analyzer"],
+       ["FR-8", "Record the transaction, its accounts, device and address in the graph so later transactions can be evaluated against it.", "services/graph_analyzer"],
+       ["FR-9", "Retrieve similar fraud patterns and obtain a score from 0 to 30 with an explanation from the language model, degrading to a zero score with a stated reason when no language model is reachable.", "services/rag_pipeline"],
+       ["FR-10", "Execute the three scoring layers concurrently.", "routes/transactions"],
+       ["FR-11", "Compute the composite score as the sum of the layer scores, clamped to 100.", "services/decision_engine"],
+       ["FR-12", "Map the composite score to APPROVE, REVIEW or BLOCK using configured thresholds.", "services/decision_engine"],
+       ["FR-13", "Include the triggered signals and the model's reasoning in every response.", "services/decision_engine"],
+       ["FR-14", "Persist every analysed transaction with its score, decision, explanation and note.", "models/transaction"],
+       ["FR-15", "Return a previously analysed transaction by identifier, or a not-found response.", "routes/transactions"],
+       ["FR-16", "List recent transactions, optionally filtered by decision.", "routes/transactions"],
+       ["FR-17", "Allow an analyst to override a decision and reject any invalid value.", "routes/transactions"]],
       widths=[0.5, 4.2, 1.3], size=9)
 table("Functional requirements — accounts, graph, reporting and operations",
       ["ID", "Requirement", "Module"],
-      [["FR-20", "Support creating and listing accounts and toggling blacklist status.", "routes/accounts"],
-       ["FR-21", "Return the graph neighbourhood of an account to a depth of one to three hops.", "routes/graph"],
-       ["FR-22", "Propagate fraud labels to accounts within two hops and assign a cluster identifier.", "services/graph_analyzer"],
-       ["FR-23", "Report graph statistics for accounts, devices, addresses, transactions and labels.", "routes/graph"],
-       ["FR-24", "Report decision counts and a composite-score histogram.", "routes/stats"],
-       ["FR-25", "Report the most recent transactions marked for review or blocked.", "routes/stats"],
-       ["FR-26", "Serve the latest accuracy results and indicate clearly when none exist.", "routes/stats"],
-       ["FR-27", "Replay a labelled dataset and report precision, recall, F1, a confusion matrix and ring detection.", "scripts/evaluate"],
-       ["FR-28", "Derive decisions again across candidate thresholds and report no block threshold when none is reachable.", "scripts/evaluate"],
-       ["FR-29", "Limit each client to 120 requests per minute overall and 30 on the analysis endpoint.", "core/rate_limit"],
-       ["FR-30", "Expose a health endpoint reporting service status.", "routes/health"],
-       ["FR-31", "Provide repeatable seed scripts for account profiles and a synthetic fraud graph.", "scripts/seed"],
-       ["FR-32", "Display metrics, decision mix, score distribution, accuracy and flagged transactions with detail and override.", "dashboard"]],
+      [["FR-18", "Support creating and listing accounts and toggling blacklist status.", "routes/accounts"],
+       ["FR-19", "Return the graph neighbourhood of an account to a depth of one to three hops.", "routes/graph"],
+       ["FR-20", "Propagate fraud labels to accounts within two hops and assign a cluster identifier.", "services/graph_analyzer"],
+       ["FR-21", "Report graph statistics for accounts, devices, addresses, transactions and labels.", "routes/graph"],
+       ["FR-22", "Report dashboard statistics: decision counts and score histogram, the most recent review/block transactions, and the latest accuracy results.", "routes/stats"],
+       ["FR-23", "Replay a labelled dataset and report precision, recall, F1, a confusion matrix and ring detection.", "scripts/evaluate"],
+       ["FR-24", "Derive decisions again across candidate thresholds and report no block threshold when none is reachable.", "scripts/evaluate"],
+       ["FR-25", "Limit each client to 120 requests per minute overall and 30 on the analysis endpoint.", "core/rate_limit"],
+       ["FR-26", "Expose a health endpoint reporting service status.", "routes/health"],
+       ["FR-27", "Provide repeatable seed scripts for account profiles and a synthetic fraud graph.", "scripts/seed"],
+       ["FR-28", "Display metrics, decision mix, score distribution, accuracy and flagged transactions with detail and override.", "dashboard"]],
       widths=[0.5, 4.2, 1.3], size=9)
 section("3.2 Non-Functional Requirements")
-para("The values below were measured on the development machine, an Apple Silicon "
-     "computer running without a graphics processor.")
+para("Non-functional requirements are grouped below under performance, reliability, "
+     "maintainability, testability, portability, usability and accuracy. Security "
+     "requirements are stated separately in section 3.3.")
+para("Performance. The values below were measured on the development machine, an "
+     "Apple Silicon computer running without a graphics processor, and are reproduced by "
+     "the commands in Appendix B.")
 table("Measured performance", ["Measurement", "Value", "Note"],
       [["Rule engine", "8 ms", "Velocity check and in-memory rules."],
        ["Graph analyzer", "158 ms first call, 48 ms warm", "Graph write and four pattern queries."],
@@ -660,14 +660,18 @@ table("Measured performance", ["Measurement", "Value", "Note"],
       widths=[1.9, 1.6, 2.5])
 for n in ["The deterministic layers shall complete within 500 milliseconds per transaction.",
           "The layers shall run concurrently so that total latency is bounded by the "
-          "slowest layer rather than by their sum.",
-          "The service shall hold no state between requests, so that an instance can be "
+          "slowest layer rather than by their sum."]:
+    bullet(n)
+para("Reliability and maintainability.")
+for n in ["The service shall hold no state between requests, so that an instance can be "
           "restarted without loss of data.",
           "An unavailable component shall never cause a transaction to be approved silently.",
           "The composite score shall be clamped so that no combination exceeds the range.",
-          "Every decision shall be persisted with its explanation for audit.",
-          "The stack shall start with a single command on Linux, macOS or Windows.",
-          "The automated test suite shall run without any database or network access."]:
+          "Every decision shall be persisted with its explanation for audit."]:
+    bullet(n)
+para("Testability and portability.")
+for n in ["The automated test suite shall run without any database or network access.",
+          "The stack shall start with a single command on Linux, macOS or Windows."]:
     bullet(n)
 table("Software quality attributes", ["Attribute", "How it is achieved"],
       [["Reliability", "The pipeline degrades one component at a time; a duplicate "
@@ -719,10 +723,6 @@ section("4.3 Data Flow Diagram — Level 1")
 para("The level 1 diagram decomposes the system into its seven principal processes and "
      "shows the data stores each process reads from and writes to.")
 figure("11-dfd1.png", "Data flow diagram — Level 1")
-section("4.4 Data Flow Diagram — Level 2")
-para("The level 2 diagram expands process 3.0, rule evaluation, into its component "
-     "checks and the order in which they contribute to the rule score.")
-figure("12-dfd2.png", "Data flow diagram — Level 2 (rule evaluation)")
 
 # ───────────────────────── CHAPTER 5 ─────────────────────────
 chapter("UML Diagrams")
@@ -739,11 +739,7 @@ figure("03-activity.png",
        "Activity diagram (1 of 2) — intake and concurrent scoring")
 figure("03b-activity-decision.png",
        "Activity diagram (2 of 2) — decision, response and analyst review")
-section("5.3 Sequence Diagram")
-para("The sequence diagram shows the order of interaction between the components while "
-     "a single transaction is analysed.")
-figure("04-sequence.png", "Sequence diagram — transaction analysis")
-section("5.4 Class Diagram")
+section("5.3 Class Diagram")
 para("The class model is presented in two parts, for the same reason of legibility. The "
      "first part shows the domain classes — the request accepted at the interface, the "
      "account and transaction records that are persisted, the response returned and the "
@@ -751,36 +747,10 @@ para("The class model is presented in two parts, for the same reason of legibili
      "concrete implementations and the decision engine that aggregates the layer scores.")
 figure("05-class.png", "Class diagram (1 of 2) — domain classes")
 figure("05b-class-services.png", "Class diagram (2 of 2) — analysis service classes")
-section("5.5 State Diagram")
-para("The state diagram shows the states a transaction passes through from submission "
-     "to a final outcome, including the analyst override path.")
-figure("06-state.png", "State diagram — transaction lifecycle")
-section("5.6 Component Diagram")
-para("The component diagram shows the deployable components and the interfaces through "
-     "which they communicate.")
-figure("07-component.png", "Component diagram")
-section("5.7 Deployment Diagram")
-para("The deployment diagram shows the physical arrangement of the containers and the "
-     "ports on which they communicate.")
-figure("08-deployment.png", "Deployment diagram — container topology")
-table("Deployment configuration", ["Node", "Component", "Port", "Persistent storage"],
-      [["Client device", "Web browser", "—", "None"],
-       ["Container: dashboard", "nginx serving the React build", "5173 to 80", "None"],
-       ["Container: api", "uvicorn running the FastAPI application", "8000", "None"],
-       ["Container: mongo", "MongoDB 7", "27017", "Volume mongo_data"],
-       ["Container: neo4j", "Neo4j 5.20", "7474, 7687", "Volume neo4j_data"],
-       ["Container: redis", "Redis 7.2", "6379", "Volume redis_data"],
-       ["Docker host", "ChromaDB persistent store", "—", "Bind mount ./data/chroma"],
-       ["Host machine", "Ollama running llama3", "11434", "Local model files"]],
-      widths=[1.5, 2.2, 1.0, 1.3])
 
 # ───────────────────────── CHAPTER 6 ─────────────────────────
 chapter("Database Design")
-section("6.1 Entity Relationship Diagram")
-para("The entity relationship diagram shows the stored entities and the relationships "
-     "between them across the document store and the graph store.")
-figure("09-er.png", "Entity relationship diagram")
-section("6.2 Logical Data Schema")
+section("6.1 Logical Data Schema")
 para("The document store is schemaless, so the schema below is the logical one enforced "
      "by the application: the Beanie document models declare the fields, their types and "
      "their indexes, and those indexes are created when the application starts, so no "
@@ -817,7 +787,7 @@ table("Transactions collection", ["Field", "Type", "Constraint", "Description"],
        ["note", "String", "Optional", "Free text supplied at submission."],
        ["created_at", "DateTime", "Default now", "Supports recent-first listing."]],
       widths=[1.6, 0.9, 1.2, 2.3], size=10)
-section("6.3 Data Dictionary")
+section("6.2 Data Dictionary")
 para("Every entity held outside the document store is defined below, one table per "
      "store. Together with the two collection tables above these cover all persisted "
      "data in the system.")
