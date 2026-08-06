@@ -1,46 +1,50 @@
 {
   "Table 2.1": [
-    "transactions.",
-    "specification"
+    "Fraud",
+    "Project"
   ],
   "Table 2.2": [
-    "approximately",
-    "greater."
+    "Hardware",
+    "Client"
   ],
   "Table 3.1": [
-    "routes/transactions",
-    "routes/transactions"
+    "FR-1",
+    "FR-9"
   ],
   "Table 3.2": [
-    "routes/accounts",
-    "distribution,"
+    "FR-10",
+    "FR-17"
   ],
   "Table 3.3": [
-    "in-memory",
-    "transactions"
+    "FR-18",
+    "FR-28"
   ],
   "Table 3.4": [
+    "Rule",
+    "Benchmark"
+  ],
+  "Table 3.5": [
     "Reliability",
-    "transactions;"
+    "Accuracy"
   ],
   "Table 6.1": [
-    "transactions",
-    "receiver_account_id,"
+    "accounts",
+    "transactions"
   ],
   "Table 6.2": [
     "account_id",
     "risk_tier"
   ],
   "Table 6.3": [
-    "duplicate",
-    "recent-first"
+    "tx_id",
+    "created_at"
   ],
   "Table 6.4": [
-    "fraud_adjacent",
-    "Shared-address"
+    "Account",
+    "IPAddress"
   ],
   "Table 6.5": [
-    "Circular-flow",
+    "SENT",
     "CONNECTED_TO"
   ],
   "Table 6.6": [
@@ -49,6 +53,6 @@
   ],
   "Table 6.7": [
     "fraud_patterns",
-    "metadata.severity"
+    "fraud_patterns"
   ]
 }

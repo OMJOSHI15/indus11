@@ -4,10 +4,12 @@ Build the Indus11 SRS document.
 Structure and formatting follow the department template and the internal
 guide's review comments:
 
-  - running text at 1.5 line spacing and justified (latest review); tables stay
-    at single spacing, since a 32-row requirements table at 1.5 is unreadable
+  - 1.5 line spacing throughout — every paragraph, including table cells,
+    captions and headings — and justified running text
+  - 2.54 cm (1 in) margins on all four sides
   - no stray space before/after paragraphs
-  - only chapters start on a new page; chapter titles centred at 16 pt
+  - only chapters start on a new page; chapter titles centred at 16 pt,
+    sub-topic titles at 14 pt
   - figures numbered per chapter (Figure 4.1, 5.3, ...), no repeated titles
   - every store is given its own data-dictionary table
   - Conclusion, References and Definitions appear last, unnumbered
@@ -45,9 +47,10 @@ FLAGGED, GRAPH, COUNTS = EVAL["metrics"]["flagged"], EVAL["graph"], EVAL["counts
 
 FONT = "Times New Roman"
 BODY, SUB, CHAP = 12, 14, 16
-LINE = 1.5                # running text; tables and captions stay single-spaced
+LINE = 1.5                # every paragraph in the document, no exceptions
 INK = RGBColor(0, 0, 0)
-USABLE_W = 6.0            # 8.5in page, 1.5in left + 1.0in right margin
+MARGIN = 1.0               # inches; 2.54 cm on all four sides
+USABLE_W = 8.5 - 2 * MARGIN
 MAX_FIG_H = 7.0
 
 figures, tables = [], []   # (label, title) for the front-matter lists
@@ -78,8 +81,7 @@ _normal.paragraph_format.space_after = Pt(0)
 _normal.paragraph_format.space_before = Pt(0)
 
 for s in doc.sections:
-    s.left_margin, s.right_margin = Inches(1.5), Inches(1.0)
-    s.top_margin, s.bottom_margin = Inches(1.5), Inches(1.5)
+    s.left_margin = s.right_margin = s.top_margin = s.bottom_margin = Inches(MARGIN)
 
 
 def _field(paragraph, instr):
@@ -108,8 +110,7 @@ def _page_number_format(section, fmt, start):
 def start_body_numbering():
     """Front matter runs i, ii, iii...; the body restarts at 1 in Arabic."""
     sec = doc.add_section(WD_SECTION.NEW_PAGE)
-    sec.left_margin, sec.right_margin = Inches(1.5), Inches(1.0)
-    sec.top_margin, sec.bottom_margin = Inches(1.5), Inches(1.5)
+    sec.left_margin = sec.right_margin = sec.top_margin = sec.bottom_margin = Inches(MARGIN)
     _page_number_format(sec, "decimal", 1)
     return sec
 
@@ -124,7 +125,7 @@ def page_numbers():
             s.footer.is_linked_to_previous = False
         p = s.footer.paragraphs[0]
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p.paragraph_format.line_spacing = 1.0
+        p.paragraph_format.line_spacing = LINE
         p.paragraph_format.space_after = Pt(0)
         _field(p, "PAGE")
         for r in p.runs:
@@ -171,7 +172,7 @@ def chapter(title, numbered=True, new_page_first=True):
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     p.paragraph_format.space_before = Pt(0)
     p.paragraph_format.space_after = Pt(14)
-    p.paragraph_format.line_spacing = 1.0
+    p.paragraph_format.line_spacing = LINE
     r = p.add_run(text)
     r.font.size, r.bold, r.font.color.rgb, r.font.name = Pt(CHAP), True, INK, FONT
     contents.append((1, text))
@@ -183,7 +184,7 @@ def section(title):
     p.alignment = WD_ALIGN_PARAGRAPH.LEFT
     p.paragraph_format.space_before = Pt(10)
     p.paragraph_format.space_after = Pt(6)
-    p.paragraph_format.line_spacing = 1.0
+    p.paragraph_format.line_spacing = LINE
     p.paragraph_format.keep_with_next = True
     r = p.add_run(title)
     r.font.size, r.bold, r.font.color.rgb, r.font.name = Pt(SUB), True, INK, FONT
@@ -221,7 +222,7 @@ def figure(png, title):
     pic.paragraph_format.space_before = Pt(6)
     pic.paragraph_format.space_after = Pt(2)
     para(f"{label}: {title}", size=11, bold=True,
-         align=WD_ALIGN_PARAGRAPH.CENTER, after=10, spacing=1.0)
+         align=WD_ALIGN_PARAGRAPH.CENTER, after=10, spacing=LINE)
     figures.append((label, title))
 
 
@@ -232,7 +233,7 @@ def table(title, headers, rows, widths=None, size=10.5):
     _tbl_n += 1
     label = f"Table {_chapter}.{_tbl_n}"
     caption = para(f"{label}: {title}", size=11, bold=True,
-                   align=WD_ALIGN_PARAGRAPH.CENTER, after=4, spacing=1.0)
+                   align=WD_ALIGN_PARAGRAPH.CENTER, after=4, spacing=LINE)
     caption.paragraph_format.keep_with_next = True
     t = doc.add_table(rows=1, cols=len(headers))
     t.style = "Table Grid"
@@ -243,7 +244,7 @@ def table(title, headers, rows, widths=None, size=10.5):
         c.text = ""
         p = c.paragraphs[0]
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p.paragraph_format.line_spacing = 1.0
+        p.paragraph_format.line_spacing = LINE
         p.paragraph_format.space_after = Pt(2)
         p.paragraph_format.space_before = Pt(2)
         r = p.add_run(h)
@@ -253,19 +254,19 @@ def table(title, headers, rows, widths=None, size=10.5):
         for i, v in enumerate(row):
             cells[i].text = ""
             p = cells[i].paragraphs[0]
-            p.paragraph_format.line_spacing = 1.0
+            p.paragraph_format.line_spacing = LINE
             p.paragraph_format.space_after = Pt(2)
             p.paragraph_format.space_before = Pt(2)
             r = p.add_run(str(v))
             r.font.size, r.font.name = Pt(size), FONT
     _apply_widths(t, _column_widths(headers, rows, size))
     keep_on_one_page(t)
-    para("", after=10, spacing=1.0)
+    para("", after=10, spacing=LINE)
     tables.append((label, title))
     if rows:
         # The longest word of each end row: a whole word survives the wrapping
         # that the PDF text extractor applies, where a whole cell may not.
-        table_spans[label] = [_longest_word(rows[0]), _longest_word(rows[-1])]
+        table_spans[label] = [_row_text(rows[0]), _row_text(rows[-1])]
     return t
 
 
@@ -320,8 +321,17 @@ def _column_widths(headers, rows, size):
     return [high - (high - low) * over / room for low, high in bounds]
 
 
-def _longest_word(row):
-    return max((w for cell in row for w in str(cell).split()), key=len, default="")
+def _row_text(row):
+    """The first cell's first token, as a unique page-location anchor. Three
+    approaches broke before this one: the longest word across the whole row
+    collided when rows shared a module name; concatenating every cell broke
+    because pdftotext -layout emits wrapped columns in physical reading
+    order, not logical cell order, so the concatenation never matched; and
+    even a whole first cell can itself wrap onto two lines when it is long
+    (e.g. "velocity:<account_id> member"). A single leading token is short
+    enough to never wrap on its own, and distinct enough within one table to
+    tell its first row from its last."""
+    return str(row[0]).split()[0] if str(row[0]).split() else str(row[0])
 
 
 def keep_on_one_page(t):
@@ -371,7 +381,7 @@ def code_block(lines, size=9):
     for i, line in enumerate(lines.split("\n")):
         p = cell.paragraphs[0] if i == 0 else cell.add_paragraph()
         p.paragraph_format.space_after = Pt(0)
-        p.paragraph_format.line_spacing = 1.0
+        p.paragraph_format.line_spacing = LINE
         r = p.add_run(line if line else " ")
         r.font.name, r.font.size = "Consolas", Pt(size)
     para("", after=8)
@@ -415,7 +425,7 @@ for i, txt in enumerate(["Dr. Deven Gol\nInternal Guide\nAssistant Professor\n"
     cell = _c.cell(0, i)
     cell.text = ""
     p = cell.paragraphs[0]
-    p.paragraph_format.line_spacing = 1.0
+    p.paragraph_format.line_spacing = LINE
     p.paragraph_format.space_after = Pt(0)
     r = p.add_run(txt)
     r.font.size, r.font.name = Pt(BODY), FONT
@@ -613,9 +623,10 @@ for a in ["The four data stores are reachable. If a store is unavailable the aff
 chapter("System Requirements")
 section("3.1 Functional Requirements")
 para("Each requirement is traceable to the module that implements it. The requirements "
-     "are given in two tables, covering the analysis pipeline and then the surrounding "
-     "services, so that neither table has to run across a page break.")
-table("Functional requirements — transaction analysis",
+     "are given in three tables — request handling and scoring, decision and "
+     "persistence, then the surrounding accounts, graph, reporting and operations "
+     "services — sized so that none has to run across a page break.")
+table("Functional requirements — request handling and scoring",
       ["ID", "Requirement", "Module"],
       [["FR-1", "Accept a transaction over HTTP POST carrying identifier, sender, receiver, amount, currency and optional merchant, device, address and note fields.", "routes/transactions"],
        ["FR-2", "Validate every request against a schema and reject a malformed or non-positive amount before any analysis is performed.", "schemas/transaction"],
@@ -625,8 +636,11 @@ table("Functional requirements — transaction analysis",
        ["FR-6", "Count transactions for an account within an exact ten-minute rolling window and flag more than five.", "core/redis_client"],
        ["FR-7", "Score from 0 to 30 by detecting shared devices, circular flows within four hops, fee-skimming chains and proximity to a known fraud cluster.", "services/graph_analyzer"],
        ["FR-8", "Record the transaction, its accounts, device and address in the graph so later transactions can be evaluated against it.", "services/graph_analyzer"],
-       ["FR-9", "Retrieve similar fraud patterns and obtain a score from 0 to 30 with an explanation from the language model, degrading to a zero score with a stated reason when no language model is reachable.", "services/rag_pipeline"],
-       ["FR-10", "Execute the three scoring layers concurrently.", "routes/transactions"],
+       ["FR-9", "Retrieve similar fraud patterns and obtain a score from 0 to 30 with an explanation from the language model, degrading to a zero score with a stated reason when no language model is reachable.", "services/rag_pipeline"]],
+      widths=[0.5, 4.2, 1.3], size=9)
+table("Functional requirements — decision and persistence",
+      ["ID", "Requirement", "Module"],
+      [["FR-10", "Execute the three scoring layers concurrently.", "routes/transactions"],
        ["FR-11", "Compute the composite score as the sum of the layer scores, clamped to 100.", "services/decision_engine"],
        ["FR-12", "Map the composite score to APPROVE, REVIEW or BLOCK using configured thresholds.", "services/decision_engine"],
        ["FR-13", "Include the triggered signals and the model's reasoning in every response.", "services/decision_engine"],
@@ -909,16 +923,8 @@ for i, r in enumerate([
     run.font.size, run.font.name = Pt(BODY), FONT
 
 chapter("Definitions, Acronyms and Abbreviations", numbered=False)
-_t = doc.add_table(rows=1, cols=2)
-_t.style = "Table Grid"
-for i, h in enumerate(["Term", "Definition"]):
-    c = _t.rows[0].cells[i]
-    c.text = ""
-    sh = OxmlElement("w:shd"); sh.set(qn("w:fill"), "E8EEF7")
-    c._tc.get_or_add_tcPr().append(sh)
-    r = c.paragraphs[0].add_run(h)
-    r.bold, r.font.size, r.font.name = True, Pt(10.5), FONT
-for term, definition in [
+
+_DEFINITIONS = [
     ("API", "Application Programming Interface."),
     ("APPROVE", "Decision for a composite score of 0 to 39; the transaction proceeds."),
     ("BLOCK", "Decision for a composite score of 70 or above; the transaction is refused."),
@@ -944,17 +950,32 @@ for term, definition in [
     ("TTL", "Time To Live; the expiry period of a cached entry."),
     ("UML", "Unified Modeling Language."),
     ("Velocity", "The number of transactions an account makes inside a rolling window."),
-]:
-    cells = _t.add_row().cells
-    for i, v in enumerate((term, definition)):
-        cells[i].text = ""
-        p = cells[i].paragraphs[0]
-        p.paragraph_format.line_spacing = 1.0
-        p.paragraph_format.space_after = Pt(2)
-        r = p.add_run(v)
-        r.font.size, r.font.name = Pt(10.5), FONT
-    cells[0].width, cells[1].width = Inches(1.6), Inches(4.4)
-keep_on_one_page(_t)
+]
+# Split so neither half runs across a page break at 1.5 line spacing — one
+# 25-row table doesn't fit a single page under the wider margins.
+_HALF = (len(_DEFINITIONS) + 1) // 2
+for _half in (_DEFINITIONS[:_HALF], _DEFINITIONS[_HALF:]):
+    _t = doc.add_table(rows=1, cols=2)
+    _t.style = "Table Grid"
+    for i, h in enumerate(["Term", "Definition"]):
+        c = _t.rows[0].cells[i]
+        c.text = ""
+        sh = OxmlElement("w:shd"); sh.set(qn("w:fill"), "E8EEF7")
+        c._tc.get_or_add_tcPr().append(sh)
+        r = c.paragraphs[0].add_run(h)
+        r.bold, r.font.size, r.font.name = True, Pt(10.5), FONT
+    for term, definition in _half:
+        cells = _t.add_row().cells
+        for i, v in enumerate((term, definition)):
+            cells[i].text = ""
+            p = cells[i].paragraphs[0]
+            p.paragraph_format.line_spacing = LINE
+            p.paragraph_format.space_after = Pt(2)
+            r = p.add_run(v)
+            r.font.size, r.font.name = Pt(10.5), FONT
+        cells[0].width, cells[1].width = Inches(1.6), Inches(4.4)
+    keep_on_one_page(_t)
+    para("", after=10, spacing=LINE)
 
 chapter("Appendix", numbered=False)
 section("Appendix A — Application Screen")
@@ -963,7 +984,7 @@ if os.path.exists(SHOT):
     doc.paragraphs[-1].alignment = WD_ALIGN_PARAGRAPH.CENTER
     para("Figure A.1: Analyst dashboard showing risk metrics, decision mix, score "
          "distribution, accuracy results and flagged transactions", size=11, bold=True,
-         align=WD_ALIGN_PARAGRAPH.CENTER, after=10, spacing=1.0)
+         align=WD_ALIGN_PARAGRAPH.CENTER, after=10, spacing=LINE)
 section("Appendix B — Reproducing the Measured Results")
 code_block("""# 1. Start the complete stack
 docker compose up --build
@@ -984,7 +1005,7 @@ def fill_contents(anchor):
     """Write the table of contents with dot leaders and real page numbers."""
     anchor.alignment = WD_ALIGN_PARAGRAPH.CENTER
     anchor.paragraph_format.space_after = Pt(14)
-    anchor.paragraph_format.line_spacing = 1.0
+    anchor.paragraph_format.line_spacing = LINE
     r = anchor.add_run("TABLE OF CONTENTS")
     r.bold, r.font.size, r.font.name = True, Pt(CHAP), FONT
     cursor = anchor
@@ -992,7 +1013,7 @@ def fill_contents(anchor):
     for level, title in entries:
         p = doc.add_paragraph()
         p.alignment = WD_ALIGN_PARAGRAPH.LEFT
-        p.paragraph_format.line_spacing = 1.0
+        p.paragraph_format.line_spacing = LINE
         p.paragraph_format.space_after = Pt(4 if level == 1 else 2)
         p.paragraph_format.left_indent = Inches(0 if level == 1 else 0.3)
         p.paragraph_format.tab_stops.add_tab_stop(
@@ -1007,13 +1028,13 @@ def fill_contents(anchor):
 def fill(anchor, heading_text, items):
     anchor.alignment = WD_ALIGN_PARAGRAPH.CENTER
     anchor.paragraph_format.space_after = Pt(12)
-    anchor.paragraph_format.line_spacing = 1.0
+    anchor.paragraph_format.line_spacing = LINE
     r = anchor.add_run(heading_text)
     r.bold, r.font.size, r.font.name = True, Pt(CHAP), FONT
     cursor = anchor
     for label, title in items:
         p = doc.add_paragraph()
-        p.paragraph_format.line_spacing = 1.0
+        p.paragraph_format.line_spacing = LINE
         p.paragraph_format.space_after = Pt(2)
         run = p.add_run(f"{label}:  {title}")
         run.font.size, run.font.name = Pt(BODY), FONT
