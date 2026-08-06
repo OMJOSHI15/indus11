@@ -453,32 +453,40 @@ for n, sid in [("Joshi Om", "24DCE052"), ("Krish Gajera", "24DCE040"),
 
 new_page()
 para("ABSTRACT", CHAP, True, WD_ALIGN_PARAGRAPH.CENTER, 18)
-para("[ TO BE WRITTEN BY THE TEAM IN YOUR OWN WORDS — approximately 250 to 300 words. ]",
-     BODY, True, WD_ALIGN_PARAGRAPH.LEFT, 10)
-para("The internal guide has asked specifically that the abstract be original and "
-     "reflect your own understanding of the project. Write it yourselves, covering the "
-     "points below in continuous prose rather than as a list. The measured figures are "
-     "supplied so that you do not have to look them up.", after=10)
-for prompt in [
-    "The problem — why fraud detection needs both accuracy and a reason for every "
-    "decision, and what goes wrong when a system provides only one of the two.",
-    "The objective — what you set out to build and what the system returns for each "
-    "transaction.",
-    "The methodology — the three detection engines you combined (rules, graph analysis "
-    "and a retrieval-augmented language model), how their scores are weighted "
-    "(40, 30 and 30 out of 100) and why the language model is capped.",
-    f"The outcome — measured on {COUNTS['total']} labelled transactions "
-    f"({COUNTS['fraud']} fraudulent and {COUNTS['legit']} legitimate): precision "
-    f"{FLAGGED['precision']*100:.1f} per cent, recall {FLAGGED['recall']*100:.1f} per "
-    f"cent, F1 {FLAGGED['f1']:.2f}, and all {GRAPH['ring_transactions']} planted "
-    "mule-ring transactions detected by the graph layer.",
-    "Your own conclusion — what the results told you, including the finding that no "
-    "transaction reached the block threshold, so every detection currently reaches a "
-    "human analyst.",
-]:
-    bullet(prompt)
-para("", after=8)
-para("Keywords: ______________________________________________", italic=True)
+para("Indus11 is an AI-powered financial fraud detection and decision support system "
+     "developed to identify suspicious banking transactions using a multi-layer risk "
+     "assessment approach. The system addresses the limitations of conventional "
+     "rule-based fraud detection by combining deterministic rules, graph-based "
+     "relationship analysis, and Retrieval-Augmented Generation (RAG) to produce "
+     "explainable risk decisions.")
+para("The application is implemented using Python 3.12 and FastAPI for the backend "
+     "APIs, React for the analyst dashboard, MongoDB (Beanie ODM) for transactional "
+     "data storage, Neo4j for relationship analysis, Redis for caching, and ChromaDB "
+     "as the vector database for document retrieval. LangChain and Ollama integrate "
+     "the Large Language Model with the RAG pipeline, enabling the system to retrieve "
+     "relevant banking policies, fraud guidelines, and historical cases before "
+     "generating contextual explanations for analysts.")
+para("Incoming transactions are evaluated through a three-layer scoring pipeline. The "
+     "rule engine contributes 0–40 risk points based on predefined fraud indicators, "
+     "graph analysis contributes 0–30 points by detecting shared devices, IP "
+     "addresses, and circular transaction flows among accounts, while the RAG-based "
+     "reasoning module contributes 0–30 points by validating contextual evidence. The "
+     "combined score determines whether a transaction is classified as APPROVE, "
+     "REVIEW, or BLOCK, while providing an explanation for every decision.")
+para("The system was evaluated using a labelled fraud dataset and achieved 93.8% "
+     "precision, 86.5% recall, and an F1-score of 0.90. Graph analysis successfully "
+     "identified all 36 transactions belonging to the 3 planted mule rings, "
+     "demonstrating the effectiveness of relationship-based fraud detection. During "
+     "evaluation, no transaction reached the predefined BLOCK threshold because the "
+     "seeded fraud accounts lacked stored historical profiles, preventing the "
+     "amount-anomaly rule from contributing to their overall score. This identified a "
+     "limitation in the current scoring mechanism rather than a characteristic of the "
+     "dataset and highlights an area for future enhancement. Overall, the results "
+     "demonstrate that integrating rule-based analysis, graph analytics, and "
+     "RAG-based reasoning improves fraud detection while maintaining explainability "
+     "and supporting financial investigators in making informed decisions.", after=10)
+para("Keywords: fraud detection, explainable AI, graph analytics, retrieval-augmented "
+     "generation, risk scoring", italic=True)
 
 new_page()
 TOC_ANCHOR = doc.add_paragraph()
