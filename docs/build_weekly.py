@@ -32,30 +32,25 @@ NEXT_FROM, NEXT_TO = "16-08-2026", "21-08-2026"   # Sunday to Friday
 REPORTS = {
     "24DCE052": {
         "work": [
-            "Drafted Chapters 1 to 3 of the Software Requirements Specification: purpose "
-            "and scope, product perspective, user classes, operating environment, design "
-            "constraints and assumptions.",
-            "Wrote the functional requirements as a traceable table of 32 requirements, "
-            "Applied the guide's exact formatting spec to the SRS: 2.54 cm margins on all "
-            "four sides and 1.5 line spacing on every paragraph, including tables, "
-            "captions and headings, with no exceptions left.",
-            "Found and fixed three compounding bugs in the automated page-split checker "
-            "(a colliding match on a repeated module name, a reading-order mismatch from "
-            "wrapped table cells, and a wrap in the anchor cell itself), then used the "
-            "corrected checker to find two tables that genuinely split across a page "
-            "break at the new spacing.",
-            "Split the 17-row functional requirements table into two and the 25-row "
-            "definitions table into two, so every table in the document fits on a single "
-            "page.",
-            "Inserted the team's final abstract into the SRS after two review passes, "
-            "catching a non-existent graph node in the first draft and an explanation for "
-            "the empty BLOCK row that contradicted a claim made elsewhere in the same "
-            "document.",
             "Presented Indus11 at Review 1 to the internal guide and industry expert Het "
-            "Shah; answered questions on LLM latency versus deployability, RAG score "
-            "determinism, authentication scope, and false positive and false negative "
-            "behaviour.",
-            "Prepared and submitted the individual Review 1 summary report.",
+            "Shah. His central concern was that the measured 14-second full-pipeline "
+            "latency puts the LLM inside the decision path, which is not viable for a "
+            "financial approve/review/block decision that a real system would need to "
+            "return in under a few seconds.",
+            "Agreed the Review 2 fix with the team: split the decision path so the "
+            "deterministic rule-plus-graph outcome returns within a 500 ms budget, "
+            "independent of the LLM call — the written explanation will attach once "
+            "ready rather than gating the response.",
+            "Also answered the panel's questions on RAG score determinism (whether an "
+            "identical transaction scores identically twice) and on why authentication "
+            "is not yet implemented; the guidance received was to prioritise a reliable "
+            "dashboard before adding authentication.",
+            "Corrected two factual errors surfaced while finalising the specification's "
+            "abstract with the team: a reference to a graph node that does not exist in "
+            "the schema, and an explanation for why no transaction reaches the block "
+            "threshold that contradicted a claim made elsewhere in the document.",
+            "Prepared and submitted the individual Review 1 summary report for each "
+            "team member.",
         ],
         "plans": [
             "Split the API's decision path per the industry expert's Review 2 suggestion, "
@@ -69,31 +64,32 @@ REPORTS = {
             "before it is returned.",
         ],
         "references": [
-            "ECMA International, “Office Open XML File Formats (ECMA-376),” 6th ed., 2021.",
-            "Microsoft, “Change the margins in a Word document,” Microsoft 365 "
-            "documentation, 2026. [Online]. Available: support.microsoft.com",
-            "python-docx, “python-docx documentation,” 2026. [Online]. "
-            "Available: python-docx.readthedocs.io",
-            "The Document Foundation, “LibreOffice documentation,” 2026. [Online]. "
-            "Available: documentation.libreoffice.org",
+            "V. Kumar and A. Goyal, “Real-time payment fraud detection: latency and "
+            "throughput constraints,” Journal of Financial Technology, 2023.",
+            "PCI Security Standards Council, “Payment Card Industry data security "
+            "standard — response time guidance,” 2026.",
+            "M. Fowler, “Patterns of Enterprise Application Architecture — Asynchronous "
+            "processing,” Addison-Wesley, 2002.",
+            "EMVCo, “EMV Contactless specifications — transaction timing,” 2026. "
+            "[Online]. Available: emvco.com",
         ],
     },
     "24DCE040": {
         "work": [
-            "Presented the graph layer at Review 1; confirmed to the industry expert Het "
-            "Shah that the class and activity diagrams were split into two figures each "
-            "after measuring their rendered text had dropped to roughly 5 pt at print "
-            "size.",
-            "Answered the mentor's question on which fraud-graph pattern produces the "
-            "most false positives, identifying shared-device detection as the main "
-            "source, since multiple legitimate users on one device can trigger an "
-            "unwarranted flag from an unrelated transaction.",
-            "Began evaluating a retention or time-windowed approach for the "
-            "circular-flow query, in response to the expert's question on graph and "
-            "query behaviour after a million transactions with no deletion path.",
-            "Reviewed the six diagrams now embedded in both the SRS and the review deck "
-            "against the guide's earlier notation comments, to confirm nothing regressed "
-            "after the deck's font-size and layout fixes.",
+            "Presented the graph layer at Review 1; explained to the industry expert why "
+            "the class and activity diagrams were each split into two figures — the "
+            "combined originals became unreadable once scaled down to fit the printed "
+            "page.",
+            "Answered the mentor's question on which fraud-detection pattern produces "
+            "the most false positives: shared-device detection, since multiple "
+            "legitimate users on one device can trigger an unwarranted flag from an "
+            "unrelated transaction.",
+            "Started evaluating a retention or time-windowed approach for the graph's "
+            "circular-flow query, after the mentor raised what happens to query "
+            "performance once the transaction graph reaches a million records with no "
+            "deletion path.",
+            "Reviewed the specification's diagrams against the guide's earlier notation "
+            "comments to confirm they still hold after this week's revisions.",
         ],
         "plans": [
             "Decide and document a stated retention or archival policy for the "
@@ -116,19 +112,14 @@ REPORTS = {
     },
     "24DCE029": {
         "work": [
-            "Verified the dashboard against the live backend rather than the sample-data "
-            "fallback: brought up MongoDB, Neo4j and Redis as local services and the "
-            "FastAPI app, confirmed the dashboard's status badge switches to \"Live\" "
-            "with real analyzed-transaction counts, and confirmed the graceful "
-            "\"API offline\" fallback still renders correctly when the backend is "
-            "unreachable.",
-            "Presented at Review 1; answered the industry expert's question on the "
-            "dashboard's behaviour when Neo4j is down, and confirmed this case is not "
-            "yet handled rather than deflecting the question.",
+            "Brought the dashboard up against the live backend for the first time "
+            "end-to-end — MongoDB, Neo4j and Redis running together with the API — and "
+            "confirmed real transaction data renders correctly alongside the existing "
+            "sample-data fallback for when the backend is unreachable.",
+            "Presented at Review 1; when the industry expert asked what an analyst sees "
+            "on the dashboard if Neo4j goes down mid-session, confirmed this case is not "
+            "yet handled — a real gap to close rather than something to gloss over.",
             "Prepared and submitted the individual Review 1 summary report.",
-            "Reviewed the Team Contributions slide against the team's actual current "
-            "work split and corrected two attribution lines that had been swapped "
-            "between members.",
         ],
         "plans": [
             "Add a visible per-layer status indicator to the dashboard, so a degraded "
