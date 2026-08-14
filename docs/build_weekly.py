@@ -26,8 +26,8 @@ DOWNLOADS = os.path.expanduser("~/Downloads")
 SOFFICE = "/Applications/LibreOffice.app/Contents/MacOS/soffice"
 
 WEEK = 6
-FROM_DATE, TO_DATE = "11-08-2026", "17-08-2026"
-NEXT_FROM, NEXT_TO = "18-08-2026", "24-08-2026"
+FROM_DATE, TO_DATE = "09-08-2026", "14-08-2026"   # Sunday to Friday
+NEXT_FROM, NEXT_TO = "16-08-2026", "21-08-2026"   # Sunday to Friday
 
 REPORTS = {
     "24DCE052": {
