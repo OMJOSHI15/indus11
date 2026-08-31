@@ -1,7 +1,8 @@
 """Account management routes. Owner: Member A"""
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
 from app.core.redis_client import cache_delete
+from app.core.security import require_api_key
 from app.models.account import Account
 from app.schemas.risk import AccountProfile
 
@@ -31,7 +32,11 @@ async def get_account(account_id: str):
     )
 
 
-@router.patch("/{account_id}/blacklist", summary="Toggle blacklist status")
+@router.patch(
+    "/{account_id}/blacklist",
+    summary="Toggle blacklist status",
+    dependencies=[Depends(require_api_key)],
+)
 async def toggle_blacklist(account_id: str, blacklisted: bool):
     account = await Account.find_one(Account.account_id == account_id)
     if not account:

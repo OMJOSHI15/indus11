@@ -137,7 +137,7 @@ export default function App() {
 
         <section className="panel wide">
           <h2>Detection accuracy — synthetic benchmark</h2>
-          <AccuracyPanel />
+          <AccuracyPanel offline={offline} />
         </section>
 
         <section className="panel wide" aria-busy={flags === null}>

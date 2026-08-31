@@ -11,6 +11,7 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
 from app.api.routes import accounts, graph, health, stats, transactions
+from app.config import settings
 from app.core.database import close_db, init_db
 from app.core.neo4j_client import close_driver, ensure_indexes
 from app.core.rate_limit import limiter
@@ -29,7 +30,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.cors_origins.split(","),
     allow_methods=["*"],
     allow_headers=["*"],
 )

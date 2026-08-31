@@ -5,10 +5,14 @@ Run with: pytest tests/ -v
 import pytest
 from unittest.mock import AsyncMock, patch
 
+from fastapi import HTTPException
+
 from app.schemas.transaction import TransactionRequest, LayerScore
 from app.schemas.risk import AccountProfile
 from app.services.rule_engine import run_rule_engine
+from app.services.graph_analyzer import run_graph_analyzer
 from app.services.decision_engine import make_decision
+from app.core.security import require_api_key
 
 
 def make_tx(**kwargs) -> TransactionRequest:
@@ -74,6 +78,38 @@ async def test_clean_transaction_scores_zero():
     assert result.flags == []
 
 
+# ── Graph Analyzer Tests ──────────────────────────────────────────────────────
+
+@pytest.mark.asyncio
+async def test_graph_analyzer_degrades_on_neo4j_failure():
+    tx = make_tx(device_id="DEV-001")
+    with patch("app.services.graph_analyzer.neo4j_session", side_effect=Exception("connection refused")):
+        result = await run_graph_analyzer(tx)
+    assert result.score == 0
+    assert "GRAPH_ANALYZER_ERROR" in result.flags
+
+
+# ── API-key guard Tests ───────────────────────────────────────────────────────
+
+@pytest.mark.asyncio
+async def test_require_api_key_rejects_wrong_key():
+    with pytest.raises(HTTPException) as exc:
+        await require_api_key(x_api_key="wrong-key")
+    assert exc.value.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_require_api_key_rejects_missing_key():
+    with pytest.raises(HTTPException):
+        await require_api_key(x_api_key="")
+
+
+@pytest.mark.asyncio
+async def test_require_api_key_accepts_configured_key():
+    from app.config import settings
+    await require_api_key(x_api_key=settings.app_secret_key)  # no raise = pass
+
+
 # ── Decision Engine Tests ─────────────────────────────────────────────────────
 
 def make_layer(score, max_score, flags=None):
@@ -105,3 +141,58 @@ def test_composite_score_capped_at_100():
     tx = make_tx()
     result = make_decision(tx, make_layer(40, 40), make_layer(30, 30), make_layer(30, 30), "Max risk.", 80.0)
     assert result.composite_score == 100
+
+
+def test_explanation_falls_back_when_it_ignores_triggered_flags():
+    tx = make_tx()
+    result = make_decision(
+        tx, make_layer(40, 40, ["BLACKLISTED_ACCOUNT"]), make_layer(0, 30), make_layer(0, 30),
+        "This customer travels frequently for work.", 50.0,
+    )
+    assert "did not reference the triggered signals" in result.explanation
+
+
+def test_explanation_kept_when_it_matches_flags():
+    tx = make_tx()
+    result = make_decision(
+        tx, make_layer(40, 40, ["BLACKLISTED_ACCOUNT"]), make_layer(0, 30), make_layer(0, 30),
+        "Sender is on the institutional blacklist.", 50.0,
+    )
+    assert "institutional blacklist" in result.explanation
+
+
+def test_explanation_guard_ignores_generic_risk_words():
+    """Regression: a live wire transfer got an explanation about a grocery
+    purchase, and the guard passed it because HIGH_RISK_MERCHANT contains
+    the word "risk", which appears in almost any risk prose."""
+    tx = make_tx()
+    result = make_decision(
+        tx, make_layer(8, 40, ["HIGH_RISK_MERCHANT (wire_transfer)"]),
+        make_layer(0, 30), make_layer(2, 30),
+        "A small grocery purchase well within the sender's normal monthly "
+        "spending, from a standard-risk account.", 50.0,
+    )
+    assert "did not reference the triggered signals" in result.explanation
+
+
+def test_explanation_guard_matches_on_flag_detail():
+    """A good wire-transfer explanation says "wire transfer", never "merchant" —
+    the parenthetical detail has to count as a match."""
+    tx = make_tx()
+    result = make_decision(
+        tx, make_layer(8, 40, ["HIGH_RISK_MERCHANT (wire_transfer)"]),
+        make_layer(0, 30), make_layer(22, 30),
+        "A wire transfer more than 15x the sender's monthly average.", 50.0,
+    )
+    assert "15x" in result.explanation
+
+
+def test_pending_rag_explanation_skips_validation():
+    tx = make_tx()
+    result = make_decision(
+        tx, make_layer(40, 40, ["BLACKLISTED_ACCOUNT"]), make_layer(0, 30), make_layer(0, 30),
+        "Pending — the written explanation attaches once the language model finishes.",
+        50.0, rag_pending=True,
+    )
+    assert result.rag_pending is True
+    assert "Pending" in result.explanation

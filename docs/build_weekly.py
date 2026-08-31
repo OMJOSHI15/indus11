@@ -25,123 +25,138 @@ from docx.text.paragraph import Paragraph
 DOWNLOADS = os.path.expanduser("~/Downloads")
 SOFFICE = "/Applications/LibreOffice.app/Contents/MacOS/soffice"
 
-WEEK = 6
-FROM_DATE, TO_DATE = "09-08-2026", "14-08-2026"   # Sunday to Friday
-NEXT_FROM, NEXT_TO = "16-08-2026", "21-08-2026"   # Sunday to Friday
+WEEK = 8
+FROM_DATE, TO_DATE = "23-08-2026", "28-08-2026"   # Sunday to Friday
+NEXT_FROM, NEXT_TO = "30-08-2026", "04-09-2026"   # Sunday to Friday
 
 REPORTS = {
     "24DCE052": {
         "work": [
-            "Presented Indus11 at Review 1 to the internal guide and industry expert Het "
-            "Shah. His central concern was that the measured 14-second full-pipeline "
-            "latency puts the LLM inside the decision path, which is not viable for a "
-            "financial approve/review/block decision that a real system would need to "
-            "return in under a few seconds.",
-            "Agreed the Review 2 fix with the team: split the decision path so the "
-            "deterministic rule-plus-graph outcome returns within a 500 ms budget, "
-            "independent of the LLM call — the written explanation will attach once "
-            "ready rather than gating the response.",
-            "Also answered the panel's questions on RAG score determinism (whether an "
-            "identical transaction scores identically twice) and on why authentication "
-            "is not yet implemented; the guidance received was to prioritise a reliable "
-            "dashboard before adding authentication.",
-            "Corrected two factual errors surfaced while finalising the specification's "
-            "abstract with the team: a reference to a graph node that does not exist in "
-            "the schema, and an explanation for why no transaction reaches the block "
-            "threshold that contradicted a claim made elsewhere in the document.",
-            "Prepared and submitted the individual Review 1 summary report for each "
-            "team member.",
+            "Benchmarked the split decision path against the running stack: the "
+            "endpoint now answers in 124 ms on average and 189 ms at the 95th "
+            "percentile, with all 29 sampled requests inside the 500 ms budget "
+            "agreed at Review 1, against the 14,046 ms measured before the split.",
+            "Traced and fixed two robustness faults that only appeared once the "
+            "system was driven at volume: replaying the full evaluation set queued "
+            "one language-model call per transaction with no limit and killed the "
+            "API process, and a failed background task left its transaction marked "
+            "pending forever instead of falling back to the decision already made.",
+            "Found that the accuracy harness had been quietly measuring the wrong "
+            "thing since the split — it scored the immediate response, which no "
+            "longer includes the language model's contribution, understating recall "
+            "as 0.462 against 0.865 for the same pipeline. It now waits for the "
+            "background layer before recording a result.",
+            "Wrote the comparison against FICO Falcon, Feedzai and Featurespace that "
+            "the industry expert asked for at Review 1, including where this project "
+            "does not compete: no consortium data, and accuracy measured on synthetic "
+            "traffic far denser in fraud than a real feed.",
         ],
         "plans": [
-            "Split the API's decision path per the industry expert's Review 2 suggestion, "
-            "so the rule and graph layers return within a 500 ms budget independent of "
-            "the LLM call.",
-            "Add the FICO Falcon / Feedzai / Featurespace comparison table to the "
-            "Literature Review.",
-            "Add graph-layer degrade-on-failure handling for a Neo4j outage, matching the "
-            "pattern already used for the RAG layer's fallback.",
-            "Validate the LLM's written explanation against the actual triggered flags "
-            "before it is returned.",
+            "Report the full accuracy re-run against the corrected harness.",
+            "Rehearse the Review 2 demonstration end to end with the whole team.",
+            "Measure throughput under sustained load rather than single-user latency.",
+            "Decide whether the background language-model work should survive an API "
+            "restart, which it currently does not.",
         ],
         "references": [
-            "V. Kumar and A. Goyal, “Real-time payment fraud detection: latency and "
-            "throughput constraints,” Journal of Financial Technology, 2023.",
-            "PCI Security Standards Council, “Payment Card Industry data security "
-            "standard — response time guidance,” 2026.",
-            "M. Fowler, “Patterns of Enterprise Application Architecture — Asynchronous "
-            "processing,” Addison-Wesley, 2002.",
-            "EMVCo, “EMV Contactless specifications — transaction timing,” 2026. "
-            "[Online]. Available: emvco.com",
+            "Amazon Web Services, \u201cTimeouts, retries and backoff with jitter,\u201d "
+            "AWS Builders' Library, 2026. [Online]. Available: aws.amazon.com/builders-library",
+            "B. Beyer et al., \u201cSite Reliability Engineering: load shedding and "
+            "graceful degradation,\u201d O'Reilly, 2016.",
+            "Python Software Foundation, \u201casyncio synchronization primitives,\u201d "
+            "Python 3.12 documentation, 2026. [Online]. Available: docs.python.org",
+            "Featurespace, \u201cARIC Risk Hub \u2014 adaptive behavioural analytics,\u201d 2026. "
+            "[Online]. Available: featurespace.com",
         ],
     },
     "24DCE040": {
         "work": [
-            "Presented the graph layer at Review 1; explained to the industry expert why "
-            "the class and activity diagrams were each split into two figures — the "
-            "combined originals became unreadable once scaled down to fit the printed "
-            "page.",
-            "Answered the mentor's question on which fraud-detection pattern produces "
-            "the most false positives: shared-device detection, since multiple "
-            "legitimate users on one device can trigger an unwarranted flag from an "
-            "unrelated transaction.",
-            "Started evaluating a retention or time-windowed approach for the graph's "
-            "circular-flow query, after the mentor raised what happens to query "
-            "performance once the transaction graph reaches a million records with no "
-            "deletion path.",
-            "Reviewed the specification's diagrams against the guide's earlier notation "
-            "comments to confirm they still hold after this week's revisions.",
+            "Measured which graph pattern actually produces the most false positives, "
+            "the question left unanswered at Review 1, by replaying the 208-transaction "
+            "labelled set through the graph layer. The answer contradicts what was said "
+            "at the review: shared-device detection produced no false positives at all, "
+            "while circular-flow produced 22 of them, a 44.9% false-positive rate.",
+            "Established the cause: the cycle query had no time constraint, so it "
+            "matched any path that eventually returned to the sender across the graph's "
+            "whole history \u2014 1,486 transactions produced 51,146 such cycles, and any "
+            "ordinary account that both sends and receives money forms one over time.",
+            "Fixed it by constraining a cycle to a laundering-shaped window: every hop "
+            "within 72 hours of the transaction and in chronological order. False "
+            "positives fell from 44.9% to 10.3% with true detections essentially "
+            "unchanged.",
+            "Benchmarked the query afterwards and found the first version had made it "
+            "seven times slower, 1,800 ms on a ring member, because it counted every "
+            "matching path when the decision only needs to know whether one exists. "
+            "Stopping at the first match and pruning by timestamp during expansion "
+            "brought the whole graph layer to about 20 ms.",
+            "Noted that this is the same root cause as the mentor's separate question "
+            "about Neo4j at a million transactions \u2014 unbounded graph accumulation, "
+            "surfacing as a false-positive problem before it becomes a storage one.",
         ],
         "plans": [
-            "Decide and document a stated retention or archival policy for the "
-            "transaction graph, rather than leaving indefinite retention implicit.",
-            "Add fan-in and fan-out mule detection patterns and measure the effect on "
-            "ring recall.",
-            "Benchmark the Cypher circular-flow query against the fully seeded graph to "
-            "quantify how its cost grows with graph size.",
-            "Investigate the seven undetected frauds from the accuracy evaluation.",
+            "Tune the 72-hour window against the seeded data rather than leaving it at "
+            "a first reasonable value.",
+            "Investigate the three circular-flow false positives that remain.",
+            "Write the retention and archival policy for the transaction graph, now "
+            "that the windowing argument is settled.",
+            "Add fan-in and fan-out mule patterns and measure the effect on ring recall.",
         ],
         "references": [
-            "Neo4j, “Cypher performance and query tuning,” Neo4j developer "
-            "documentation, 2026. [Online]. Available: neo4j.com/developer",
-            "Neo4j, “Data modelling guidelines for graph growth and retention,” Neo4j "
-            "developer documentation, 2026. [Online]. Available: neo4j.com/developer",
-            "Neo4j, “APOC (Awesome Procedures on Cypher) library documentation,” 2026. "
-            "[Online]. Available: neo4j.com/labs/apoc",
-            "S. Ranka, “Graph database performance at scale,” O'Reilly, 2024.",
+            "Neo4j, \u201cQuery tuning: planner, cardinality and expand pruning,\u201d Neo4j "
+            "documentation, 2026. [Online]. Available: neo4j.com/docs/cypher-manual",
+            "M. Weber et al., \u201cScalable graph learning for anti-money "
+            "laundering: a first look,\u201d KDD Workshop on Anomaly Detection "
+            "in Finance, 2019.",
+            "L. Akoglu, H. Tong and D. Koutra, \u201cGraph-based anomaly detection and "
+            "description: a survey,\u201d Data Mining and Knowledge Discovery, 2015.",
+            "International Organization for Standardization, \u201cISO 8601 date and time "
+            "representation,\u201d 2019.",
         ],
     },
     "24DCE029": {
         "work": [
-            "Brought the dashboard up against the live backend for the first time "
-            "end-to-end — MongoDB, Neo4j and Redis running together with the API — and "
-            "confirmed real transaction data renders correctly alongside the existing "
-            "sample-data fallback for when the backend is unreachable.",
-            "Presented at Review 1; when the industry expert asked what an analyst sees "
-            "on the dashboard if Neo4j goes down mid-session, confirmed this case is not "
-            "yet handled — a real gap to close rather than something to gloss over.",
-            "Prepared and submitted the individual Review 1 summary report.",
+            "Measured whether an identical transaction scores identically, which the "
+            "industry expert asked at the follow-up session and was answered then as "
+            "'two to five points apart'. Submitting the same wire transfer five times "
+            "produced 26, 20, 20, 21 and 22 \u2014 a spread of six.",
+            "Found the cause: the OpenAI client was created with temperature zero but "
+            "the local Ollama client was not, so it ran at the default of roughly 0.8. "
+            "At that setting the model also occasionally repeated a worked example "
+            "verbatim instead of assessing the real transaction \u2014 one live wire "
+            "transfer came back described as a small grocery purchase. Both clients now "
+            "come from one helper with temperature zero, and five repeat submissions "
+            "score identically.",
+            "Closed a hole in the explanation-validation guard that let that grocery "
+            "text through: the flag was HIGH_RISK_MERCHANT and the explanation "
+            "contained the word 'risk', which was enough to satisfy the check. It now "
+            "ignores generic risk vocabulary and matches on the flag's detail, so a "
+            "wire-transfer flag is satisfied by an explanation that says 'wire "
+            "transfer' and not by one that merely says 'risk'.",
+            "Wired the dashboard to the pending state, so the language model's score "
+            "and written explanation now appear on the analyst's screen as soon as they "
+            "are ready rather than only after a manual refresh.",
         ],
         "plans": [
-            "Add a visible per-layer status indicator to the dashboard, so a degraded "
-            "layer (for example Neo4j down) is not invisible to the analyst.",
-            "Add the decision-history timeline to the transaction detail view.",
-            "Rehearse the Review 2 demonstration once the decision-path split lands.",
-            "Run an accessibility pass over the dashboard against contrast and keyboard "
-            "requirements.",
+            "Show the same pending state in the flagged-transactions table, not only on "
+            "the analyze panel.",
+            "Add an end-to-end test for the explanation guard against real model output "
+            "rather than fixture text.",
+            "Continue the accessibility pass over the dashboard against contrast and "
+            "keyboard requirements.",
+            "Review whether a decision that changes after the language model lands "
+            "should be visually marked as revised.",
         ],
         "references": [
-            "MDN Web Docs, “Using the Fetch API,” Mozilla, 2026. [Online]. "
-            "Available: developer.mozilla.org",
-            "Vite, “Env variables and modes,” Vite documentation, 2026. [Online]. "
-            "Available: vitejs.dev",
-            "React, “Synchronizing with Effects,” react.dev, 2026. [Online]. "
-            "Available: react.dev",
-            "Redis, “Caching with Redis,” Redis documentation, 2026. [Online]. "
-            "Available: redis.io/docs",
+            "A. Holtzman et al., \u201cThe curious case of neural text degeneration,\u201d "
+            "ICLR, 2020.",
+            "Ollama, \u201cModel parameters: temperature, top-k and top-p,\u201d Ollama "
+            "documentation, 2026. [Online]. Available: github.com/ollama/ollama",
+            "S. Minaee et al., \u201cLarge language models: a survey,\u201d 2024.",
+            "Nielsen Norman Group, \u201cResponse times and the limits of human "
+            "perception in interface feedback,\u201d 2026. [Online]. Available: nngroup.com",
         ],
     },
 }
-
 
 def _set_text(paragraph, text):
     """Replace a paragraph's text, keeping the first run's formatting."""
