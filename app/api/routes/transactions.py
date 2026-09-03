@@ -40,6 +40,13 @@ RAG_PENDING_EXPLANATION = (
 # quickly the explanations catch up.
 _RAG_CONCURRENCY = asyncio.Semaphore(4)
 
+# A language-model call with no deadline can hang indefinitely. Four of those
+# hold every permit above and wedge the whole background pipeline — silently,
+# because nothing awaits these tasks: no error is raised and no log is written,
+# records simply stay pending forever. Observed exactly that after an
+# interrupted 208-row replay: a restart was the only way to recover.
+_RAG_TIMEOUT_S = 180
+
 
 async def _load_account_profile(account_id: str) -> AccountProfile:
     """Load account from Redis cache, fallback to MongoDB."""
@@ -87,7 +94,9 @@ async def _finish_rag_layer(
     start = time.perf_counter()
     async with _RAG_CONCURRENCY:
         try:
-            rag_result = await run_rag_pipeline(tx, sender)
+            rag_result = await asyncio.wait_for(
+                run_rag_pipeline(tx, sender), timeout=_RAG_TIMEOUT_S
+            )
         except Exception as e:
             # Nothing awaits this task, so an escaping exception would only
             # surface in the log and leave the record pending forever. Clear
