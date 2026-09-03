@@ -7,6 +7,11 @@
 
 export const DEMO = import.meta.env.VITE_DEMO === "1";
 
+// Matches the backend's APP_SECRET_KEY (see .env.example) — required for the
+// decision-override, blacklist-toggle, and label-propagation routes. Sent on
+// every request rather than conditionally; the read-only routes ignore it.
+const API_KEY = import.meta.env.VITE_API_KEY || "dev-secret";
+
 let demoCache = null;
 
 async function demoData() {
@@ -20,7 +25,7 @@ async function demoData() {
 
 async function request(path, options = {}) {
   const res = await fetch(`/api/v1${path}`, {
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "X-API-Key": API_KEY },
     ...options,
   });
   if (!res.ok) {

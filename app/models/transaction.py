@@ -20,6 +20,7 @@ class Transaction(Document):
     decision: Annotated[Optional[str], Indexed()] = None  # APPROVE | REVIEW | BLOCK
     explanation: Optional[str] = None
     note: Optional[str] = None  # optional reason submitted with the transaction
+    rag_pending: bool = False  # True until the background RAG/LLM layer updates this record
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
     class Settings:

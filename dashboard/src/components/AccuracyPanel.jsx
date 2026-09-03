@@ -1,17 +1,20 @@
 import { useEffect, useState } from "react";
 import { getAccuracy } from "../api.js";
+import { ScanSearchIcon, WifiOffIcon } from "../icons.jsx";
 
 // Percent with one decimal; metrics arrive as 0..1 floats.
 const pct = (value) => `${(value * 100).toFixed(1)}%`;
 
 const DECISIONS = ["APPROVE", "REVIEW", "BLOCK"];
 
-export default function AccuracyPanel() {
+export default function AccuracyPanel({ offline }) {
   const [report, setReport] = useState(null);
   const [state, setState] = useState("loading"); // loading | ready | empty | error
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
+    setState("loading");
     getAccuracy()
       .then((data) => {
         if (cancelled) return;
@@ -27,7 +30,7 @@ export default function AccuracyPanel() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [attempt]);
 
   if (state === "loading") {
     return (
@@ -40,16 +43,33 @@ export default function AccuracyPanel() {
 
   if (state === "empty") {
     return (
-      <p className="empty">
-        No evaluation has been run yet. Run{" "}
-        <code>python -m scripts.evaluate</code> with the API up to measure precision
-        and recall on the synthetic dataset.
-      </p>
+      <div className="empty">
+        <span className="icon"><ScanSearchIcon size={28} /></span>
+        No evaluation has been run yet.
+        <span>
+          Run <code>python -m scripts.evaluate</code> with the API up to measure
+          precision and recall on the synthetic dataset.
+        </span>
+      </div>
     );
   }
 
   if (state === "error") {
-    return <p className="empty">Could not load evaluation results.</p>;
+    return (
+      <div className="empty">
+        <span className="icon"><WifiOffIcon size={28} /></span>
+        {offline
+          ? "Evaluation metrics need the live backend."
+          : "Could not load evaluation results."}
+        <button
+          type="button"
+          className="link-button"
+          onClick={() => setAttempt((n) => n + 1)}
+        >
+          Retry
+        </button>
+      </div>
+    );
   }
 
   const { counts, metrics, graph, suggested_thresholds: suggested } = report;

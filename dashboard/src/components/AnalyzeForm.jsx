@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { DEMO, analyzeTransaction } from "../api.js";
+import { useEffect, useState } from "react";
+import { DEMO, analyzeTransaction, getTransaction } from "../api.js";
 import {
   AlertTriangleIcon,
   BanIcon,
@@ -7,8 +7,11 @@ import {
   ScanSearchIcon,
 } from "../icons.jsx";
 
+// Keep in sync with MerchantCategory in app/schemas/transaction.py — the
+// backend rejects anything outside this set.
 const CATEGORIES = [
   "groceries", "restaurants", "utilities", "retail", "travel",
+  "fuel", "healthcare",
   "wire_transfer", "crypto_exchange", "gambling", "money_service",
 ];
 
@@ -18,13 +21,16 @@ const DECISION_META = {
   BLOCK: { icon: BanIcon, color: "var(--danger)" },
 };
 
-function LayerBar({ name, layer }) {
+function LayerBar({ name, layer, pending }) {
   return (
     <div className="layer-bar">
       <div className="meta">
-        <span>{name}</span>
         <span>
-          {layer.score}/{layer.max_score}
+          {name}
+          {pending && <span className="pending-tag">scoring…</span>}
+        </span>
+        <span>
+          {pending ? "—" : `${layer.score}/${layer.max_score}`}
         </span>
       </div>
       <div
@@ -82,6 +88,59 @@ export default function AnalyzeForm({ onAnalyzed }) {
       setBusy(false);
     }
   }
+
+  // The analyze endpoint answers as soon as the rule and graph layers are
+  // done; the language model attaches its score and explanation to the stored
+  // record a few seconds later. Poll until it lands so the analyst sees the
+  // final decision without refreshing.
+  useEffect(() => {
+    if (!result?.rag_pending || DEMO) return undefined;
+    let cancelled = false;
+    let timer;
+    const deadline = Date.now() + 120000;
+
+    const tick = async () => {
+      if (cancelled || Date.now() > deadline) return;
+      try {
+        const record = await getTransaction(result.tx_id);
+        if (cancelled) return;
+        if (record.rag_pending === false) {
+          setResult((prev) =>
+            prev && prev.tx_id === record.tx_id
+              ? {
+                  ...prev,
+                  rag_pending: false,
+                  decision: record.decision,
+                  composite_score: record.composite_score,
+                  explanation: record.explanation,
+                  rag_pipeline: {
+                    ...prev.rag_pipeline,
+                    score: Math.max(
+                      record.composite_score -
+                        prev.rule_engine.score -
+                        prev.graph_analyzer.score,
+                      0
+                    ),
+                  },
+                }
+              : prev
+          );
+          onAnalyzed?.();
+          return;
+        }
+      } catch {
+        // A failed poll is not worth surfacing — the decision already shown
+        // is valid on its own, only the written explanation is outstanding.
+      }
+      timer = setTimeout(tick, 3000);
+    };
+
+    timer = setTimeout(tick, 3000);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [result?.tx_id, result?.rag_pending, onAnalyzed]);
 
   const meta = result ? DECISION_META[result.decision] : null;
   const DecisionIcon = meta?.icon;
@@ -176,7 +235,11 @@ export default function AnalyzeForm({ onAnalyzed }) {
           </div>
           <LayerBar name="Rule engine" layer={result.rule_engine} />
           <LayerBar name="Graph analysis" layer={result.graph_analyzer} />
-          <LayerBar name="RAG assessment" layer={result.rag_pipeline} />
+          <LayerBar
+            name="RAG assessment"
+            layer={result.rag_pipeline}
+            pending={result.rag_pending}
+          />
           <p className="explanation">{result.explanation}</p>
         </div>
       )}

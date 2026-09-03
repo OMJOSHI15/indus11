@@ -5,8 +5,21 @@ Owner: Member B
 Detects fraud rings and entity relationship anomalies using Cypher graph queries.
 Returns a score (0-30) plus detected pattern flags.
 """
+import logging
+from datetime import timedelta
+
 from app.core.neo4j_client import neo4j_session
 from app.schemas.transaction import LayerScore, TransactionRequest
+
+logger = logging.getLogger(__name__)
+
+# How long a cycle may take and still look like a laundering ring. Without this
+# the query matched any path that eventually returned to the sender across the
+# graph's whole history: 1,486 transactions produced 51,146 "cycles", and 44.9%
+# of CIRCULAR_FLOW firings landed on legitimate traffic — by far the worst
+# false-positive source of the five graph patterns. Mules move funds in hours;
+# money that finds its way back over three months is ordinary commerce.
+MULE_CYCLE_WINDOW_HOURS = 72
 
 
 async def run_graph_analyzer(tx: TransactionRequest) -> LayerScore:
@@ -14,6 +27,18 @@ async def run_graph_analyzer(tx: TransactionRequest) -> LayerScore:
     Query Neo4j for fraud ring patterns involving the transaction's accounts,
     device, and IP address. Returns a LayerScore (0-30).
     """
+    try:
+        return await _run_checks(tx)
+    except Exception as e:
+        # Matches the RAG layer's fallback (app/services/rag_pipeline.py): a
+        # Neo4j outage must not crash the whole /analyze request through
+        # asyncio.gather() — it degrades this layer to 0 instead, same as
+        # Review 1 asked for.
+        logger.warning(f"Graph analyzer error: {e} — defaulting to score 0")
+        return LayerScore(score=0, max_score=30, flags=["GRAPH_ANALYZER_ERROR"])
+
+
+async def _run_checks(tx: TransactionRequest) -> LayerScore:
     score = 0
     flags: list[str] = []
 
@@ -38,15 +63,27 @@ async def run_graph_analyzer(tx: TransactionRequest) -> LayerScore:
                 )
 
         # ── Check 2: Circular money flow (A → B → C → A within 4 hops) ───────
+        # Only existence matters here, so stop at the first hit: counting every
+        # cycle on a ring member meant counting tens of thousands of paths and
+        # took 1.8 s on the seeded graph, well past the 500 ms budget.
+        # The cutoff is compared as an ISO-8601 string, which sorts
+        # chronologically and prunes during expansion — parsing each path's
+        # dates with duration.between() was the other half of that cost.
+        cutoff = (tx.timestamp - timedelta(hours=MULE_CYCLE_WINDOW_HOURS)).isoformat()
         result = await session.run(
             """
             MATCH path = (a:Account {account_id: $sender})-[:SENT*2..4]->(a)
-            RETURN count(path) AS cycle_count
+            WHERE all(r IN relationships(path)
+                      WHERE r.timestamp IS NOT NULL AND r.timestamp >= $cutoff)
+            WITH [r IN relationships(path) | r.timestamp] AS times
+            WHERE all(i IN range(0, size(times) - 2) WHERE times[i + 1] >= times[i])
+            RETURN 1 AS hit
+            LIMIT 1
             """,
             sender=tx.sender_account_id,
+            cutoff=cutoff,
         )
-        record = await result.single()
-        if record and record["cycle_count"] > 0:
+        if await result.single():
             score += 12
             flags.append("CIRCULAR_FLOW (cycle detected within 4 hops)")
 
@@ -57,13 +94,22 @@ async def run_graph_analyzer(tx: TransactionRequest) -> LayerScore:
             result = await session.run(
                 """
                 MATCH path = (a:Account {account_id: $sender})-[:SENT*2..4]->(a)
-                WITH [r IN relationships(path) | r.amount] AS amounts
-                WHERE ALL(i IN range(0, size(amounts) - 2)
+                WHERE all(r IN relationships(path)
+                          WHERE r.timestamp IS NOT NULL AND r.timestamp >= $cutoff)
+                WITH [r IN relationships(path) | r.amount] AS amounts,
+                     [r IN relationships(path) | r.timestamp] AS times
+                WHERE all(i IN range(0, size(times) - 2)
+                          WHERE times[i + 1] >= times[i])
+                  AND ALL(i IN range(0, size(amounts) - 2)
                           WHERE amounts[i + 1] <= amounts[i]
                             AND amounts[i + 1] >= amounts[i] * 0.75)
+                // Bounded: the flag only needs to show that fee-skimming is
+                // present and roughly how much, not an exact census.
+                WITH amounts LIMIT 100
                 RETURN count(amounts) AS mule_cycles
                 """,
                 sender=tx.sender_account_id,
+                cutoff=cutoff,
             )
             record = await result.single()
             if record and record["mule_cycles"] > 0:
@@ -185,7 +231,8 @@ async def _upsert_transaction_graph(session, tx: TransactionRequest) -> None:
         MERGE (receiver:Account {account_id: $receiver})
         MERGE (t:Transaction {tx_id: $tx_id})
         SET t.amount = $amount, t.timestamp = $timestamp
-        MERGE (sender)-[:SENT {tx_id: $tx_id, amount: $amount}]->(receiver)
+        MERGE (sender)-[:SENT {tx_id: $tx_id, amount: $amount,
+                               timestamp: $timestamp}]->(receiver)
         """,
         sender=tx.sender_account_id,
         receiver=tx.receiver_account_id,

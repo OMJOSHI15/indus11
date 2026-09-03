@@ -37,5 +37,10 @@ class Settings(BaseSettings):
     # which would otherwise trip the per-IP limit against its own machine.
     rate_limit_enabled: bool = True
 
+    # Comma-separated allowed origins for the dashboard. A "*" wildcard here
+    # would let any website's browser script this API — the dashboard's own
+    # dev ports are the only legitimate callers.
+    cors_origins: str = "http://localhost:5173,http://localhost:5175"
+
 
 settings = Settings()

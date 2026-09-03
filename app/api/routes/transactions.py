@@ -3,25 +3,49 @@ Transaction analysis routes — the main API surface.
 Owner: Member A (route/persistence), B (graph), C (RAG/decision)
 """
 import asyncio
+import logging
 import time
 from datetime import datetime
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request
 from pydantic import BaseModel
 from pymongo.errors import DuplicateKeyError
 
 from app.core.rate_limit import limiter
 from app.core.redis_client import cache_get, cache_set
+from app.core.security import require_api_key
 from app.models.account import Account
 from app.models.transaction import Transaction
 from app.schemas.risk import AccountProfile
-from app.schemas.transaction import AnalysisResponse, TransactionRequest
+from app.schemas.transaction import AnalysisResponse, LayerScore, TransactionRequest
 from app.services.decision_engine import make_decision
 from app.services.graph_analyzer import run_graph_analyzer
 from app.services.rag_pipeline import run_rag_pipeline
 from app.services.rule_engine import run_rule_engine
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter(prefix="/transactions", tags=["transactions"])
+
+# Shown while the RAG/LLM layer (13-14s measured, see the SRS NFR table) hasn't
+# scored the transaction yet — Review 1 flagged that this call was gating the
+# whole decision.
+RAG_PENDING_EXPLANATION = (
+    "Pending — the written explanation attaches once the language model finishes."
+)
+
+# Background RAG work is unbounded otherwise: replaying the 208-transaction
+# evaluation set queued 208 concurrent language-model calls and killed the
+# server. The deterministic path stays fast regardless — this only decides how
+# quickly the explanations catch up.
+_RAG_CONCURRENCY = asyncio.Semaphore(4)
+
+# A language-model call with no deadline can hang indefinitely. Four of those
+# hold every permit above and wedge the whole background pipeline — silently,
+# because nothing awaits these tasks: no error is raised and no log is written,
+# records simply stay pending forever. Observed exactly that after an
+# interrupted 208-row replay: a restart was the only way to recover.
+_RAG_TIMEOUT_S = 180
 
 
 async def _load_account_profile(account_id: str) -> AccountProfile:
@@ -53,14 +77,64 @@ async def _load_account_profile(account_id: str) -> AccountProfile:
     return profile
 
 
+async def _finish_rag_layer(
+    tx: TransactionRequest,
+    sender: AccountProfile,
+    rule_result: LayerScore,
+    graph_result: LayerScore,
+    deterministic_ms: float,
+) -> None:
+    """
+    Runs after the response has already gone back to the client — the split
+    Review 1 asked for: the LLM call (13-14s measured) never gates the
+    decision, only the rule and graph layers do. Scores the RAG layer and
+    folds the result into the persisted record, including a decision change
+    if the RAG score moves the composite across a band.
+    """
+    start = time.perf_counter()
+    async with _RAG_CONCURRENCY:
+        try:
+            rag_result = await asyncio.wait_for(
+                run_rag_pipeline(tx, sender), timeout=_RAG_TIMEOUT_S
+            )
+        except Exception as e:
+            # Nothing awaits this task, so an escaping exception would only
+            # surface in the log and leave the record pending forever. Clear
+            # the flag and keep the deterministic decision already persisted.
+            logger.warning(f"Background RAG failed for {tx.tx_id}: {e}")
+            await Transaction.find_one(Transaction.tx_id == tx.tx_id).update(
+                {"$set": {"rag_pending": False}}
+            )
+            return
+    if isinstance(rag_result, tuple):
+        rag_score, rag_explanation = rag_result
+    else:
+        rag_score, rag_explanation = rag_result, "RAG pipeline unavailable."
+    total_ms = deterministic_ms + (time.perf_counter() - start) * 1000
+
+    final = make_decision(tx, rule_result, graph_result, rag_score, rag_explanation, total_ms)
+    await Transaction.find_one(Transaction.tx_id == tx.tx_id).update(
+        {"$set": {
+            "composite_score": final.composite_score,
+            "decision": final.decision.value,
+            "explanation": final.explanation[:2000],
+            "rag_pending": False,
+        }}
+    )
+
+
 @router.post("/analyze", response_model=AnalysisResponse, summary="Analyze a transaction for fraud risk")
 @limiter.limit("30/minute")
-async def analyze_transaction(request: Request, tx: TransactionRequest):
+async def analyze_transaction(request: Request, tx: TransactionRequest, background_tasks: BackgroundTasks):
     """
     Submit a transaction for real-time fraud analysis.
 
-    All three analyzers (Rule Engine, Neo4j Graph, RAG Pipeline) run in parallel.
-    The Decision Engine aggregates scores and returns APPROVE / REVIEW / BLOCK.
+    The rule engine and graph analyzer run in parallel and must return within
+    a ~500ms budget; the response and the initial persisted decision come
+    from those two alone. The RAG/LLM layer runs afterward as a background
+    task — its score, written explanation, and any resulting decision change
+    land on the persisted record once ready (poll GET /transactions/{tx_id}
+    and check `rag_pending`), never on this response.
     """
     start = time.perf_counter()
 
@@ -70,22 +144,19 @@ async def analyze_transaction(request: Request, tx: TransactionRequest):
         _load_account_profile(tx.receiver_account_id),
     )
 
-    # Run all three analyzers concurrently
-    rule_result, graph_result, rag_result = await asyncio.gather(
+    # Run the two deterministic analyzers concurrently — the RAG/LLM layer is
+    # scored separately in the background, see _finish_rag_layer above.
+    rule_result, graph_result = await asyncio.gather(
         run_rule_engine(tx, sender, receiver),
         run_graph_analyzer(tx),
-        run_rag_pipeline(tx, sender),
     )
-
-    # Unpack RAG tuple (score, explanation)
-    if isinstance(rag_result, tuple):
-        rag_score, rag_explanation = rag_result
-    else:
-        rag_score, rag_explanation = rag_result, "RAG pipeline unavailable."
-
     elapsed_ms = (time.perf_counter() - start) * 1000
 
-    response = make_decision(tx, rule_result, graph_result, rag_score, rag_explanation, elapsed_ms)
+    pending_rag = LayerScore(score=0, max_score=30, flags=[])
+    response = make_decision(
+        tx, rule_result, graph_result, pending_rag, RAG_PENDING_EXPLANATION,
+        elapsed_ms, rag_pending=True,
+    )
 
     # Persist to MongoDB
     db_tx = Transaction(
@@ -102,6 +173,7 @@ async def analyze_transaction(request: Request, tx: TransactionRequest):
         decision=response.decision.value,
         explanation=response.explanation[:2000],
         note=tx.note,
+        rag_pending=True,
         created_at=datetime.utcnow(),
     )
     # tx_id is uniquely indexed: a retry of an already-scored transaction is a
@@ -114,6 +186,8 @@ async def analyze_transaction(request: Request, tx: TransactionRequest):
             detail=f"Transaction {tx.tx_id} has already been analysed",
         )
 
+    background_tasks.add_task(_finish_rag_layer, tx, sender, rule_result, graph_result, elapsed_ms)
+
     return response
 
 
@@ -121,7 +195,11 @@ class DecisionUpdate(BaseModel):
     decision: str
 
 
-@router.patch("/{tx_id}/decision", summary="Override a transaction decision (approve/block a review)")
+@router.patch(
+    "/{tx_id}/decision",
+    summary="Override a transaction decision (approve/block a review)",
+    dependencies=[Depends(require_api_key)],
+)
 async def override_decision(tx_id: str, body: DecisionUpdate):
     dec = body.decision.upper()
     if dec not in ("APPROVE", "REVIEW", "BLOCK"):
@@ -143,7 +221,7 @@ async def get_transaction(tx_id: str):
 
 
 @router.get("/", summary="List recent transactions with optional decision filter")
-async def list_transactions(decision: str | None = None, limit: int = 50):
+async def list_transactions(decision: str | None = None, limit: int = Query(default=50, le=200)):
     query = Transaction.find()
     if decision:
         query = Transaction.find(Transaction.decision == decision.upper())

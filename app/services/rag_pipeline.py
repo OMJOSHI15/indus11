@@ -38,10 +38,22 @@ def _get_collection():
     return _collection
 
 
+def _ollama() -> Ollama:
+    """
+    Local Ollama client. temperature=0 is not optional: at Ollama's default
+    (~0.8) the same transaction scores differently on every submission —
+    measured spread of 6 points (26/20/20/21/22) on one identical wire
+    transfer, and the model sometimes echoes a few-shot example verbatim
+    instead of assessing the real transaction. Review 1 asked directly
+    whether an identical transaction scores identically; it must.
+    """
+    return Ollama(base_url=settings.ollama_base_url, model="llama3", temperature=0)
+
+
 def _get_llm():
     """Return the configured LLM (OpenAI or Ollama)."""
     if settings.llm_provider == "ollama":
-        return Ollama(base_url=settings.ollama_base_url, model="llama3")
+        return _ollama()
     return ChatOpenAI(
         model="gpt-4o-mini",
         temperature=0,
@@ -203,7 +215,7 @@ async def _invoke_with_fallback(prompt: ChatPromptTemplate, inputs: dict) -> str
         if settings.llm_provider == "ollama":
             raise
         logger.warning(f"{settings.llm_provider} LLM failed ({e}) — falling back to Ollama")
-        ollama = Ollama(base_url=settings.ollama_base_url, model="llama3")
+        ollama = _ollama()
         response = await (prompt | ollama).ainvoke(inputs)
     return response.content if hasattr(response, "content") else str(response)
 

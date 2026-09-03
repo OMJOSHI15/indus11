@@ -466,6 +466,21 @@ form.analyze button:disabled { opacity: 0.55; cursor: progress; }
 
 .error-text { color: var(--danger); font-size: 13px; margin-top: var(--space-3); }
 
+.link-button {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--primary-strong);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: border-color var(--transition), background var(--transition);
+}
+
+.link-button:hover { border-color: var(--primary); background: rgba(59, 130, 246, 0.1); }
+
 /* ── Accuracy panel ───────────────────────────────────────────────────────── */
 .metric-row {
   display: grid;
@@ -736,4 +751,28 @@ tbody tr:focus-visible {
   }
   .kpi:hover { transform: none; }
   * { transition-duration: 1ms !important; }
+}
+
+/* ── Background-RAG pending state ─────────────────────────────────────────── */
+/* The decision shown is final for the rule and graph layers; only the written
+   explanation is still arriving, so this reads as "in progress", not "broken". */
+.pending-tag {
+  margin-left: var(--space-2);
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(96, 141, 255, 0.16);
+  color: var(--primary-strong);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  animation: pending-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes pending-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pending-tag { animation: none; }
 }

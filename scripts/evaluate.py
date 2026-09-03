@@ -21,6 +21,7 @@ import argparse
 import asyncio
 import json
 import random
+import time
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -224,9 +225,61 @@ def ring_recall(scored: list[dict]) -> dict:
 
 
 # ── Live run ──────────────────────────────────────────────────────────────────
+async def _drain_pending(client: httpx.AsyncClient, bodies: dict[str, dict],
+                         timeout_s: float = 2400.0) -> None:
+    """Wait for the background RAG layer to land on every submitted transaction.
+
+    Polls one transaction at a time rather than one task per transaction. An
+    earlier version polled all 208 concurrently every two seconds, which put
+    more simultaneous connections on the wire than httpx's pool allows and
+    failed the run with a ReadError partway through — the API was never the
+    problem and never restarted. Walking the outstanding list sequentially uses
+    a single connection, and by the time one pass finishes the earliest
+    submissions have usually completed anyway.
+    """
+    detail_base = API_URL.rsplit("/", 1)[0]
+    outstanding = {tx_id for tx_id, b in bodies.items() if b.get("rag_pending")}
+    deadline = time.monotonic() + timeout_s
+
+    while outstanding and time.monotonic() < deadline:
+        done = set()
+        for tx_id in sorted(outstanding):
+            try:
+                response = await client.get(f"{detail_base}/{tx_id}")
+                response.raise_for_status()
+                record = response.json()
+            except Exception:
+                continue          # transient; retried on the next pass
+            if record.get("rag_pending", False):
+                continue
+            body = bodies[tx_id]
+            # The stored record carries the final composite and decision but not
+            # the per-layer split, so derive the RAG score from the difference.
+            body["composite_score"] = record["composite_score"]
+            body["decision"] = record["decision"]
+            body["rag_pipeline"]["score"] = max(
+                record["composite_score"]
+                - body["rule_engine"]["score"]
+                - body["graph_analyzer"]["score"],
+                0,
+            )
+            done.add(tx_id)
+        outstanding -= done
+        if outstanding:
+            print(f"  waiting on {len(outstanding)} language-model assessments...")
+            await asyncio.sleep(10)
+
+    if outstanding:
+        raise TimeoutError(
+            f"{len(outstanding)} transactions never completed their RAG layer "
+            f"within {timeout_s}s (first: {sorted(outstanding)[0]})"
+        )
+
+
 async def score_via_api(rows: list[dict], concurrency: int = 4) -> list[dict]:
     """POST each transaction to the analyze endpoint and record the response."""
-    scored: list[dict] = []
+    bodies: dict[str, dict] = {}
+    meta: dict[str, dict] = {}
     semaphore = asyncio.Semaphore(concurrency)
 
     async with httpx.AsyncClient(timeout=120.0) as client:
@@ -235,21 +288,31 @@ async def score_via_api(rows: list[dict], concurrency: int = 4) -> list[dict]:
             async with semaphore:
                 response = await client.post(API_URL, json=payload)
             response.raise_for_status()
-            body = response.json()
-            scored.append({
-                "tx_id": row["tx_id"],
-                "label": row["label"],
-                "pattern": row["pattern"],
-                "composite_score": body["composite_score"],
-                "decision": body["decision"],
-                "rule_score": body["rule_engine"]["score"],
-                "graph_score": body["graph_analyzer"]["score"],
-                "rag_score": body["rag_pipeline"]["score"],
-            })
+            bodies[row["tx_id"]] = response.json()
+            meta[row["tx_id"]] = {"label": row["label"], "pattern": row["pattern"]}
 
         await asyncio.gather(*(one(row) for row in rows))
 
-    return scored
+        # The analyze endpoint returns as soon as the rule and graph layers are
+        # done; the RAG score lands on the stored record afterwards. Recording
+        # the immediate response would silently drop up to 30 of the 100 points
+        # from every transaction — measured as recall 0.462 against 0.865 for
+        # the same pipeline, purely as an artefact of the split.
+        await _drain_pending(client, bodies)
+
+    return [
+        {
+            "tx_id": tx_id,
+            "label": meta[tx_id]["label"],
+            "pattern": meta[tx_id]["pattern"],
+            "composite_score": body["composite_score"],
+            "decision": body["decision"],
+            "rule_score": body["rule_engine"]["score"],
+            "graph_score": body["graph_analyzer"]["score"],
+            "rag_score": body["rag_pipeline"]["score"],
+        }
+        for tx_id, body in bodies.items()
+    ]
 
 
 def render(report: dict) -> str:

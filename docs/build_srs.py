@@ -640,14 +640,15 @@ table("Functional requirements — request handling and scoring",
       widths=[0.5, 4.2, 1.3], size=9)
 table("Functional requirements — decision and persistence",
       ["ID", "Requirement", "Module"],
-      [["FR-10", "Execute the three scoring layers concurrently.", "routes/transactions"],
+      [["FR-10", "Execute the rule and graph layers concurrently and return the decision from those two; score the retrieval and language-model layer after the response and fold its result into the stored record.", "routes/transactions"],
        ["FR-11", "Compute the composite score as the sum of the layer scores, clamped to 100.", "services/decision_engine"],
        ["FR-12", "Map the composite score to APPROVE, REVIEW or BLOCK using configured thresholds.", "services/decision_engine"],
        ["FR-13", "Include the triggered signals and the model's reasoning in every response.", "services/decision_engine"],
        ["FR-14", "Persist every analysed transaction with its score, decision, explanation and note.", "models/transaction"],
        ["FR-15", "Return a previously analysed transaction by identifier, or a not-found response.", "routes/transactions"],
        ["FR-16", "List recent transactions, optionally filtered by decision.", "routes/transactions"],
-       ["FR-17", "Allow an analyst to override a decision and reject any invalid value.", "routes/transactions"]],
+       ["FR-17", "Allow an analyst to override a decision and reject any invalid value.", "routes/transactions"],
+       ["FR-17a", "Mark a transaction whose language-model assessment is still outstanding, and clear the mark when it completes or fails.", "routes/transactions"]],
       widths=[0.5, 4.2, 1.3], size=9)
 table("Functional requirements — accounts, graph, reporting and operations",
       ["ID", "Requirement", "Module"],
@@ -661,7 +662,11 @@ table("Functional requirements — accounts, graph, reporting and operations",
        ["FR-25", "Limit each client to 120 requests per minute overall and 30 on the analysis endpoint.", "core/rate_limit"],
        ["FR-26", "Expose a health endpoint reporting service status.", "routes/health"],
        ["FR-27", "Provide repeatable seed scripts for account profiles and a synthetic fraud graph.", "scripts/seed"],
-       ["FR-28", "Display metrics, decision mix, score distribution, accuracy and flagged transactions with detail and override.", "dashboard"]],
+       ["FR-28", "Display metrics, decision mix, score distribution, accuracy and flagged transactions with detail and override.", "dashboard"],
+       ["FR-29", "Require a shared key on the routes that override a decision, change blacklist status or propagate fraud labels.", "core/security"],
+       ["FR-30", "Restrict the graph layer's circular-flow detection to hops occurring within a configured window and in chronological order.", "services/graph_analyzer"],
+       ["FR-31", "Withhold a written explanation that does not reference any triggered signal, and show the signal list alone in its place.", "services/decision_engine"],
+       ["FR-32", "Show an outstanding language-model assessment on the dashboard and replace it with the final score when it arrives.", "dashboard"]],
       widths=[0.5, 4.2, 1.3], size=9)
 section("3.2 Non-Functional Requirements")
 para("Non-functional requirements are grouped below under performance, reliability, "
@@ -670,16 +675,33 @@ para("Non-functional requirements are grouped below under performance, reliabili
 para("Performance. The values below were measured on the development machine, an "
      "Apple Silicon computer running without a graphics processor, and are reproduced by "
      "the commands in Appendix B.")
+para("An earlier revision of this document reported a complete-pipeline latency of "
+     "14,046 milliseconds, of which about 13.9 seconds was the language model. That "
+     "measurement was taken when the language model was still inside the decision "
+     "path. Following the first project review it was moved out of it, and the "
+     "figures below are the current measurements.")
 table("Measured performance", ["Measurement", "Value", "Note"],
       [["Rule engine", "8 ms", "Velocity check and in-memory rules."],
-       ["Graph analyzer", "158 ms first call, 48 ms warm", "Graph write and four pattern queries."],
-       ["Rule and graph concurrently", "48 ms", "Deterministic layers only."],
-       ["Complete pipeline", "14,046 ms", "The language model accounts for about 13.9 s."],
-       ["Benchmark run", "208 transactions", "Sequential, bound by the language model."]],
+       ["Graph analyzer", "20 ms", "Graph write and four pattern queries, time-windowed."],
+       ["Response, mean", "124 ms", "Rule and graph layers, measured over 29 requests."],
+       ["Response, 95th percentile", "189 ms", "Slowest 1 request in 20."],
+       ["Response, maximum", "287 ms", "Worst observed sample."],
+       ["Within the 500 ms budget", "29 of 29", "Every sampled request."],
+       ["Language model", "13-14 s", "Runs after the response, not inside it."]],
       widths=[1.9, 1.6, 2.5])
 for n in ["The deterministic layers shall complete within 500 milliseconds per transaction.",
-          "The layers shall run concurrently so that total latency is bounded by the "
-          "slowest layer rather than by their sum."]:
+          "The rule and graph layers shall run concurrently, so that the response "
+          "latency is bounded by the slower of the two rather than by their sum.",
+          "The retrieval and language-model layer shall not delay the response. It is "
+          "scored after the response has been returned, and its score and written "
+          "explanation are added to the stored record when they are ready.",
+          "A transaction whose language-model assessment is still outstanding shall be "
+          "marked as such, so that a provisional decision is never mistaken for a "
+          "final one.",
+          "An identical transaction submitted twice shall receive an identical score. "
+          "The language model is therefore configured at temperature zero; at the "
+          "default setting the same transaction was measured scoring between 20 and "
+          "26."]:
     bullet(n)
 para("Reliability and maintainability.")
 for n in ["The service shall hold no state between requests, so that an instance can be "
@@ -697,7 +719,7 @@ table("Software quality attributes", ["Attribute", "How it is achieved"],
                        "submission returns a defined conflict response."],
        ["Maintainability", "Each layer is a single function with one input and one "
                            "output type, so a layer can be replaced independently."],
-       ["Testability", "Twenty-seven automated tests run with no database or network."],
+       ["Testability", "Thirty-six automated tests run with no database or network."],
        ["Portability", "The entire stack is defined in one container composition file."],
        ["Usability", "Every decision is accompanied by a written explanation."],
        ["Accuracy", f"Precision {FLAGGED['precision']:.3f}, recall {FLAGGED['recall']:.3f}, "
@@ -713,18 +735,32 @@ for s in ["Credentials shall be supplied through environment variables and never
           "Stored explanations shall be truncated to a bounded length.",
           "Account identifiers are the only data shared between stores; no payment "
           "instrument data is persisted.",
-          "Authentication and authorisation are not implemented in the current version. "
-          "The interface is intended for deployment on a trusted network only, and the "
-          "addition of key-based authentication is recorded as required future work."]:
+          "The routes that alter a stored decision, change an account's blacklist "
+          "status or rewrite the graph's fraud labels shall require a shared key "
+          "supplied in a request header, compared in constant time.",
+          "Browser access shall be restricted to configured origins rather than "
+          "permitted from any origin.",
+          "Fields that are incorporated into a language-model prompt shall be "
+          "constrained to a fixed vocabulary or a bounded length, so that submitted "
+          "text cannot be used to redirect the model's assessment.",
+          "Full user authentication and authorisation are not implemented in the "
+          "current version. The shared-key check above covers the routes whose misuse "
+          "would alter a decision; per-user authentication remains recorded as future "
+          "work, and the interface is intended for a trusted network in the meantime."]:
     bullet(s)
 
 # ───────────────────────── CHAPTER 4 ─────────────────────────
 chapter("System Design")
 section("4.1 Overall Architecture")
 para("The system is organised as a five-layer pipeline. The first layer validates the "
-     "request and loads context, the second, third and fourth layers score the "
-     "transaction concurrently, and the fifth layer aggregates the scores and "
-     "determines the decision.")
+     "request and loads context. The second and third layers, the rule engine and the "
+     "graph analyzer, score the transaction concurrently, and the fifth layer "
+     "aggregates their scores and determines the decision that is returned. The fourth "
+     "layer, retrieval-augmented generation, is scored after the response has been "
+     "sent and its result is folded into the stored record; it was moved out of the "
+     "request path following the first project review, where its 13 to 14 second "
+     "latency was identified as unacceptable inside a decision that a payment system "
+     "must return in under a second.")
 para("Two of the scoring layers are adapted from published work. The graph layer takes "
      "the network-based view of card-fraud detection set out by Van Vlasselaer and "
      "others [2] and the semi-supervised propagation of fraud labels across a "
@@ -851,6 +887,17 @@ para("Transaction records are retained indefinitely to preserve the audit trail,
      "deletion path is exposed through the interface. Referential integrity between "
      "accounts and transactions is enforced by the application, since the document "
      "store does not impose foreign keys. Both seed scripts are idempotent.")
+para("Indefinite retention has a consequence for the graph that was found by "
+     "measurement rather than by reasoning. The circular-flow query originally matched "
+     "any path returning to the sender across the whole retained history: 1,486 stored "
+     "transactions produced 51,146 such paths, because any ordinary account that both "
+     "sends and receives money eventually forms one. Almost half of that pattern's "
+     "detections were on legitimate traffic as a result. The query is therefore "
+     "restricted to hops falling within a bounded window and occurring in "
+     "chronological order, which is the shape of a laundering chain rather than of "
+     "ordinary commerce. Bounding the query is a separate decision from bounding "
+     "storage, and only the former has been taken; an archival policy for the graph "
+     "itself remains outstanding.")
 
 # ────────────────── UNNUMBERED CLOSING SECTIONS ──────────────────
 chapter("Conclusion and Future Enhancements", numbered=False)
@@ -872,11 +919,13 @@ para("The evaluation also produced a negative result worth recording. No transac
      "decision requiring evidence rather than a change of configuration.")
 para("Planned enhancements, in order of priority:")
 for e in ["Resolve the block-threshold trade-off using the recorded transaction scores.",
-          "Add key-based authentication and structured request logging.",
+          "Extend the present shared-key check on the decision-altering routes to "
+          "per-user authentication, and add structured request logging.",
           "Build an interactive fraud-ring visualisation on the existing graph endpoint.",
           "Investigate the seven undetected frauds and add fan-in and fan-out graph patterns.",
           "Train a supervised classifier as a fourth scoring signal.",
-          "Reduce latency, which is presently dominated by the local language model.",
+          "Bound the growth of the transaction graph with a retention or archival "
+          "policy, so that query cost does not grow with the whole retained history.",
           "Validate against a public labelled dataset to obtain a realistic precision figure."]:
     bullet(e)
 

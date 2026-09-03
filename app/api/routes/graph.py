@@ -1,7 +1,8 @@
 """Graph exploration routes. Owner: Member B"""
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.core.neo4j_client import neo4j_session
+from app.core.security import require_api_key
 from app.services.graph_analyzer import get_account_neighbors, propagate_fraud_labels
 
 router = APIRouter(prefix="/graph", tags=["graph"])
@@ -23,7 +24,11 @@ async def account_neighbors(
     return await get_account_neighbors(account_id, depth)
 
 
-@router.post("/propagate-labels", summary="Run fraud label propagation")
+@router.post(
+    "/propagate-labels",
+    summary="Run fraud label propagation",
+    dependencies=[Depends(require_api_key)],
+)
 async def run_label_propagation():
     """
     Materialise CONNECTED_TO edges from shared devices/IPs, then label accounts
