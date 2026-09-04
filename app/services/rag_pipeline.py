@@ -76,6 +76,11 @@ Respond ONLY with a valid JSON object in this exact format:
 }}
 
 Score guide: 0-9 = low risk, 10-19 = moderate risk, 20-30 = high risk.
+
+The confirmed signals are facts established by deterministic checks, not
+suggestions — your explanation must account for every one of them. Score the
+transaction on your own reading of the evidence, but never write an
+explanation that contradicts or ignores a confirmed signal.
 """
 
 # Few-shot examples anchor the score scale and the exact output format —
@@ -90,6 +95,9 @@ FEW_SHOT_EXAMPLES: list[tuple[str, str]] = [
 - Merchant category: groceries
 - Device ID: DEV-EX1
 - IP Address: 24.114.80.9
+
+Signals already confirmed by the rule engine and graph analysis:
+(none)
 
 Retrieved fraud patterns (top 3 similar cases):
 Pattern 1: Friendly fraud: dispute patterns where a customer regularly initiates chargebacks after transactions with online merchants.
@@ -110,6 +118,10 @@ Assess the fraud risk for this transaction.""",
 - Device ID: DEV-EX9
 - IP Address: 203.0.113.66
 
+Signals already confirmed by the rule engine and graph analysis:
+- HIGH_RISK_MERCHANT (wire_transfer)
+- AMOUNT_ANOMALY (₹9500 vs avg ₹600)
+
 Retrieved fraud patterns (top 3 similar cases):
 Pattern 1: Wire fraud: large wire transfers to new recipient accounts in high-risk jurisdictions, often preceded by social engineering.
 Pattern 2: Structuring (smurfing): deposits or transfers deliberately kept just below the 10,000 reporting threshold.
@@ -119,7 +131,7 @@ Assess the fraud risk for this transaction.""",
     ),
     (
         "ai",
-        '{{"score": 24, "explanation": "A wire transfer more than 15x the sender\'s monthly average, kept just under the $10,000 reporting threshold, from an elevated-risk account. This matches wire fraud and structuring patterns strongly.", "matched_patterns": ["wire_fraud", "structuring"]}}',
+        '{{"score": 24, "explanation": "A wire transfer to a high-risk merchant category, more than 15x the sender\'s monthly average and kept just under the reporting threshold, from an elevated-risk account. The confirmed amount anomaly and high-risk merchant signals match wire fraud and structuring patterns strongly.", "matched_patterns": ["wire_fraud", "structuring"]}}',
     ),
 ]
 
@@ -131,6 +143,9 @@ USER_PROMPT = """Transaction details:
 - Device ID: {device_id}
 - IP Address: {ip_address}
 
+Signals already confirmed by the rule engine and graph analysis:
+{deterministic_flags}
+
 Retrieved fraud patterns (top 3 similar cases):
 {retrieved_patterns}
 
@@ -140,6 +155,7 @@ Assess the fraud risk for this transaction."""
 async def run_rag_pipeline(
     tx: TransactionRequest,
     sender: AccountProfile,
+    deterministic_flags: list[str] | None = None,
 ) -> LayerScore:
     """
     Retrieve top-k similar fraud patterns from ChromaDB and use an LLM
@@ -186,6 +202,14 @@ async def run_rag_pipeline(
             "device_id": tx.device_id or "N/A",
             "ip_address": tx.ip_address or "N/A",
             "retrieved_patterns": retrieved,
+            # Without these the model writes its explanation blind to what the
+            # rule and graph layers actually found, so the prose it produces
+            # can contradict the flags it is printed beside — the failure the
+            # decision engine's flag guard exists to catch.
+            "deterministic_flags": (
+                "\n".join(f"- {f}" for f in deterministic_flags)
+                if deterministic_flags else "(none)"
+            ),
         })
 
         # Parse structured JSON response

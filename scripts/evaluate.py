@@ -151,6 +151,30 @@ def precision_recall_f1(tp: int, fp: int, fn: int) -> dict:
     return {"precision": round(precision, 4), "recall": round(recall, 4), "f1": round(f1, 4)}
 
 
+# Fraud prevalence in a real card/payment feed. The synthetic set is 25% fraud
+# because a useful test set has to be; a production feed is nearer one in a
+# thousand. Precision is the metric that moves with prevalence, and it moves a
+# long way, so reporting only the synthetic figure overstates the system by
+# roughly eight times.
+REAL_WORLD_PREVALENCE = 0.001
+
+
+def precision_at_prevalence(recall: float, fpr: float, prevalence: float) -> float:
+    """Precision this detector would show on a feed with `prevalence` fraud.
+
+    Recall and false-positive rate are properties of the detector and carry
+    over; precision is not, because it depends on how much legitimate traffic
+    there is to raise false alarms against. Bayes, in the form a fraud team
+    actually cares about:
+
+        precision = (recall x prevalence)
+                    / (recall x prevalence + fpr x (1 - prevalence))
+    """
+    tp = recall * prevalence
+    fp = fpr * (1 - prevalence)
+    return round(tp / (tp + fp), 4) if (tp + fp) else 0.0
+
+
 def metrics_at(scored: list[dict], review_threshold: int, block_threshold: int) -> dict:
     """
     Two views of the same run:
@@ -167,10 +191,24 @@ def metrics_at(scored: list[dict], review_threshold: int, block_threshold: int) 
     blocked_fp = matrix["BLOCK"]["legit"]
     blocked_fn = matrix["APPROVE"]["fraud"] + matrix["REVIEW"]["fraud"]
 
+    flagged = precision_recall_f1(flagged_tp, flagged_fp, flagged_fn)
+    legit_total = flagged_fp + matrix["APPROVE"]["legit"]
+    fpr = flagged_fp / legit_total if legit_total else 0.0
+
     return {
         "confusion": matrix,
-        "flagged": precision_recall_f1(flagged_tp, flagged_fp, flagged_fn),
+        "flagged": flagged,
         "blocked": precision_recall_f1(blocked_tp, blocked_fp, blocked_fn),
+        "realistic": {
+            "prevalence": REAL_WORLD_PREVALENCE,
+            "false_positive_rate": round(fpr, 5),
+            "precision": precision_at_prevalence(
+                flagged["recall"], fpr, REAL_WORLD_PREVALENCE
+            ),
+            "note": "Precision the flagged view would show at production fraud "
+                    "prevalence, holding this run's recall and false-positive "
+                    "rate constant. Recall is unchanged by prevalence.",
+        },
     }
 
 
@@ -340,6 +378,12 @@ def render(report: dict) -> str:
         f"recall {m['flagged']['recall']:.3f}   F1 {m['flagged']['f1']:.3f}",
         f"  Blocked (BLOCK only)       precision {m['blocked']['precision']:.3f}   "
         f"recall {m['blocked']['recall']:.3f}   F1 {m['blocked']['f1']:.3f}",
+        "",
+        f"  At {m['realistic']['prevalence']:.1%} real-world fraud prevalence:",
+        f"    precision falls to {m['realistic']['precision']:.3f} "
+        f"(false-positive rate {m['realistic']['false_positive_rate']:.4f}, "
+        f"recall unchanged at {m['flagged']['recall']:.3f})",
+        "    The synthetic set is 25% fraud; a live feed is nearer 0.1%.",
         "",
         f"  Graph ring recall          {report['graph']['recall']:.3f} "
         f"({report['graph']['graph_flagged']}/{report['graph']['ring_transactions']} "

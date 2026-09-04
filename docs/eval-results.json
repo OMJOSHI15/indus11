@@ -35,6 +35,12 @@
       "precision": 0.0,
       "recall": 0.0,
       "f1": 0.0
+    },
+    "realistic": {
+      "prevalence": 0.001,
+      "false_positive_rate": 0.00641,
+      "precision": 0.119,
+      "note": "Precision the flagged view would show at production fraud prevalence, holding this run's recall and false-positive rate constant. Recall is unchanged by prevalence."
     }
   },
   "graph": {

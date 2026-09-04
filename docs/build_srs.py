@@ -44,6 +44,7 @@ OUT = os.path.expanduser("~/Downloads/Indus11_SRS.docx")
 with open(os.path.join(HERE, "eval-results.json")) as f:
     EVAL = json.load(f)
 FLAGGED, GRAPH, COUNTS = EVAL["metrics"]["flagged"], EVAL["graph"], EVAL["counts"]
+REALISTIC = EVAL["metrics"]["realistic"]
 
 FONT = "Times New Roman"
 BODY, SUB, CHAP = 12, 14, 16
@@ -610,7 +611,7 @@ for a in ["The four data stores are reachable. If a store is unavailable the aff
           "The synthetic dataset is representative enough to compare configurations "
           "against one another, but not to predict production accuracy: fraud is far "
           "denser in it than in a real payment feed, so the measured precision is "
-          "optimistic.",
+          "optimistic. Section 3.2 quantifies by how much.",
           "An account with no stored profile is treated as elevated risk rather than "
           "as safe.",
           "Decision thresholds are tunable for each deployment; the values quoted in "
@@ -727,6 +728,17 @@ table("Software quality attributes", ["Attribute", "How it is achieved"],
                     f"{GRAPH['graph_flagged']} of {GRAPH['ring_transactions']} ring "
                     "transactions detected."]],
       widths=[1.3, 4.7])
+para("The precision figure above is measured on a dataset that is 25 per cent "
+     "fraud, because a test set has to contain enough fraud to measure. A live "
+     "payment feed carries closer to one fraudulent transaction in a thousand, "
+     "and precision — unlike recall — depends on that ratio. Holding this run's "
+     f"recall of {FLAGGED['recall']:.3f} and its false-positive rate of "
+     f"{REALISTIC['false_positive_rate']:.4f} constant, the same detector on a "
+     f"feed with {REALISTIC['prevalence']:.1%} fraud would show a precision of "
+     f"{REALISTIC['precision']:.3f} — roughly eight false alarms for every fraud "
+     "caught. That figure, not the headline one, is the number a deployment "
+     "would have to staff against. It is reported here because the synthetic "
+     "figure alone would materially overstate the system.")
 section("3.3 Security Requirements")
 for s in ["Credentials shall be supplied through environment variables and never committed.",
           "All input shall be validated against a strict schema before use.",

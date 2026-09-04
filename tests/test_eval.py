@@ -5,6 +5,7 @@ Covers the pure metric functions only — no API, no databases — so the suite 
 runs offline in CI.
 """
 from scripts.evaluate import (
+    precision_at_prevalence,
     build_eval_set,
     classify,
     confusion,
@@ -217,3 +218,19 @@ def test_parse_llm_json_raises_when_there_is_no_object():
 
     with _pytest.raises(ValueError):
         _parse_llm_json("I could not determine a score.")
+
+
+# ── prevalence adjustment ─────────────────────────────────────────────────────
+
+def test_precision_collapses_at_real_prevalence():
+    """The headline 97.8% was measured at 25% fraud. The same detector on a
+    0.1%-fraud feed is a different product: ~8 false alarms per catch."""
+    # this run: recall 0.865, 1 false positive across 156 legitimate rows
+    assert precision_at_prevalence(0.865, 1 / 156, 0.001) == 0.119
+    # unchanged at the synthetic set's own prevalence, as a control
+    assert precision_at_prevalence(0.865, 1 / 156, 0.25) > 0.9
+
+
+def test_precision_at_prevalence_edges():
+    assert precision_at_prevalence(0.9, 0.0, 0.001) == 1.0   # no false alarms
+    assert precision_at_prevalence(0.0, 0.0, 0.001) == 0.0   # detects nothing

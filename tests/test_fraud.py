@@ -110,6 +110,56 @@ async def test_require_api_key_accepts_configured_key():
     await require_api_key(x_api_key=settings.app_secret_key)  # no raise = pass
 
 
+# ── RAG explainability Tests ──────────────────────────────────────────────────
+
+@pytest.mark.asyncio
+async def test_rag_prompt_carries_deterministic_flags():
+    """The LLM must see what the rule and graph layers actually found.
+
+    Without this it wrote explanations blind: a blacklisted account on a
+    device shared by 8 others was described live as "no unusual merchant
+    categories or device fingerprints", scoring 0.
+    """
+    from app.services import rag_pipeline
+    captured = {}
+
+    async def fake_invoke(prompt, inputs):
+        captured.update(inputs)
+        return '{"score": 20, "explanation": "Blacklisted sender.", "matched_patterns": []}'
+
+    tx = make_tx(merchant_category="retail")
+    sender = make_profile()
+    with patch.object(rag_pipeline, "_invoke_with_fallback", fake_invoke), \
+         patch.object(rag_pipeline, "_get_collection") as coll:
+        coll.return_value.count.return_value = 1
+        coll.return_value.query.return_value = {"documents": [["a pattern"]], "metadatas": [[{}]]}
+        await rag_pipeline.run_rag_pipeline(
+            tx, sender, ["BLACKLISTED_ACCOUNT", "SHARED_DEVICE (8 accounts)"]
+        )
+
+    assert "BLACKLISTED_ACCOUNT" in captured["deterministic_flags"]
+    assert "SHARED_DEVICE" in captured["deterministic_flags"]
+
+
+@pytest.mark.asyncio
+async def test_rag_prompt_handles_no_flags():
+    """A clean transaction must render as "(none)", not an empty section."""
+    from app.services import rag_pipeline
+    captured = {}
+
+    async def fake_invoke(prompt, inputs):
+        captured.update(inputs)
+        return '{"score": 0, "explanation": "Routine.", "matched_patterns": []}'
+
+    with patch.object(rag_pipeline, "_invoke_with_fallback", fake_invoke), \
+         patch.object(rag_pipeline, "_get_collection") as coll:
+        coll.return_value.count.return_value = 1
+        coll.return_value.query.return_value = {"documents": [["a pattern"]], "metadatas": [[{}]]}
+        await rag_pipeline.run_rag_pipeline(make_tx(), make_profile(), [])
+
+    assert captured["deterministic_flags"] == "(none)"
+
+
 # ── Decision Engine Tests ─────────────────────────────────────────────────────
 
 def make_layer(score, max_score, flags=None):

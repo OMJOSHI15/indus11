@@ -94,8 +94,14 @@ async def _finish_rag_layer(
     start = time.perf_counter()
     async with _RAG_CONCURRENCY:
         try:
+            # The rule and graph findings go with it: an explanation written
+            # blind to what actually fired is a plausible-sounding narrative
+            # for a decision it played no part in.
             rag_result = await asyncio.wait_for(
-                run_rag_pipeline(tx, sender), timeout=_RAG_TIMEOUT_S
+                run_rag_pipeline(
+                    tx, sender, rule_result.flags + graph_result.flags
+                ),
+                timeout=_RAG_TIMEOUT_S,
             )
         except Exception as e:
             # Nothing awaits this task, so an escaping exception would only
