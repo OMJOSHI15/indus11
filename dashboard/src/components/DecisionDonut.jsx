@@ -23,15 +23,15 @@ export default function DecisionDonut({ distribution }) {
 
   return (
     <div className="donut-wrap">
-      <div style={{ position: "relative", width: "55%", height: 180 }}>
+      <div className="donut-chart">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
               data={data}
               dataKey="value"
               nameKey="name"
-              innerRadius={52}
-              outerRadius={76}
+              innerRadius="58%"
+              outerRadius="86%"
               paddingAngle={3}
               strokeWidth={0}
               isAnimationActive={false}
