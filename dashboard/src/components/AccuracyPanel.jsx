@@ -104,7 +104,7 @@ export default function AccuracyPanel({ offline }) {
 
       <table className="confusion">
         <caption>
-          Confusion matrix — {counts.total.toLocaleString("en-IN")} transactions
+          Confusion matrix across {counts.total.toLocaleString("en-IN")} transactions
           ({counts.fraud} fraud / {counts.legit} legitimate)
         </caption>
         <thead>
@@ -129,7 +129,7 @@ export default function AccuracyPanel({ offline }) {
 
       <p className="accuracy-footnote">
         Block-only view: precision {pct(blocked.precision)}, recall{" "}
-        {pct(blocked.recall)}. Best bands by F1 — review ≥ {suggested.review_threshold},{" "}
+        {pct(blocked.recall)}. Best bands by F1: review ≥ {suggested.review_threshold},{" "}
         {suggested.block_threshold === null
           ? "block band never fires at these scores"
           : `block ≥ ${suggested.block_threshold}`}

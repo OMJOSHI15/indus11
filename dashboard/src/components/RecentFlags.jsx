@@ -71,7 +71,7 @@ export default function RecentFlags({ flags, onSelect }) {
     return (
       <div className="empty">
         <span className="icon"><ShieldIcon size={28} /></span>
-        No flagged transactions — everything analyzed so far was approved.
+        No flagged transactions. Everything analyzed so far was approved.
       </div>
     );
   }

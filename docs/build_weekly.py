@@ -25,135 +25,128 @@ from docx.text.paragraph import Paragraph
 DOWNLOADS = os.path.expanduser("~/Downloads")
 SOFFICE = "/Applications/LibreOffice.app/Contents/MacOS/soffice"
 
-WEEK = 8
-FROM_DATE, TO_DATE = "23-08-2026", "28-08-2026"   # Sunday to Friday
-NEXT_FROM, NEXT_TO = "30-08-2026", "04-09-2026"   # Sunday to Friday
+WEEK = 9
+FROM_DATE, TO_DATE = "30-08-2026", "04-09-2026"   # Sunday to Friday
+NEXT_FROM, NEXT_TO = "06-09-2026", "11-09-2026"   # Sunday to Friday
 
 REPORTS = {
     "24DCE052": {
         "work": [
-            "Benchmarked the split decision path against the running stack: the "
-            "endpoint now answers in 124 ms on average and 189 ms at the 95th "
-            "percentile, with all 29 sampled requests inside the 500 ms budget "
-            "agreed at Review 1, against the 14,046 ms measured before the split.",
-            "Traced and fixed two robustness faults that only appeared once the "
-            "system was driven at volume: replaying the full evaluation set queued "
-            "one language-model call per transaction with no limit and killed the "
-            "API process, and a failed background task left its transaction marked "
-            "pending forever instead of falling back to the decision already made.",
-            "Found that the accuracy harness had been quietly measuring the wrong "
-            "thing since the split — it scored the immediate response, which no "
-            "longer includes the language model's contribution, understating recall "
-            "as 0.462 against 0.865 for the same pipeline. It now waits for the "
-            "background layer before recording a result.",
-            "Wrote the comparison against FICO Falcon, Feedzai and Featurespace that "
-            "the industry expert asked for at Review 1, including where this project "
-            "does not compete: no consortium data, and accuracy measured on synthetic "
-            "traffic far denser in fraud than a real feed.",
+            "Traced a fault that only appears under sustained load: the background "
+            "language-model call had no deadline, so a single hung request held its "
+            "concurrency permit indefinitely. Four such requests stopped the entire "
+            "background pipeline, and because nothing waits on those tasks it failed "
+            "silently \u2014 no error, no log entry, transactions simply left marked as "
+            "awaiting an explanation forever.",
+            "Confirmed the diagnosis rather than assuming it: a restarted service "
+            "completed the same transaction in twelve seconds, which isolated the "
+            "cause to exhausted permits rather than to the model or the database. "
+            "The call now carries a 180-second deadline, so a stalled request "
+            "recovers on its own instead of blocking every later one.",
+            "Corrected the accuracy harness, which had been recording the immediate "
+            "response since the decision path was split and therefore omitted the "
+            "language model's contribution from every transaction. It now waits for "
+            "the background layer before recording a result.",
+            "Merged the full set of review changes into the main branch after the "
+            "test suite passed, and updated the specification's performance table, "
+            "architecture description and security section to match what is now "
+            "measured rather than what was originally predicted.",
         ],
         "plans": [
-            "Report the full accuracy re-run against the corrected harness.",
             "Rehearse the Review 2 demonstration end to end with the whole team.",
-            "Measure throughput under sustained load rather than single-user latency.",
-            "Decide whether the background language-model work should survive an API "
+            "Measure sustained throughput rather than single-request latency.",
+            "Decide whether background language-model work should survive a service "
             "restart, which it currently does not.",
+            "Record a per-layer score breakdown for each transaction, which is not "
+            "presently stored and had to be reconstructed for this week's results.",
         ],
         "references": [
-            "Amazon Web Services, \u201cTimeouts, retries and backoff with jitter,\u201d "
-            "AWS Builders' Library, 2026. [Online]. Available: aws.amazon.com/builders-library",
-            "B. Beyer et al., \u201cSite Reliability Engineering: load shedding and "
-            "graceful degradation,\u201d O'Reilly, 2016.",
-            "Python Software Foundation, \u201casyncio synchronization primitives,\u201d "
-            "Python 3.12 documentation, 2026. [Online]. Available: docs.python.org",
-            "Featurespace, \u201cARIC Risk Hub \u2014 adaptive behavioural analytics,\u201d 2026. "
-            "[Online]. Available: featurespace.com",
+            "R. Nystrom, \u201cDeadlines and cancellation in concurrent systems,\u201d "
+            "ACM Queue, 2024.",
+            "Python Software Foundation, \u201casyncio.wait_for and task "
+            "cancellation,\u201d Python 3.12 documentation, 2026. [Online]. "
+            "Available: docs.python.org",
+            "C. Fidge, \u201cResource starvation and deadlock in bounded concurrent "
+            "queues,\u201d Journal of Systems and Software, 2019.",
+            "Git, \u201cgit-merge and fast-forward semantics,\u201d Git reference "
+            "manual, 2026. [Online]. Available: git-scm.com/docs",
         ],
     },
     "24DCE040": {
         "work": [
-            "Measured which graph pattern actually produces the most false positives, "
-            "the question left unanswered at Review 1, by replaying the 208-transaction "
-            "labelled set through the graph layer. The answer contradicts what was said "
-            "at the review: shared-device detection produced no false positives at all, "
-            "while circular-flow produced 22 of them, a 44.9% false-positive rate.",
-            "Established the cause: the cycle query had no time constraint, so it "
-            "matched any path that eventually returned to the sender across the graph's "
-            "whole history \u2014 1,486 transactions produced 51,146 such cycles, and any "
-            "ordinary account that both sends and receives money forms one over time.",
-            "Fixed it by constraining a cycle to a laundering-shaped window: every hop "
-            "within 72 hours of the transaction and in chronological order. False "
-            "positives fell from 44.9% to 10.3% with true detections essentially "
-            "unchanged.",
-            "Benchmarked the query afterwards and found the first version had made it "
-            "seven times slower, 1,800 ms on a ring member, because it counted every "
-            "matching path when the decision only needs to know whether one exists. "
-            "Stopping at the first match and pruning by timestamp during expansion "
-            "brought the whole graph layer to about 20 ms.",
-            "Noted that this is the same root cause as the mentor's separate question "
-            "about Neo4j at a million transactions \u2014 unbounded graph accumulation, "
-            "surfacing as a false-positive problem before it becomes a storage one.",
+            "Confirmed by measurement that last week's change to the circular-flow "
+            "detection held up once the whole pipeline was re-evaluated. Precision "
+            "rose from 93.8 to 97.8 per cent and the F1 score from 0.900 to 0.918, "
+            "while recall was unchanged at 86.5 per cent \u2014 the intended outcome, "
+            "since the change was meant to remove false alarms without losing "
+            "genuine detections.",
+            "Ring detection reached every planted case: 36 of 36 mule-ring "
+            "transactions were flagged, against 35 of 36 before the change. "
+            "Legitimate transactions wrongly flagged fell from three to one across "
+            "the 208-transaction labelled set.",
+            "Reviewed the one remaining circular-flow false positive to judge "
+            "whether the 72-hour window is the right bound or whether the ordering "
+            "condition needs tightening as well, which is the open question going "
+            "into next week.",
         ],
         "plans": [
-            "Tune the 72-hour window against the seeded data rather than leaving it at "
-            "a first reasonable value.",
-            "Investigate the three circular-flow false positives that remain.",
+            "Tune the 72-hour window against the seeded data rather than leaving it "
+            "at a first reasonable value.",
+            "Resolve the single remaining circular-flow false positive.",
             "Write the retention and archival policy for the transaction graph, now "
             "that the windowing argument is settled.",
-            "Add fan-in and fan-out mule patterns and measure the effect on ring recall.",
+            "Add fan-in and fan-out mule patterns and measure the effect on ring "
+            "recall.",
         ],
         "references": [
-            "Neo4j, \u201cQuery tuning: planner, cardinality and expand pruning,\u201d Neo4j "
-            "documentation, 2026. [Online]. Available: neo4j.com/docs/cypher-manual",
-            "M. Weber et al., \u201cScalable graph learning for anti-money "
-            "laundering: a first look,\u201d KDD Workshop on Anomaly Detection "
-            "in Finance, 2019.",
-            "L. Akoglu, H. Tong and D. Koutra, \u201cGraph-based anomaly detection and "
-            "description: a survey,\u201d Data Mining and Knowledge Discovery, 2015.",
-            "International Organization for Standardization, \u201cISO 8601 date and time "
-            "representation,\u201d 2019.",
+            "T. Pourhabibi, K. Ong, B. Kam and Y. Boo, \u201cFraud detection: a "
+            "systematic literature review of graph-based anomaly detection "
+            "approaches,\u201d Decision Support Systems, vol. 133, 2020.",
+            "Financial Action Task Force, \u201cProfessional money laundering: "
+            "typologies and layering timeframes,\u201d FATF Report, 2018.",
+            "Neo4j, \u201cTemporal values and duration arithmetic in Cypher,\u201d "
+            "Neo4j documentation, 2026. [Online]. Available: neo4j.com/docs",
+            "D. Powers, \u201cEvaluation: from precision, recall and F-measure to "
+            "informedness, markedness and correlation,\u201d Journal of Machine "
+            "Learning Technologies, vol. 2, 2011.",
         ],
     },
     "24DCE029": {
         "work": [
-            "Measured whether an identical transaction scores identically, which the "
-            "industry expert asked at the follow-up session and was answered then as "
-            "'two to five points apart'. Submitting the same wire transfer five times "
-            "produced 26, 20, 20, 21 and 22 \u2014 a spread of six.",
-            "Found the cause: the OpenAI client was created with temperature zero but "
-            "the local Ollama client was not, so it ran at the default of roughly 0.8. "
-            "At that setting the model also occasionally repeated a worked example "
-            "verbatim instead of assessing the real transaction \u2014 one live wire "
-            "transfer came back described as a small grocery purchase. Both clients now "
-            "come from one helper with temperature zero, and five repeat submissions "
-            "score identically.",
-            "Closed a hole in the explanation-validation guard that let that grocery "
-            "text through: the flag was HIGH_RISK_MERCHANT and the explanation "
-            "contained the word 'risk', which was enough to satisfy the check. It now "
-            "ignores generic risk vocabulary and matches on the flag's detail, so a "
-            "wire-transfer flag is satisfied by an explanation that says 'wire "
-            "transfer' and not by one that merely says 'risk'.",
-            "Wired the dashboard to the pending state, so the language model's score "
-            "and written explanation now appear on the analyst's screen as soon as they "
-            "are ready rather than only after a manual refresh.",
+            "Simplified the decision engine's explanation check after review: the "
+            "two flags that tracked whether the language model had finished were "
+            "collapsed into one, since they always moved together and an "
+            "inconsistent pair was representable but meaningless, and the "
+            "flag-matching logic was reduced from two functions to one.",
+            "Removed unnecessary state from the dashboard's analysis panel and "
+            "accuracy panel \u2014 a stored timer reference that could outlive the "
+            "effect that created it, and a memoised callback with a single caller "
+            "that could never change \u2014 leaving the same behaviour with less to go "
+            "wrong.",
+            "Confirmed the explanation-validation guard behaves correctly against "
+            "the corrected accuracy run, including the case that originally "
+            "defeated it, where a generic risk term in the flag name matched "
+            "ordinary risk prose in an unrelated explanation.",
         ],
         "plans": [
-            "Show the same pending state in the flagged-transactions table, not only on "
-            "the analyze panel.",
-            "Add an end-to-end test for the explanation guard against real model output "
-            "rather than fixture text.",
-            "Continue the accessibility pass over the dashboard against contrast and "
-            "keyboard requirements.",
-            "Review whether a decision that changes after the language model lands "
-            "should be visually marked as revised.",
+            "Show the pending state in the flagged-transactions table, not only on "
+            "the analysis panel.",
+            "Add an end-to-end test for the explanation guard against real model "
+            "output rather than fixture text.",
+            "Continue the accessibility pass over the dashboard against contrast "
+            "and keyboard requirements.",
+            "Mark a decision that changes after the language model lands, so a "
+            "revised outcome is visible to the analyst as a revision.",
         ],
         "references": [
-            "A. Holtzman et al., \u201cThe curious case of neural text degeneration,\u201d "
-            "ICLR, 2020.",
-            "Ollama, \u201cModel parameters: temperature, top-k and top-p,\u201d Ollama "
-            "documentation, 2026. [Online]. Available: github.com/ollama/ollama",
-            "S. Minaee et al., \u201cLarge language models: a survey,\u201d 2024.",
-            "Nielsen Norman Group, \u201cResponse times and the limits of human "
-            "perception in interface feedback,\u201d 2026. [Online]. Available: nngroup.com",
+            "React, \u201cYou might not need an effect,\u201d react.dev, 2026. "
+            "[Online]. Available: react.dev/learn",
+            "React, \u201cReferencing values with refs \u2014 when not to use a ref,\u201d "
+            "react.dev, 2026. [Online]. Available: react.dev/learn",
+            "M. Fowler, \u201cRefactoring: Improving the Design of Existing Code,\u201d "
+            "2nd ed., Addison-Wesley, 2018.",
+            "K. Beck, \u201cTidy First? A Personal Exercise in Empirical Software "
+            "Design,\u201d O'Reilly, 2023.",
         ],
     },
 }

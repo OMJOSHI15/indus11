@@ -36,7 +36,7 @@ async function request(path, options = {}) {
 }
 
 const DEMO_WRITE_MESSAGE =
-  "This is a static demo — scoring a new transaction needs the live backend. " +
+  "This is a static demo. Scoring a new transaction needs the live backend. " +
   "Run it locally with `docker compose up` to try this.";
 
 export const getRiskDistribution = async () =>

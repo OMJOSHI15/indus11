@@ -9,16 +9,19 @@ import {
   YAxis,
 } from "recharts";
 
-// Buckets colored by decision band: 0-39 approve, 40-69 review, 70+ block
-const BUCKET_COLORS = ["#34d399", "#34d399", "#fbbf24", "#f87171", "#f87171"];
+import { CHART_NEUTRALS, DECISION_COLORS, MONO, tooltipStyle } from "../theme.js";
 
-const tooltipStyle = {
-  background: "#182136",
-  border: "1px solid #26304a",
-  borderRadius: 8,
-  fontSize: 12,
-  color: "#e8edf7",
-};
+// Buckets coloured by the band each one falls in: 0-39 approve, 40-69 review,
+// 70+ block. The 60-79 bucket straddles the block threshold at 70, so it is
+// shown as review — the lower of the two, which understates rather than
+// overstates risk.
+const BUCKET_COLORS = [
+  DECISION_COLORS.APPROVE,
+  DECISION_COLORS.APPROVE,
+  DECISION_COLORS.REVIEW,
+  DECISION_COLORS.REVIEW,
+  DECISION_COLORS.BLOCK,
+];
 
 export default function ScoreHistogram({ distribution }) {
   if (!distribution) {
@@ -28,7 +31,7 @@ export default function ScoreHistogram({ distribution }) {
   if (distribution.total === 0) {
     return (
       <div className="empty">
-        No score data yet — the histogram fills in as transactions are analyzed.
+        No score data yet. The histogram fills in as transactions are analyzed.
       </div>
     );
   }
@@ -36,24 +39,24 @@ export default function ScoreHistogram({ distribution }) {
   return (
     <ResponsiveContainer width="100%" height={180}>
       <BarChart data={distribution.score_histogram} barCategoryGap="22%">
-        <CartesianGrid stroke="#1d2740" vertical={false} />
+        <CartesianGrid stroke={CHART_NEUTRALS.grid} vertical={false} />
         <XAxis
           dataKey="bucket"
-          tick={{ fill: "#94a3b8", fontSize: 11, fontFamily: "Fira Code" }}
-          axisLine={{ stroke: "#26304a" }}
+          tick={{ fill: CHART_NEUTRALS.label, fontSize: 11, fontFamily: MONO }}
+          axisLine={{ stroke: CHART_NEUTRALS.axis }}
           tickLine={false}
         />
         <YAxis
           allowDecimals={false}
-          tick={{ fill: "#94a3b8", fontSize: 11, fontFamily: "Fira Code" }}
+          tick={{ fill: CHART_NEUTRALS.label, fontSize: 11, fontFamily: MONO }}
           axisLine={false}
           tickLine={false}
           width={32}
         />
-        <Tooltip cursor={{ fill: "rgba(255,255,255,0.04)" }} contentStyle={tooltipStyle} />
+        <Tooltip cursor={{ fill: "rgba(237,237,236,0.04)" }} contentStyle={tooltipStyle} />
         <Bar dataKey="count" radius={[4, 4, 0, 0]} isAnimationActive={false}>
           {distribution.score_histogram.map((entry, i) => (
-            <Cell key={entry.bucket} fill={BUCKET_COLORS[i] ?? "#3b82f6"} />
+            <Cell key={entry.bucket} fill={BUCKET_COLORS[i] ?? CHART_NEUTRALS.label} />
           ))}
         </Bar>
       </BarChart>

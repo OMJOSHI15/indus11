@@ -8,14 +8,7 @@ import AccuracyPanel from "./components/AccuracyPanel.jsx";
 import { DEMO, getRecentFlags, getRiskDistribution } from "./api.js";
 import useCountUp from "./useCountUp.js";
 import { SAMPLE_DISTRIBUTION, SAMPLE_FLAGS } from "./sampleData.js";
-import {
-  ActivityIcon,
-  AlertTriangleIcon,
-  BanIcon,
-  CheckCircleIcon,
-  ShieldIcon,
-  WifiOffIcon,
-} from "./icons.jsx";
+import { WifiOffIcon } from "./icons.jsx";
 
 const REFRESH_MS = 10000;
 
@@ -25,11 +18,12 @@ function KpiValue({ value }) {
   return <div className="value">{shown.toLocaleString()}</div>;
 }
 
-const KPIS = [
-  { key: "total", label: "Analyzed", icon: ActivityIcon },
-  { key: "APPROVE", label: "Approved", icon: CheckCircleIcon },
-  { key: "REVIEW", label: "In review", icon: AlertTriangleIcon },
-  { key: "BLOCK", label: "Blocked", icon: BanIcon },
+// Ordered by severity, not alphabetically — the bar reads left to right as
+// risk increases, so the block segment always sits at the sharp end.
+const DECISIONS = [
+  { key: "APPROVE", label: "Approved", cls: "approve" },
+  { key: "REVIEW", label: "In review", cls: "review" },
+  { key: "BLOCK", label: "Blocked", cls: "block" },
 ];
 
 export default function App() {
@@ -64,18 +58,15 @@ export default function App() {
   const loading = distribution === null;
   const total = distribution?.total ?? 0;
 
-  const kpiValue = (key) =>
-    key === "total" ? total : distribution?.decisions?.[key] ?? 0;
+  const decisionCount = (key) => distribution?.decisions?.[key] ?? 0;
 
   return (
     <div className="layout">
       <header className="topbar">
-        <div className="logo-mark">
-          <ShieldIcon size={20} label="Indus11 logo" />
-        </div>
+        <div className="logo-mark" aria-hidden="true">I11</div>
         <div>
           <h1>Indus11</h1>
-          <div className="subtitle">AI Financial Risk &amp; Fraud Decision Engine</div>
+          <div className="subtitle">Transaction risk &amp; fraud decisioning</div>
         </div>
         <div className="spacer" />
         <span className={`status-pill${offline ? " offline" : ""}`}>
@@ -88,36 +79,62 @@ export default function App() {
         offline && (
           <div className="banner" role="status">
             <WifiOffIcon size={15} />
-            Backend unreachable — showing sample data. Start the API and databases to
+            Backend unreachable. Showing sample data; start the API and databases to
             see live results.
           </div>
         )
       )}
 
-      <div className="kpi-row">
-        {KPIS.map(({ key, label, icon: Kicon }) => (
-          <div key={key} className={`kpi ${key === "total" ? "total" : key.toLowerCase()}`}>
-            <div className="icon-chip">
-              <Kicon size={18} />
-            </div>
-            <div>
-              <div className="label">{label}</div>
-              {loading ? (
-                <div className="skeleton" style={{ width: 56, height: 28 }} />
-              ) : (
-                <>
-                  <KpiValue value={kpiValue(key)} />
-                  {key !== "total" && total > 0 && (
-                    <div className="pct">
-                      {((kpiValue(key) / total) * 100).toFixed(1)}%
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
+      <section className="stat-lead">
+        <div className="stat-lead__figure">
+          <span className="stat-lead__label">Transactions analysed</span>
+          {loading
+            ? <div className="skeleton" style={{ width: 150, height: 56 }} />
+            : <KpiValue value={total} />}
+        </div>
+
+        <div className="stat-lead__split">
+          <div
+            className="split-bar"
+            role="img"
+            aria-label={
+              loading
+                ? "Decision mix loading"
+                : DECISIONS.map((d) => `${decisionCount(d.key)} ${d.label}`).join(", ")
+            }
+          >
+            {DECISIONS.map(({ key, cls }) => (
+              <span
+                key={key}
+                className={`split-bar__seg ${cls}`}
+                // flex-grow, not width: the segments always fill the bar even
+                // before any transaction has been scored.
+                style={{ flexGrow: Math.max(decisionCount(key), total ? 0 : 1) }}
+              />
+            ))}
           </div>
-        ))}
-      </div>
+
+          <ul className="split-legend">
+            {DECISIONS.map(({ key, label, cls }) => (
+              <li key={key} className={`split-legend__item ${cls}`}>
+                <span className="split-legend__label">{label}</span>
+                {loading ? (
+                  <div className="skeleton" style={{ width: 48, height: 24 }} />
+                ) : (
+                  <>
+                    <span className="split-legend__value">
+                      {decisionCount(key).toLocaleString()}
+                    </span>
+                    <span className="split-legend__pct">
+                      {total > 0 ? `${((decisionCount(key) / total) * 100).toFixed(1)}%` : "—"}
+                    </span>
+                  </>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
 
       <div className="grid">
         <section className="panel" aria-busy={loading}>
@@ -136,12 +153,12 @@ export default function App() {
         </section>
 
         <section className="panel wide">
-          <h2>Detection accuracy — synthetic benchmark</h2>
+          <h2>Detection accuracy on the synthetic benchmark</h2>
           <AccuracyPanel offline={offline} />
         </section>
 
         <section className="panel wide" aria-busy={flags === null}>
-          <h2>Recent flags — review &amp; block</h2>
+          <h2>Recent flags for review and block</h2>
           <RecentFlags flags={flags} onSelect={offline ? undefined : setSelectedId} />
         </section>
       </div>

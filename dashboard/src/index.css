@@ -1,18 +1,36 @@
-/* ── Design tokens (ui-ux-pro-max: Dark Mode ops dashboard, density 8/10) ──── */
+/* ── Design system — "forensic instrument" ────────────────────────────────────
+   One rule governs colour here: colour is signal, never decoration. The only
+   saturated things on screen are decisions — approve, review, block. Chrome,
+   buttons, links and focus rings are all graded neutrals, so nothing competes
+   with risk for the analyst's eye. That is also why there is no brand accent:
+   a blue CTA would be the most colourful thing on a fraud screen.
+   ────────────────────────────────────────────────────────────────────────── */
 :root {
-  /* color */
-  --bg: #0b0f17;
-  --surface: #121826;
-  --surface-2: #182136;
-  --border: #26304a;
-  --text: #e8edf7;
-  --text-dim: #94a3b8;
-  --primary: #3b82f6;
-  --primary-strong: #60a5fa;
-  --success: #34d399;
-  --warning: #fbbf24;
-  --danger: #f87171;
-  --ring: #60a5fa;
+  /* Neutrals — one family, warm graphite. Never mixed with cool greys. */
+  --bg: #0c0c0d;
+  --surface: #121214;
+  --surface-2: #191a1c;
+  --surface-3: #202124;
+  --border: #232427;
+  --border-strong: #303135;
+  --text: #ededec;
+  --text-dim: #8d8d88;
+  --text-faint: #82827c;
+
+  /* Decision colours — desaturated well below 80%, so they read forensic
+     rather than neon. These are the only saturated values in the system. */
+  --approve: #6f9e78;
+  --review: #c39a4e;
+  --block: #c2645a;
+  --approve-wash: rgba(111, 158, 120, 0.13);
+  --review-wash: rgba(195, 154, 78, 0.13);
+  --block-wash: rgba(194, 100, 90, 0.14);
+
+  /* Interactive = bone, not blue. Highest contrast on the page belongs to the
+     primary action, which needs no hue to be obvious. */
+  --action: #ededec;
+  --action-ink: #0c0c0d;
+  --ring: #a8a8a2;
 
   /* spacing (dense dashboard scale) */
   --space-1: 4px;
@@ -21,15 +39,29 @@
   --space-4: 16px;
   --space-5: 24px;
   --space-6: 32px;
+  --space-7: 48px;
 
   /* type */
-  --font-body: "Fira Sans", -apple-system, "Segoe UI", sans-serif;
-  --font-data: "Fira Code", ui-monospace, "SF Mono", monospace;
+  --font-body: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
+  --font-data: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
 
-  /* misc */
-  --radius: 10px;
-  --radius-sm: 6px;
-  --transition: 180ms ease-out;
+  /* Radius varies by nesting depth: softer on containers, tighter inside. */
+  --radius: 14px;
+  --radius-sm: 8px;
+  --radius-xs: 4px;
+
+  /* Shadows carry the background hue rather than pure black. */
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 12px 32px -12px rgba(0, 0, 0, 0.75);
+
+  --transition: 180ms cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* legacy aliases — components still reference these names */
+  --primary: #ededec;
+  --primary-strong: #ffffff;
+  --success: var(--approve);
+  --warning: var(--review);
+  --danger: var(--block);
 }
 
 * { box-sizing: border-box; }
@@ -68,26 +100,30 @@ header.topbar {
 .logo-mark {
   display: grid;
   place-items: center;
-  width: 38px;
-  height: 38px;
-  border-radius: var(--radius);
-  color: #fff;
-  background: linear-gradient(135deg, #1e40af, #3b82f6);
-  box-shadow: 0 0 18px rgba(59, 130, 246, 0.35);
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  font-family: var(--font-data);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.04em;
 }
 
 .topbar h1 {
   margin: 0;
-  font-family: var(--font-data);
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 600;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.035em;
 }
 
 .topbar .subtitle {
-  color: var(--text-dim);
-  font-size: 13px;
+  color: var(--text-faint);
+  font-size: 12.5px;
   margin-top: 1px;
+  letter-spacing: 0.01em;
 }
 
 .topbar .spacer { flex: 1; }
@@ -116,8 +152,8 @@ header.topbar {
 .status-pill.offline .dot { background: var(--warning); animation: none; }
 
 @keyframes pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.5); }
-  50% { box-shadow: 0 0 0 5px rgba(52, 211, 153, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(111, 158, 120, 0.45); }
+  50% { box-shadow: 0 0 0 5px rgba(111, 158, 120, 0); }
 }
 
 /* ── Offline / sample-data banner ─────────────────────────────────────────── */
@@ -127,62 +163,110 @@ header.topbar {
   gap: var(--space-2);
   padding: var(--space-3) var(--space-4);
   margin-bottom: var(--space-4);
-  border: 1px solid rgba(251, 191, 36, 0.35);
-  border-radius: var(--radius);
-  background: rgba(251, 191, 36, 0.08);
-  color: var(--warning);
+  border: 1px solid rgba(195, 154, 78, 0.3);
+  border-radius: var(--radius-sm);
+  background: var(--review-wash);
+  color: var(--review);
   font-size: 13px;
 }
 
-/* ── KPI row ──────────────────────────────────────────────────────────────── */
-.kpi-row {
+/* ── Lead statistic + decision split ──────────────────────────────────────────
+   Four equal cards in a row is the stock dashboard layout and it flattens the
+   hierarchy: the total and the block count are not equally important. The
+   total leads at display size; the three decisions read as one proportional
+   bar, so the mix is legible before any number is.
+   ────────────────────────────────────────────────────────────────────────── */
+.stat-lead {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-3);
+  grid-template-columns: minmax(220px, 0.9fr) 2.1fr;
+  gap: var(--space-6);
+  align-items: center;
+  padding: var(--space-5) var(--space-5) var(--space-5) 0;
+  margin-bottom: var(--space-5);
+  border-bottom: 1px solid var(--border);
+}
+
+.stat-lead__label {
+  display: block;
+  font-size: 12px;
+  color: var(--text-faint);
+  letter-spacing: 0.02em;
+  margin-bottom: var(--space-2);
+}
+
+.stat-lead__figure .value {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(40px, 6vw, 58px);
+  font-weight: 600;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+}
+
+/* the mix, as one bar rather than three competing cards */
+.split-bar {
+  display: flex;
+  gap: 3px;
+  height: 10px;
   margin-bottom: var(--space-4);
 }
 
-.kpi {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-4);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  transition: border-color var(--transition);
+.split-bar__seg {
+  border-radius: var(--radius-xs);
+  transition: opacity var(--transition);
+  animation: grow-x 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: left center;
 }
 
-.kpi:hover { border-color: #34406088; }
+.split-bar__seg.approve { background: var(--approve); }
+.split-bar__seg.review  { background: var(--review); }
+.split-bar__seg.block   { background: var(--block); }
 
-.kpi .icon-chip {
+@keyframes grow-x { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+.split-legend {
   display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-sm);
-  flex-shrink: 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.kpi.total .icon-chip { color: var(--primary-strong); background: rgba(59, 130, 246, 0.12); }
-.kpi.approve .icon-chip { color: var(--success); background: rgba(52, 211, 153, 0.12); }
-.kpi.review .icon-chip { color: var(--warning); background: rgba(251, 191, 36, 0.12); }
-.kpi.block .icon-chip { color: var(--danger); background: rgba(248, 113, 113, 0.12); }
+.split-legend__item {
+  display: grid;
+  gap: 2px;
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--border-strong);
+}
 
-.kpi .label { font-size: 12px; color: var(--text-dim); }
+.split-legend__item.approve { border-left-color: var(--approve); }
+.split-legend__item.review  { border-left-color: var(--review); }
+.split-legend__item.block   { border-left-color: var(--block); }
 
-.kpi .value {
+.split-legend__label {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.split-legend__value {
   font-family: var(--font-data);
   font-variant-numeric: tabular-nums;
-  font-size: 24px;
-  font-weight: 600;
-  line-height: 1.2;
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
 }
 
-.kpi .pct {
-  font-size: 11px;
-  color: var(--text-dim);
+.split-legend__pct {
+  font-family: var(--font-data);
+  font-size: 11.5px;
+  color: var(--text-faint);
   font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 860px) {
+  .stat-lead { grid-template-columns: 1fr; gap: var(--space-5); padding-right: 0; }
+  .split-legend { gap: var(--space-3); }
 }
 
 /* ── Panels ───────────────────────────────────────────────────────────────── */
@@ -196,19 +280,30 @@ header.topbar {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: var(--space-4);
+  padding: var(--space-5);
   min-width: 0;
+  box-shadow: var(--shadow-1);
 }
 
 .panel.wide { grid-column: 1 / -1; }
 
 .panel h2 {
-  margin: 0 0 var(--space-3);
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-dim);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-4);
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+/* hairline that runs out to the panel edge — carries the eye across the row */
+.panel h2::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
 }
 
 /* ── Donut legend ─────────────────────────────────────────────────────────── */
@@ -248,7 +343,7 @@ header.topbar {
   color: var(--text);
 }
 
-.legend .swatch { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+.legend .swatch { width: 10px; height: 10px; border-radius: var(--radius-xs); flex-shrink: 0; }
 
 /* ── Table ────────────────────────────────────────────────────────────────── */
 .table-scroll { overflow-x: auto; }
@@ -300,9 +395,9 @@ tbody tr:last-child td { border-bottom: none; }
   letter-spacing: 0.03em;
 }
 
-.badge.APPROVE { background: rgba(52, 211, 153, 0.14); color: var(--success); }
-.badge.REVIEW { background: rgba(251, 191, 36, 0.14); color: var(--warning); }
-.badge.BLOCK { background: rgba(248, 113, 113, 0.14); color: var(--danger); }
+.badge.APPROVE { background: var(--approve-wash); color: var(--approve); }
+.badge.REVIEW { background: var(--review-wash); color: var(--review); }
+.badge.BLOCK { background: var(--block-wash); color: var(--block); }
 
 /* ── Form ─────────────────────────────────────────────────────────────────── */
 form.analyze {
@@ -340,23 +435,24 @@ form.analyze textarea {
 }
 form.analyze textarea::placeholder { color: var(--text-dim); opacity: 0.7; }
 
-form.analyze input:hover, form.analyze select:hover, form.analyze textarea:hover { border-color: #344060; }
+form.analyze input:hover, form.analyze select:hover, form.analyze textarea:hover { border-color: var(--border-strong); }
 form.analyze input:focus, form.analyze select:focus, form.analyze textarea:focus {
   outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
+  border-color: var(--border-strong);
+  box-shadow: 0 0 0 3px rgba(237, 237, 236, 0.08);
 }
 
 form.analyze button {
+  letter-spacing: -0.01em;
   grid-column: 1 / -1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
-  background: var(--primary);
+  background: var(--action);
   border: none;
   border-radius: var(--radius-sm);
-  color: #fff;
+  color: var(--action-ink);
   font-family: var(--font-body);
   font-weight: 600;
   font-size: 14px;
@@ -366,15 +462,15 @@ form.analyze button {
   transition: background var(--transition), transform var(--transition);
 }
 
-form.analyze button:hover:not(:disabled) { background: #2f6fe0; }
+form.analyze button:hover:not(:disabled) { background: #ffffff; }
 form.analyze button:active:not(:disabled) { transform: scale(0.98); }
 form.analyze button:disabled { opacity: 0.55; cursor: progress; }
 
 .spinner {
   width: 14px;
   height: 14px;
-  border: 2px solid rgba(255, 255, 255, 0.35);
-  border-top-color: #fff;
+  border: 2px solid rgba(12, 12, 13, 0.28);
+  border-top-color: var(--action-ink);
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }
@@ -428,7 +524,7 @@ form.analyze button:disabled { opacity: 0.55; cursor: progress; }
 .layer-bar .fill {
   height: 100%;
   border-radius: 999px;
-  background: var(--primary);
+  background: var(--text-dim);
   transition: width 300ms ease-out;
 }
 
@@ -470,7 +566,7 @@ form.analyze button:disabled { opacity: 0.55; cursor: progress; }
   background: none;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  color: var(--primary-strong);
+  color: var(--text);
   font: inherit;
   font-size: 12px;
   font-weight: 500;
@@ -479,7 +575,7 @@ form.analyze button:disabled { opacity: 0.55; cursor: progress; }
   transition: border-color var(--transition), background var(--transition);
 }
 
-.link-button:hover { border-color: var(--primary); background: rgba(59, 130, 246, 0.1); }
+.link-button:hover { border-color: var(--border-strong); background: var(--surface-2); }
 
 /* ── Accuracy panel ───────────────────────────────────────────────────────── */
 .metric-row {
@@ -507,7 +603,8 @@ form.analyze button:disabled { opacity: 0.55; cursor: progress; }
   font-family: var(--font-data);
   font-size: 28px;
   font-weight: 600;
-  color: var(--primary-strong);
+  letter-spacing: -0.03em;
+  color: var(--text);
   margin-top: var(--space-1);
 }
 
@@ -657,9 +754,9 @@ form.analyze button:disabled { opacity: 0.55; cursor: progress; }
 .chip:hover { background: rgba(255, 255, 255, 0.07); color: #dbe4f0; }
 
 .chip.active {
-  background: rgba(96, 141, 255, 0.16);
-  border-color: rgba(96, 141, 255, 0.5);
-  color: #cfe0ff;
+  background: var(--surface-3);
+  border-color: var(--border-strong);
+  color: var(--text);
 }
 
 .chip-count {
@@ -671,7 +768,7 @@ form.analyze button:disabled { opacity: 0.55; cursor: progress; }
 .table-search {
   flex: 0 1 280px;
   padding: 7px 11px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   border: 1px solid rgba(120, 150, 200, 0.22);
   background: rgba(255, 255, 255, 0.03);
   color: inherit;
@@ -681,8 +778,8 @@ form.analyze button:disabled { opacity: 0.55; cursor: progress; }
 
 .table-search:focus {
   outline: none;
-  border-color: rgba(96, 141, 255, 0.6);
-  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--border-strong);
+  background: var(--surface-2);
 }
 
 .th-sort {
@@ -696,7 +793,7 @@ form.analyze button:disabled { opacity: 0.55; cursor: progress; }
   text-transform: inherit;
 }
 
-.th-sort:hover { color: #cfe0ff; }
+.th-sort:hover { color: var(--text); }
 
 /* ── score cell with proportional bar ── */
 .score-cell { display: grid; gap: 4px; min-width: 66px; }
@@ -723,9 +820,9 @@ form.analyze button:disabled { opacity: 0.55; cursor: progress; }
 
 @keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 
-.score-fill.approve { background: #34d399; }
-.score-fill.review  { background: #fbbf24; }
-.score-fill.block   { background: #f87171; }
+.score-fill.approve { background: var(--approve); }
+.score-fill.review  { background: var(--review); }
+.score-fill.block   { background: var(--block); }
 
 /* ── table rows ── */
 tbody tr.row-enter { animation: fade 320ms ease both; }
@@ -737,7 +834,7 @@ tbody tr {
 tbody tr:hover { background: rgba(255, 255, 255, 0.045); }
 
 tbody tr:focus-visible {
-  outline: 2px solid rgba(96, 141, 255, 0.75);
+  outline: 2px solid var(--ring);
   outline-offset: -2px;
 }
 
@@ -757,11 +854,12 @@ tbody tr:focus-visible {
 /* The decision shown is final for the rule and graph layers; only the written
    explanation is still arriving, so this reads as "in progress", not "broken". */
 .pending-tag {
+  font-family: var(--font-data);
   margin-left: var(--space-2);
   padding: 1px 7px;
   border-radius: 999px;
-  background: rgba(96, 141, 255, 0.16);
-  color: var(--primary-strong);
+  background: var(--surface-3);
+  color: var(--text-dim);
   font-size: 10px;
   font-weight: 500;
   letter-spacing: 0.02em;
@@ -774,5 +872,26 @@ tbody tr:focus-visible {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pending-tag { animation: none; }
+  .pending-tag {
+  font-family: var(--font-data); animation: none; }
+}
+
+
+/* ── Grain ────────────────────────────────────────────────────────────────────
+   Flat dark surfaces read as sterile on a large screen. A fixed, very low
+   opacity noise layer gives the page material without costing a repaint —
+   pointer-events:none so it can never intercept a click.
+   ────────────────────────────────────────────────────────────────────────── */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9;
+  pointer-events: none;
+  opacity: 0.028;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .split-bar__seg { animation: none; }
 }

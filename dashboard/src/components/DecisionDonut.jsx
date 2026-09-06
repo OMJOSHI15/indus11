@@ -1,15 +1,7 @@
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { ScanSearchIcon } from "../icons.jsx";
 
-const COLORS = { APPROVE: "#34d399", REVIEW: "#fbbf24", BLOCK: "#f87171" };
-
-const tooltipStyle = {
-  background: "#182136",
-  border: "1px solid #26304a",
-  borderRadius: 8,
-  fontSize: 12,
-  color: "#e8edf7",
-};
+import { DECISION_COLORS as COLORS, tooltipStyle } from "../theme.js";
 
 export default function DecisionDonut({ distribution }) {
   if (!distribution) {
