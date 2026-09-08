@@ -156,10 +156,12 @@ async def run_rag_pipeline(
     tx: TransactionRequest,
     sender: AccountProfile,
     deterministic_flags: list[str] | None = None,
-) -> LayerScore:
+) -> tuple[LayerScore, str]:
     """
-    Retrieve top-k similar fraud patterns from ChromaDB and use an LLM
-    to assess fraud risk. Returns a LayerScore (0-30) with explanation.
+    Retrieve top-k similar fraud patterns from ChromaDB and use an LLM to
+    assess fraud risk. Returns the 0-30 LayerScore and its written explanation
+    — both paths, including the error path, so callers never have to sniff the
+    return type.
     """
     try:
         collection = _get_collection()

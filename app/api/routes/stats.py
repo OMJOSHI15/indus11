@@ -11,10 +11,11 @@ router = APIRouter(prefix="/stats", tags=["stats"])
 # Written by scripts/evaluate.py; absent until an evaluation has been run.
 EVAL_RESULTS_PATH = Path(__file__).resolve().parents[3] / "docs" / "eval-results.json"
 
-# (low, high) inclusive score bands for the histogram
-SCORE_BUCKETS = [(0, 19), (20, 39), (40, 59), (60, 79), (80, 100)]
-# $bucket boundaries are half-open [b_i, b_{i+1}); 101 makes the last bucket 80–100
+# $bucket boundaries are half-open [b_i, b_{i+1}); 101 makes the last bucket 80-100.
+# The (low, high) labels are derived rather than written out twice — a second
+# hand-maintained table is a table that eventually disagrees with this one.
 BUCKET_BOUNDARIES = [0, 20, 40, 60, 80, 101]
+SCORE_BUCKETS = [(lo, hi - 1) for lo, hi in zip(BUCKET_BOUNDARIES, BUCKET_BOUNDARIES[1:])]
 
 
 @router.get("/risk-distribution", summary="Decision counts and composite score histogram")

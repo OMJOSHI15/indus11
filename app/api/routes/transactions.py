@@ -112,10 +112,7 @@ async def _finish_rag_layer(
                 {"$set": {"rag_pending": False}}
             )
             return
-    if isinstance(rag_result, tuple):
-        rag_score, rag_explanation = rag_result
-    else:
-        rag_score, rag_explanation = rag_result, "RAG pipeline unavailable."
+    rag_score, rag_explanation = rag_result
     total_ms = deterministic_ms + (time.perf_counter() - start) * 1000
 
     final = make_decision(tx, rule_result, graph_result, rag_score, rag_explanation, total_ms)

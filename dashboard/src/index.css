@@ -39,7 +39,6 @@
   --space-4: 16px;
   --space-5: 24px;
   --space-6: 32px;
-  --space-7: 48px;
 
   /* type */
   --font-body: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
@@ -52,13 +51,11 @@
 
   /* Shadows carry the background hue rather than pure black. */
   --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-2: 0 12px 32px -12px rgba(0, 0, 0, 0.75);
 
   --transition: 180ms cubic-bezier(0.22, 1, 0.36, 1);
 
-  /* legacy aliases — components still reference these names */
-  --primary: #ededec;
-  --primary-strong: #ffffff;
+  /* Semantic aliases: a "live" pill and an error message are not decisions,
+     so they name the meaning rather than the band. */
   --success: var(--approve);
   --warning: var(--review);
   --danger: var(--block);
@@ -214,15 +211,13 @@ header.topbar {
 .split-bar__seg {
   border-radius: var(--radius-xs);
   transition: opacity var(--transition);
-  animation: grow-x 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: grow 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
   transform-origin: left center;
 }
 
 .split-bar__seg.approve { background: var(--approve); }
 .split-bar__seg.review  { background: var(--review); }
 .split-bar__seg.block   { background: var(--block); }
-
-@keyframes grow-x { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 
 .split-legend {
   display: grid;
@@ -693,7 +688,6 @@ form.analyze button:disabled { opacity: 0.55; cursor: progress; }
 }
 
 @media (max-width: 768px) {
-  .kpi-row { grid-template-columns: 1fr 1fr; }
   .grid { grid-template-columns: 1fr; }
   form.analyze { grid-template-columns: 1fr; }
   .metric-row { grid-template-columns: 1fr 1fr; }
@@ -710,9 +704,10 @@ form.analyze button:disabled { opacity: 0.55; cursor: progress; }
 
 /* ──────────────────────────────────────────────────────────────────────────
    Motion and interaction
-   Entrances are staggered so the eye lands on the KPIs first, then the
-   panels. Every animation is disabled under prefers-reduced-motion at the
-   bottom of this block — motion here is decoration, not information.
+   Entrances are staggered so the eye lands on the lead statistic first, then
+   the panels. Motion here is decoration, not information, so all of it is
+   disabled by the single prefers-reduced-motion rule above — nothing in this
+   block needs to opt out again.
    ────────────────────────────────────────────────────────────────────────── */
 
 @keyframes rise {
@@ -725,15 +720,9 @@ form.analyze button:disabled { opacity: 0.55; cursor: progress; }
   to   { opacity: 1; }
 }
 
-.kpi,
 .panel {
   animation: rise 460ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
-
-.kpi:nth-child(1) { animation-delay: 40ms; }
-.kpi:nth-child(2) { animation-delay: 90ms; }
-.kpi:nth-child(3) { animation-delay: 140ms; }
-.kpi:nth-child(4) { animation-delay: 190ms; }
 
 .grid .panel:nth-child(1) { animation-delay: 220ms; }
 .grid .panel:nth-child(2) { animation-delay: 265ms; }
@@ -741,20 +730,9 @@ form.analyze button:disabled { opacity: 0.55; cursor: progress; }
 .grid .panel:nth-child(4) { animation-delay: 355ms; }
 .grid .panel:nth-child(5) { animation-delay: 400ms; }
 
-.kpi,
 .panel {
   transition: transform 180ms ease, border-color 180ms ease,
               box-shadow 180ms ease;
-}
-
-.kpi:hover {
-  transform: translateY(-2px);
-  border-color: rgba(120, 150, 200, 0.42);
-  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.32);
-}
-
-.kpi .value {
-  font-variant-numeric: tabular-nums;   /* digits keep width while counting */
 }
 
 /* ── flagged-transaction table controls ── */
@@ -870,18 +848,6 @@ tbody tr:focus-visible {
   outline-offset: -2px;
 }
 
-/* ── respect the user's motion preference ── */
-@media (prefers-reduced-motion: reduce) {
-  .kpi,
-  .panel,
-  tbody tr.row-enter,
-  .score-fill {
-    animation: none !important;
-  }
-  .kpi:hover { transform: none; }
-  * { transition-duration: 1ms !important; }
-}
-
 /* ── Background-RAG pending state ─────────────────────────────────────────── */
 /* The decision shown is final for the rule and graph layers; only the written
    explanation is still arriving, so this reads as "in progress", not "broken". */
@@ -903,11 +869,6 @@ tbody tr:focus-visible {
   50% { opacity: 0.55; }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .pending-tag {
-  font-family: var(--font-data); animation: none; }
-}
-
 
 /* ── Grain ────────────────────────────────────────────────────────────────────
    Flat dark surfaces read as sterile on a large screen. A fixed, very low
@@ -922,8 +883,4 @@ body::after {
   pointer-events: none;
   opacity: 0.028;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .split-bar__seg { animation: none; }
 }

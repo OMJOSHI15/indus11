@@ -160,6 +160,38 @@ async def test_rag_prompt_handles_no_flags():
     assert captured["deterministic_flags"] == "(none)"
 
 
+@pytest.mark.asyncio
+async def test_rag_returns_score_and_explanation_on_both_paths():
+    """Success and failure must return the same (LayerScore, str) shape.
+
+    The caller in app/api/routes/transactions.py used to sniff the return with
+    isinstance(..., tuple) because the annotation said LayerScore while both
+    branches returned a pair. The dead half of that guard would have replaced a
+    real explanation with "RAG pipeline unavailable."
+    """
+    from app.services import rag_pipeline
+
+    async def fake_invoke(prompt, inputs):
+        return '{"score": 12, "explanation": "Wire transfer to a new payee.", "matched_patterns": []}'
+
+    with patch.object(rag_pipeline, "_invoke_with_fallback", fake_invoke), \
+         patch.object(rag_pipeline, "_get_collection") as coll:
+        coll.return_value.count.return_value = 1
+        coll.return_value.query.return_value = {"documents": [["a pattern"]], "metadatas": [[{}]]}
+        score, explanation = await rag_pipeline.run_rag_pipeline(make_tx(), make_profile(), [])
+
+    assert score.score == 12
+    assert explanation == "Wire transfer to a new payee."
+
+    # Error path: ChromaDB unreachable.
+    with patch.object(rag_pipeline, "_get_collection", side_effect=RuntimeError("chroma down")):
+        score, explanation = await rag_pipeline.run_rag_pipeline(make_tx(), make_profile(), [])
+
+    assert score.score == 0
+    assert score.flags == ["RAG_PIPELINE_ERROR"]
+    assert "chroma down" in explanation
+
+
 # ── Decision Engine Tests ─────────────────────────────────────────────────────
 
 def make_layer(score, max_score, flags=None):

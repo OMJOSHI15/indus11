@@ -75,14 +75,12 @@ export default function App() {
         </span>
       </header>
 
-      {DEMO ? null : (
-        offline && (
-          <div className="banner" role="status">
-            <WifiOffIcon size={15} />
-            Backend unreachable. Showing sample data; start the API and databases to
-            see live results.
-          </div>
-        )
+      {!DEMO && offline && (
+        <div className="banner" role="status">
+          <WifiOffIcon size={15} />
+          Backend unreachable. Showing sample data; start the API and databases to
+          see live results.
+        </div>
       )}
 
       <section className="stat-lead">
