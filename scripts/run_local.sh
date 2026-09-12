@@ -44,16 +44,20 @@ echo
 # ── 1. Databases ─────────────────────────────────────────────────────────────
 echo "${BOLD}1/4  Databases${OFF}"
 
-# The plain `mongodb-community` formula is installed but broken on this machine;
-# @7.0 is the one that actually runs. Try the versioned one first either way.
-for formula in mongodb-community@7.0 mongodb-community; do
-  if brew services list 2>/dev/null | grep -q "^$formula .*started"; then
-    ok "mongodb ($formula) already running"; break
-  fi
-  if brew services start "$formula" >/dev/null 2>&1; then
-    ok "mongodb ($formula) started"; break
-  fi
-done
+# Only mongodb-community@7.0 can open this data directory. The unversioned
+# formula is MongoDB 8.x, which refuses data written by 7.0 and exits. Worse, if
+# both services are registered they start together at login, race for port
+# 27017, and neither survives — so the 8.x service is stopped if it is loaded.
+if brew services list 2>/dev/null | grep -Eq "^mongodb-community +(started|error|scheduled)"; then
+  brew services stop mongodb-community >/dev/null 2>&1 \
+    && info "stopped mongodb-community (8.x cannot open this 7.0 data)"
+fi
+if brew services list 2>/dev/null | grep -q "^mongodb-community@7.0 .*started"; then
+  ok "mongodb 7.0 already running"
+else
+  # restart, not start: a service left in the error state is not restarted by start
+  brew services restart mongodb-community@7.0 >/dev/null 2>&1 && ok "mongodb 7.0 started"
+fi
 
 if brew services list 2>/dev/null | grep -q "^redis .*started"; then
   ok "redis already running"
