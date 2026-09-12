@@ -12,7 +12,8 @@ the contents as ordinary text instead, in two passes:
 The two passes paginate identically because pass 1 already reserves one line per
 entry; only the short page number is added.
 
-    python docs/make_srs_pdf.py
+    python docs/make_srs_pdf.py            the SRS
+    python docs/make_srs_pdf.py report     the project report (docs/build_report.py)
 """
 import json
 import os
@@ -21,9 +22,13 @@ import subprocess
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-PAGES_JSON = os.path.join(HERE, "toc-pages.json")
-DOCX = os.path.expanduser("~/Downloads/Indus11_SRS.docx")
-PDF = os.path.expanduser("~/Downloads/Indus11_SRS.pdf")
+# target -> (builder script, output file stem, prefix of its bookkeeping JSON files)
+TARGETS = {"srs": ("build_srs.py", "Indus11_SRS", ""),
+           "report": ("build_report.py", "Indus11_Project_Report", "report-")}
+SCRIPT, STEM, PREFIX = TARGETS[sys.argv[1] if len(sys.argv) > 1 else "srs"]
+PAGES_JSON = os.path.join(HERE, f"{PREFIX}toc-pages.json")
+DOCX = os.path.expanduser(f"~/Downloads/{STEM}.docx")
+PDF = os.path.expanduser(f"~/Downloads/{STEM}.pdf")
 SOFFICE = "/Applications/LibreOffice.app/Contents/MacOS/soffice"
 PYTHON = sys.executable
 
@@ -32,7 +37,7 @@ FRONT_MATTER = ["CERTIFICATE", "ACKNOWLEDGEMENT", "ABSTRACT",
 
 
 def build():
-    subprocess.run([PYTHON, os.path.join(HERE, "build_srs.py")], check=True)
+    subprocess.run([PYTHON, os.path.join(HERE, SCRIPT)], check=True)
 
 
 def convert():
@@ -43,7 +48,7 @@ def convert():
 
 def page_of_each_heading():
     """Map each heading to the printed page it first appears on."""
-    with open(os.path.join(HERE, "toc-entries.json")) as f:
+    with open(os.path.join(HERE, f"{PREFIX}toc-entries.json")) as f:
         headings = json.load(f)
     text = subprocess.run(["pdftotext", "-layout", PDF, "-"],
                           check=True, capture_output=True, text=True).stdout
@@ -54,8 +59,11 @@ def page_of_each_heading():
         # dot leaders, so skipping leader pages skips exactly those pages.
         if re.search(r"\.{5,}", page):
             continue
+        # A long chapter title wraps onto two centred lines, so compare with
+        # runs of whitespace collapsed rather than line by line.
+        flat = re.sub(r"\s+", " ", page)
         for h in headings:
-            if h not in found and h in page:
+            if h not in found and h in flat:
                 found[h] = number
     missing = [h for h in headings if h not in found]
     if missing:
@@ -81,7 +89,7 @@ def roman(n):
 
 def check_tables_are_not_split():
     """Report any table whose first and last row land on different pages."""
-    with open(os.path.join(HERE, "table-spans.json")) as f:
+    with open(os.path.join(HERE, f"{PREFIX}table-spans.json")) as f:
         spans = json.load(f)
     text = subprocess.run(["pdftotext", "-layout", PDF, "-"],
                           check=True, capture_output=True, text=True).stdout
@@ -92,7 +100,9 @@ def check_tables_are_not_split():
     split = []
     for label, (first, last) in spans.items():
         on = [n for n, page in enumerate(flat, start=1)
-              if re.sub(r"\s+", "", label) in page]
+              # With its colon, so a prose reference ("see Table 5.6") or a longer
+              # label ("Table 5.11") is not mistaken for the caption.
+              if re.sub(r"\s+", "", label) + ":" in page]
         if not on:
             continue
         caption_page = on[-1]              # the list of tables comes earlier

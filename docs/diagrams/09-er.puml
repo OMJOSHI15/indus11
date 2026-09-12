@@ -1,12 +1,9 @@
 @startuml
-skinparam dpi 200
-skinparam backgroundColor white
-skinparam shadowing false
-skinparam defaultFontName Times New Roman
-skinparam class {
-  BorderColor #2F4F6F
-  BackgroundColor #F4F7FB
-}
+!include _theme.iuml
+skinparam legendBackgroundColor #161616
+skinparam legendBorderColor #BFBFBF
+title Entity Relationship Diagram — Indus11
+hide circle
 entity ACCOUNT {
   * account_id : string <<PK>>
   --
@@ -24,12 +21,14 @@ entity TRANSACTION {
   amount : float
   currency : string
   merchant_category : string
+  merchant_id : string
   device_id : string <<FK>>
   ip_address : string <<FK>>
   composite_score : int
   decision : string
   explanation : text
   note : text
+  rag_pending : boolean
   created_at : datetime
 }
 entity DEVICE {
@@ -43,9 +42,9 @@ ACCOUNT ||--o{ TRANSACTION : receives
 ACCOUNT }o--o{ DEVICE : USED_DEVICE
 ACCOUNT }o--o{ IP_ADDRESS : USED_IP
 ACCOUNT }o--o{ ACCOUNT : CONNECTED_TO
-note bottom
-  ACCOUNT and TRANSACTION are MongoDB collections.
-  DEVICE, IP_ADDRESS and the association edges are
-  Neo4j nodes and relationships used by the graph layer.
-end note
+legend bottom
+  ACCOUNT and TRANSACTION are MongoDB collections; their keys are enforced
+  by the application, not by the database. DEVICE, IP_ADDRESS and the
+  association edges are Neo4j nodes and relationships used by the graph layer.
+endlegend
 @enduml

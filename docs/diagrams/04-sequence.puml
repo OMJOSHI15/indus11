@@ -1,40 +1,53 @@
 @startuml
-skinparam dpi 200
-skinparam backgroundColor white
-skinparam shadowing false
-skinparam defaultFontName Times New Roman
+!include _theme.iuml
+title Sequence Diagram — Transaction Analysis
 actor Client
 participant "FastAPI\nGateway" as GW
 database Redis
 database MongoDB
 participant "Rule\nEngine" as RULE
 participant "Graph Analyzer\n(Neo4j)" as GRAPH
-participant "RAG Pipeline\n(Chroma + LLM)" as RAG
 participant "Decision\nEngine" as DEC
-Client -> GW : POST transaction
+participant "Background\nTask" as BG
+participant "RAG Pipeline\n(ChromaDB + Llama 3)" as RAG
+
+Client -> GW : POST /transactions/analyze
 activate GW
-GW -> Redis : GET account:<id>
-Redis --> GW : cache miss
-GW -> MongoDB : find_one(account_id)
-MongoDB --> GW : account profile
-GW -> Redis : SETEX (TTL 300 s)
-group asyncio.gather() — the three layers run concurrently
-  GW -> RULE : run_rule_engine(tx, sender, receiver)
-  GW -> GRAPH : run_graph_analyzer(tx)
-  GW -> RAG : run_rag_pipeline(tx, sender)
-  RULE --> GW : LayerScore (0–40)
-  GRAPH --> GW : LayerScore (0–30)
-  RAG --> GW : LayerScore (0–30) + explanation
+GW -> Redis : GET account:<id>, sender and receiver
+alt cache miss
+  GW -> MongoDB : find_one(account_id)
+  MongoDB --> GW : account profile
+  GW -> Redis : SET account:<id>, TTL 300 s
 end
-GW -> DEC : make_decision(rule, graph, rag)
-DEC --> GW : AnalysisResponse
-GW -> MongoDB : insert transaction
-alt duplicate tx_id
+par asyncio.gather() runs the two deterministic layers
+  GW -> RULE : run_rule_engine(tx, sender, receiver)
+  RULE -> Redis : ZADD velocity:<id>, 10-minute window
+  RULE --> GW : LayerScore 0–40 + flags
+else
+  GW -> GRAPH : run_graph_analyzer(tx)
+  GRAPH --> GW : LayerScore 0–30 + flags
+end
+GW -> DEC : make_decision(rule, graph, rag_pending = true)
+DEC --> GW : provisional decision
+GW -> MongoDB : insert transaction, rag_pending = true
+alt tx_id already stored
   MongoDB --> GW : DuplicateKeyError
-  GW --> Client : HTTP 409 Conflict
-else stored
-  GW --> Client : HTTP 200 + decision, score, explanation
+  GW --> Client : 409 Conflict
+else inserted
+  GW -> BG : add_task(_finish_rag_layer)
+  GW --> Client : 200 decision, score, rag_pending = true
 end
 deactivate GW
-note over RAG : If no language model is reachable,\nRAG returns score 0 with a stated\nreason; the pipeline still decides.
+
+== After the response: at most 4 run at once, each with a 180 s timeout ==
+activate BG
+BG -> RAG : run_rag_pipeline(tx, sender, rule + graph flags)
+RAG --> BG : LayerScore 0–30 + explanation
+BG -> DEC : make_decision(rule, graph, rag)
+DEC --> BG : final decision
+BG -> MongoDB : update score, decision, explanation, rag_pending = false
+deactivate BG
+note over BG, RAG : On a model error or timeout only rag_pending is cleared;\nthe provisional decision stays on the record.
+Client -> GW : GET /transactions/{tx_id}, polled every 3 s
+GW --> Client : final record
 @enduml

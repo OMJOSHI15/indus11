@@ -1,32 +1,34 @@
 @startuml
-skinparam dpi 200
-skinparam backgroundColor white
-skinparam shadowing false
-skinparam defaultFontName Times New Roman
-skinparam defaultFontSize 13
-skinparam state {
-  BorderColor #2F4F6F
-  BackgroundColor #F7FAFF
-  FontName Times New Roman
+!include _theme.iuml
+hide empty description
+<style>
+stateDiagram {
+  circle {
+    BackgroundColor #FFFFFF
+    LineColor #FFFFFF
+  }
 }
-[*] --> Received : transaction submitted
-Received --> Rejected : validation fails
-Received --> UnderAnalysis : validation succeeds
-state UnderAnalysis {
-  [*] --> Scoring
-  Scoring : rule, graph and AI layers
-  Scoring : evaluate concurrently
-  Scoring --> Aggregated : all scores returned
-  Aggregated : composite risk score computed
-  Aggregated --> [*]
+</style>
+skinparam StateStartColor #FFFFFF
+skinparam StateEndColor #FFFFFF
+title State Diagram — Lifecycle of a Transaction
+[*] --> Received : POST /transactions/analyze
+Received --> Rejected : schema validation fails (422)
+Received --> Scoring : payload valid
+Scoring : rule engine and graph analyzer
+Scoring : run concurrently
+Scoring --> Rejected : tx_id already stored (409)
+Scoring --> Provisional : record inserted
+Provisional : banded on rule + graph score
+Provisional : rag_pending = true
+Provisional --> Final : model returns score and explanation
+Provisional --> Final : model error or 180 s timeout,\nprovisional decision kept
+state Final {
+  [*] --> Approved : composite below 40
+  [*] --> UnderReview : composite 40–69
+  [*] --> Blocked : composite 70 or above
+  UnderReview --> Approved : analyst approves\n(X-API-Key)
+  UnderReview --> Blocked : analyst blocks\n(X-API-Key)
 }
-UnderAnalysis --> Approved : score below review threshold
-UnderAnalysis --> UnderReview : score within review band
-UnderAnalysis --> Blocked : score at or above block threshold
-UnderReview : awaiting analyst judgement
-UnderReview --> Approved : analyst approves
-UnderReview --> Blocked : analyst blocks
-Approved --> [*]
-Blocked --> [*]
 Rejected --> [*]
 @enduml

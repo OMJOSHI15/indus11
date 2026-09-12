@@ -1,44 +1,38 @@
 @startuml
-skinparam dpi 200
-skinparam backgroundColor white
-skinparam shadowing false
-skinparam defaultFontName Times New Roman
-node "Client Device" as CD {
-  artifact "Web Browser" as BR
+!include _theme.iuml
+title Deployment Diagram — Docker Compose
+node "Analyst workstation" as CD {
+  artifact "Web browser" as BR
 }
-node "Docker Host" as DH {
+node "Docker host" as DH {
   node "container: dashboard" as CDash {
-    artifact "nginx :80\nReact build\nproxies /api" as NG
+    artifact "nginx :80\nReact build\nproxies /api/ to api:8000" as NG
   }
   node "container: api" as CApi {
-    artifact "uvicorn :8000\nFastAPI\n5-layer pipeline" as UV
+    artifact "uvicorn :8000\nFastAPI\nseeds MongoDB and Neo4j on start" as UV
   }
   node "container: mongo" as CM {
-    database "MongoDB 7 :27017" as M
-    artifact "volume mongo_data" as VM
+    database "MongoDB 7 :27017\nvolume mongo_data" as M
   }
   node "container: neo4j" as CN {
-    database "Neo4j 5.20 :7687" as N
-    artifact "volume neo4j_data" as VN
+    database "Neo4j 5.20 :7687, :7474\nvolume neo4j_data" as N
   }
   node "container: redis" as CR {
-    database "Redis 7.2 :6379" as R
-    artifact "volume redis_data" as VR
+    database "Redis 7.2 :6379\nvolume redis_data" as R
   }
-  artifact "bind mount\n./data/chroma" as CH
+  artifact "bind mount ./data/chroma\nChromaDB files" as CH
 }
-node "Host Machine" as HM {
-  artifact "Ollama :11434\nllama3" as OL
+node "Host, outside Docker" as HM {
+  artifact "Ollama :11434\nLlama 3" as OL
 }
-BR --> NG : HTTP :5173
-NG --> UV : proxy /api
-UV --> M : :27017
-UV --> N : bolt :7687
-UV --> R : :6379
+CApi -[hidden]right- HM
+BR --> NG : HTTP, host port 5173
+NG --> UV : /api/
+UV --> M
+UV --> N : Bolt
+UV --> R
 UV --> CH : file I/O
-UV --> OL : :11434
-' Chain three of the store containers vertically: this keeps the host cluster
-' narrow enough that the diagram stays legible when scaled to the page.
-CM -[hidden]down- CN
-CN -[hidden]down- CR
+UV --> OL : host.docker.internal:11434
+CM -[hidden]right- CN
+CN -[hidden]right- CR
 @enduml

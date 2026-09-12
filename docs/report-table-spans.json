@@ -1,0 +1,90 @@
+{
+  "Table 1.1": [
+    "Q1",
+    "Q5"
+  ],
+  "Table 2.1": [
+    "Rule",
+    "Retrieval"
+  ],
+  "Table 2.2": [
+    "Core",
+    "Deployment"
+  ],
+  "Table 3.1": [
+    "Gateway",
+    "Dashboard"
+  ],
+  "Table 3.2": [
+    "Review",
+    "Rate"
+  ],
+  "Table 4.1": [
+    "Processor",
+    "Disk"
+  ],
+  "Table 4.2": [
+    "Python",
+    "pytest"
+  ],
+  "Table 4.3": [
+    "Transaction",
+    "Knowledge"
+  ],
+  "Table 4.4": [
+    "Gateway",
+    "Evaluation"
+  ],
+  "Table 5.1": [
+    "Machine",
+    "Run"
+  ],
+  "Table 5.2": [
+    "Precision",
+    "Determinism"
+  ],
+  "Table 5.3": [
+    "APPROVE",
+    "BLOCK"
+  ],
+  "Table 5.4": [
+    "Precision",
+    "BLOCK"
+  ],
+  "Table 5.5": [
+    "Mule",
+    "Legitimate"
+  ],
+  "Table 5.6": [
+    "Retail",
+    "Fourth"
+  ],
+  "Table 5.7": [
+    "Rules",
+    "Full"
+  ],
+  "Table 5.8": [
+    "Precision",
+    "Mean"
+  ],
+  "Table 5.9": [
+    "Rule",
+    "All"
+  ],
+  "Table 5.10": [
+    "Fraud",
+    "Legitimate"
+  ],
+  "Table 5.11": [
+    "Mean",
+    "Language-model"
+  ],
+  "Table 5.12": [
+    "No",
+    "72"
+  ],
+  "Table 7.1": [
+    "Synthetic-only",
+    "Threshold"
+  ]
+}

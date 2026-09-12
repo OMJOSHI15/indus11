@@ -1,0 +1,58 @@
+[
+ {
+  "layers": "Rule",
+  "precision": 0.0,
+  "recall": 0.0,
+  "f1": 0.0,
+  "tp": 0,
+  "fp": 1
+ },
+ {
+  "layers": "Graph",
+  "precision": 0.0,
+  "recall": 0.0,
+  "f1": 0.0,
+  "tp": 0,
+  "fp": 0
+ },
+ {
+  "layers": "LLM",
+  "precision": 0.0,
+  "recall": 0.0,
+  "f1": 0.0,
+  "tp": 0,
+  "fp": 0
+ },
+ {
+  "layers": "Rule+Graph",
+  "precision": 0.96,
+  "recall": 0.4615,
+  "f1": 0.6234,
+  "tp": 24,
+  "fp": 1
+ },
+ {
+  "layers": "Rule+LLM",
+  "precision": 0.5,
+  "recall": 0.0192,
+  "f1": 0.037,
+  "tp": 1,
+  "fp": 1
+ },
+ {
+  "layers": "Graph+LLM",
+  "precision": 1.0,
+  "recall": 0.4808,
+  "f1": 0.6494,
+  "tp": 25,
+  "fp": 0
+ },
+ {
+  "layers": "All three",
+  "precision": 0.9783,
+  "recall": 0.8654,
+  "f1": 0.9184,
+  "tp": 45,
+  "fp": 1
+ }
+]

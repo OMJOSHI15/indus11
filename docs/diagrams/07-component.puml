@@ -1,51 +1,41 @@
 @startuml
-skinparam dpi 200
-skinparam backgroundColor white
-skinparam shadowing false
-skinparam defaultFontName Times New Roman
-skinparam component {
-  BorderColor #2F4F6F
-  BackgroundColor #F4F7FB
+!include _theme.iuml
+title Component Diagram — Indus11
+component "Analyst Dashboard\n(React + Vite)" as UI
+() "REST /api/v1" as REST
+package "FastAPI application" {
+  component "Middleware\nCORS · slowapi rate limit" as MW
+  component "Routers\ntransactions · accounts\ngraph · stats · health" as RT
+  component "API-key guard\nrequire_api_key" as KEY
+  component "Rule Engine" as RE
+  component "Graph Analyzer" as GA
+  component "Decision Engine" as DE
+  component "Background tasks\n4 concurrent · 180 s timeout" as BG
+  component "RAG Pipeline" as RP
+  component "Beanie ODM models\nAccount · Transaction" as ODM
 }
-component "Dashboard\n(React + Vite)" as UI
-component "API Gateway\n(FastAPI)" as API {
-  component "Transaction\nController" as TC
-  component "Stats\nController" as SC
-  component "Graph\nController" as GC
-}
-component "Rule Engine" as RE
-component "Graph Analyzer" as GA
-component "RAG Pipeline" as RP
-component "Decision Engine" as DE
-component "Repository\n(Beanie ODM)" as REPO
-database "MongoDB" as M
-database "Neo4j" as N
 database "Redis" as R
+database "Neo4j" as N
 database "ChromaDB" as C
-component "Ollama\n(local LLM)" as OL <<external>>
-interface "IRestApi" as I1
-interface "IRules" as I2
-interface "IGraph" as I3
-interface "IRag" as I4
-interface "IPersist" as I5
-interface "ILlm" as I6
-UI -down- I1
-I1 -down- API
-TC -down- I2
-I2 -down- RE
-TC -down- I3
-I3 -down- GA
-TC -down- I4
-I4 -down- RP
-TC -down- I5
-I5 -down- REPO
-RE -down-> R : velocity + cache
-GA -down-> N : Cypher / Bolt
-RP -down-> C : vector search
-RP -down- I6
-I6 -down- OL
-REPO -down-> M
-SC -down-> REPO
-GC -down-> GA
-TC -right-> DE : aggregate scores
+database "MongoDB" as M
+component "Ollama\nLlama 3" as OL <<external>>
+
+UI --> REST
+REST - MW
+MW --> RT
+RT ..> KEY : override, blacklist,\nlabel propagation
+RT --> RE : run_rule_engine()
+RT --> GA : run_graph_analyzer()
+RT --> DE : make_decision()
+RT --> BG : add_task()
+BG --> RP : run_rag_pipeline()
+BG --> DE : make_decision()
+RT --> ODM
+BG --> ODM
+RT --> R : profile cache
+RE --> R : velocity window
+GA --> N : Cypher over Bolt
+RP --> C : 3 nearest patterns
+RP --> OL : HTTP :11434
+ODM --> M
 @enduml

@@ -1,32 +1,38 @@
 digraph DFD2 {
-  graph [rankdir=TB, fontname="Times-Roman", fontsize=14,
-         nodesep=0.45, ranksep=0.3];
-  node  [fontname="Times-Roman", fontsize=11];
-  edge  [fontname="Times-Roman", fontsize=10];
+  graph [rankdir=TB, bgcolor="black", pad=0.35, dpi=200, nodesep=1.1, ranksep=0.3,
+         forcelabels=true, fontname="Arial", fontsize=24, fontcolor="white", labelloc=t,
+         label="DFD LEVEL 2 — 3.0 EVALUATE RULES\n "];
+  node  [fontname="Arial", fontsize=12];
+  edge  [fontname="Arial", fontsize=11, color="white", fontcolor="white"];
 
-  IN  [shape=box, style=filled, fillcolor="#EEF3FA", label="From 2.0\nLoad Account Profiles"];
-  OUT [shape=box, style=filled, fillcolor="#EEF3FA", label="To 6.0\nDetermine Decision"];
+  IN  [shape=box, style="rounded,filled", fillcolor="white", color="white", fontcolor="black",
+       margin="0.22,0.1", label="2.0\nLoad Account Profiles"];
+  OUT [shape=box, style="rounded,filled", fillcolor="white", color="white", fontcolor="black",
+       margin="0.22,0.1", label="6.0\nDetermine Decision"];
 
-  P31 [shape=box, style="rounded,filled", fillcolor="#F7FAFF", label="3.1\nCheck Blacklist"];
-  P32 [shape=box, style="rounded,filled", fillcolor="#F7FAFF", label="3.2\nCheck Velocity"];
-  P33 [shape=box, style="rounded,filled", fillcolor="#F7FAFF", label="3.3\nCheck Amount Anomaly"];
-  P34 [shape=box, style="rounded,filled", fillcolor="#F7FAFF", label="3.4\nCheck Merchant Category"];
-  P35 [shape=box, style="rounded,filled", fillcolor="#F7FAFF", label="3.5\nCheck Sender Risk Tier"];
-  P36 [shape=box, style="rounded,filled", fillcolor="#F7FAFF", label="3.6\nAggregate Rule Score"];
+  node [shape=circle, fixedsize=true, width=1.2, style=filled, fillcolor="#7BC043",
+        color="#7BC043", fontcolor="black", fontsize=12];
+  P31 [label="3.1\nCheck\nBlacklist"];
+  P32 [label="3.2\nCheck\nVelocity"];
+  P33 [label="3.3\nCheck Amount\nAnomaly"];
+  P34 [label="3.4\nCheck\nMerchant"];
+  P35 [label="3.5\nCheck Sender\nRisk Tier"];
+  P36 [label="3.6\nCap Score\nat 40"];
 
-  D1 [shape=record, style=filled, fillcolor="#FBFBF4", label="{D1|Account Store}"];
-  D2 [shape=record, style=filled, fillcolor="#FBFBF4", label="{D2|Velocity Window}"];
+  D2 [shape=none, margin=0, fixedsize=false, width=0, height=0, style="", fillcolor="black", fontcolor="white", fontsize=12, label=<
+    <table border="0" cellborder="1" cellspacing="0" cellpadding="7" color="#E3D34A">
+      <tr><td sides="TBR"><font color="#E3D34A">D2</font></td>
+          <td sides="TB"> Profile Cache (velocity window) </td></tr>
+    </table>>];
+  { rank=same; P32; D2; }
 
-  IN -> P31 [label=" tx + profiles"];
-  D1 -> P31 [label=" blacklist status"];
-  P31 -> P36 [label=" 40 points (immediate)"];
-  P31 -> P32 [label=" not blacklisted"];
-  D2 -> P32 [label=" recent count"];
-  P32 -> D2 [label=" new timestamp"];
-  P32 -> P33 [label=" 15 points if exceeded"];
-  D1 -> P33 [label=" monthly average"];
-  P33 -> P34 [label=" 12 points if anomalous"];
-  P34 -> P35 [label=" 8 points if high risk"];
-  P35 -> P36 [label=" 5 or 2 points by tier"];
-  P36 -> OUT [label=" rule score + flags"];
+  IN  -> P31 [xlabel="transaction + sender and receiver profiles  "];
+  P31 -> P32 [xlabel="neither party blacklisted  "];
+  P32 -> D2  [dir=both, arrowtail=normal, minlen=2, label="  add timestamp  \n  count last 10 min  "];
+  P32 -> P33 [xlabel="+15 if more than 5  "];
+  P33 -> P34 [xlabel="+12 if amount above 3 × monthly average  "];
+  P34 -> P35 [xlabel="+8 for wire, crypto, gambling, money service  "];
+  P35 -> P36 [xlabel="+5 high tier, +2 elevated  "];
+  P31 -> P36 [xlabel="  either party blacklisted: 40 points, no further checks", constraint=false];
+  P36 -> OUT [xlabel="rule score 0–40 + flags  "];
 }

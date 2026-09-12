@@ -1,31 +1,29 @@
 @startuml
-skinparam dpi 200
-skinparam backgroundColor white
-skinparam shadowing false
-skinparam defaultFontName Times New Roman
+!include _theme.iuml
 skinparam rectangle {
-  BorderColor #2F4F6F
-  BackgroundColor #F4F7FB
+  BackgroundColor #0F3B39
+  BorderColor #FFFFFF
+  FontColor #FFFFFF
 }
-rectangle "React Dashboard\n(analyst UI)" as UI #E8F0FE
-rectangle "**LAYER 1** — FastAPI Gateway\nvalidate payload · load account profile\n(Redis → MongoDB)" as L1 #DCEEF5
-rectangle "**LAYER 2**\nRule Engine\nvelocity · amount · blacklist\nmerchant · risk tier\n**score 0–40**" as L2
-rectangle "**LAYER 3**\nGraph Analyzer\nshared device/IP · circular flow\nfee-skimming mule chains\n**score 0–30**" as L3
-rectangle "**LAYER 4**\nRAG Pipeline\nChromaDB retrieval\nLLM score + explanation\n**score 0–30**" as L4
-rectangle "**LAYER 5** — Decision Engine\ncomposite = min(rule + graph + rag, 100)\n0–39 APPROVE   |   40–69 REVIEW   |   70+ BLOCK" as L5 #DCEEF5
-database "MongoDB\nprofiles + audit" as M
+title System Architecture — Five-Layer Pipeline
+rectangle "React Dashboard\n(analyst UI)" as UI
+rectangle "**Layer 1 — FastAPI Gateway**\nvalidate payload · load profiles (Redis, then MongoDB)" as L1
+rectangle "**Layer 2 — Rule Engine**\nblacklist · velocity · amount\nmerchant · risk tier\n**score 0–40**" as L2
+rectangle "**Layer 3 — Graph Analyzer**\nshared device and IP · circular flow\nmule chains · fraud-cluster proximity\n**score 0–30**" as L3
+rectangle "**Layer 5 — Decision Engine**\ncomposite = min(rule + graph + rag, 100)\n0–39 APPROVE · 40–69 REVIEW · 70+ BLOCK" as L5
+rectangle "**Layer 4 — RAG Pipeline**\n3 nearest fraud patterns · Llama 3\nscore and explanation\n**score 0–30**" as L4
+database "Redis\nprofile cache · velocity" as R
 database "Neo4j\ntransaction graph" as N
-database "Redis\ncache + velocity" as R
-database "ChromaDB\nknowledge base" as C
+database "MongoDB\nprofiles · audit trail" as M
+database "ChromaDB\nfraud-pattern knowledge base" as C
 UI -down-> L1 : HTTP / JSON
-L1 -down-> L2
-L1 -down-> L3
-L1 -down-> L4
-note right of L1 : run concurrently\nasyncio.gather()
+L1 -down-> L2 : asyncio.gather()
+L1 -down-> L3 : asyncio.gather()
 L2 -down-> L5
 L3 -down-> L5
-L4 -down-> L5
-L5 -down-> M : persist + respond
+L5 -down-> M : store and respond\nrag_pending = true
+L5 .right.> L4 : background task,\nafter the response
+L4 .down.> M : update score, decision\nand explanation
 L1 -left-> R
 L3 -right-> N
 L4 -right-> C

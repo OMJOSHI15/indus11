@@ -1,0 +1,82 @@
+' Shared look for the PlantUML figures, matched to the dark diagrams already in
+' the SRS (teal boxes, white rules, black ground) so the report reads as one set.
+skinparam dpi 200
+skinparam backgroundColor #000000
+skinparam shadowing false
+skinparam roundCorner 6
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam defaultFontColor #FFFFFF
+skinparam titleFontSize 24
+skinparam titleFontColor #FFFFFF
+skinparam ArrowColor #FFFFFF
+skinparam ArrowFontColor #FFFFFF
+skinparam ArrowFontSize 12
+skinparam stereotypeFontColor #CFCFCF
+skinparam NoteBackgroundColor #161616
+skinparam NoteBorderColor #BFBFBF
+skinparam NoteFontColor #FFFFFF
+skinparam participant {
+  BackgroundColor #0F3B39
+  BorderColor #FFFFFF
+  FontColor #FFFFFF
+}
+skinparam actor {
+  BackgroundColor #0F3B39
+  BorderColor #FFFFFF
+  FontColor #FFFFFF
+}
+skinparam database {
+  BackgroundColor #0F3B39
+  BorderColor #FFFFFF
+  FontColor #FFFFFF
+}
+skinparam sequence {
+  LifeLineBorderColor #9A9A9A
+  LifeLineBackgroundColor #2A2A2A
+  GroupBorderColor #9A9A9A
+  GroupBackgroundColor #000000
+  GroupHeaderFontColor #FFFFFF
+  GroupFontColor #FFFFFF
+  DividerBackgroundColor #161616
+  DividerBorderColor #9A9A9A
+  DividerFontColor #FFFFFF
+}
+skinparam state {
+  BackgroundColor #0F3B39
+  BorderColor #FFFFFF
+  FontColor #FFFFFF
+  AttributeFontColor #E6E6E6
+  StartColor #FFFFFF
+  EndColor #FFFFFF
+}
+skinparam component {
+  BackgroundColor #0F3B39
+  BorderColor #FFFFFF
+  FontColor #FFFFFF
+}
+skinparam interface {
+  BackgroundColor #0F3B39
+  BorderColor #FFFFFF
+}
+skinparam package {
+  BackgroundColor #000000
+  BorderColor #9A9A9A
+  FontColor #FFFFFF
+}
+skinparam node {
+  BackgroundColor #000000
+  BorderColor #9A9A9A
+  FontColor #FFFFFF
+}
+skinparam artifact {
+  BackgroundColor #0F3B39
+  BorderColor #FFFFFF
+  FontColor #FFFFFF
+}
+skinparam class {
+  BackgroundColor #0F3B39
+  BorderColor #FFFFFF
+  FontColor #FFFFFF
+  AttributeFontColor #FFFFFF
+}

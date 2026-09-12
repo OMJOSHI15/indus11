@@ -45,6 +45,10 @@ with open(os.path.join(HERE, "eval-results.json")) as f:
     EVAL = json.load(f)
 FLAGGED, GRAPH, COUNTS = EVAL["metrics"]["flagged"], EVAL["graph"], EVAL["counts"]
 REALISTIC = EVAL["metrics"]["realistic"]
+# Ring transactions on which CIRCULAR_FLOW itself fired in the 31 Aug evaluation.
+# eval-results.json records only the graph score, so this was counted from the
+# stored explanations of that run's 36 ring transactions. Recount after a re-run.
+CYCLE_HITS = 21
 
 FONT = "Times New Roman"
 BODY, SUB, CHAP = 12, 14, 16
@@ -206,8 +210,10 @@ def bullet(text, indent=0.35):
     return p
 
 
-def figure(png, title):
-    """Embed a rendered diagram with a chapter-scoped caption."""
+def figure(png, title, max_h=MAX_FIG_H):
+    """Embed a rendered diagram with a chapter-scoped caption. max_h lowers the
+    height cap when a full-width figure would leave its section heading stranded
+    on an otherwise empty page."""
     global _fig_n
     _fig_n += 1
     label = f"Figure {_chapter}.{_fig_n}"
@@ -215,8 +221,8 @@ def figure(png, title):
     with Image.open(path) as im:
         w_px, h_px = im.size
     width = USABLE_W
-    if width * h_px / w_px > MAX_FIG_H:
-        width = MAX_FIG_H * w_px / h_px
+    if width * h_px / w_px > max_h:
+        width = max_h * w_px / h_px
     doc.add_picture(path, width=Inches(width))
     pic = doc.paragraphs[-1]
     pic.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -377,6 +383,7 @@ def _apply_widths(t, widths):
 def code_block(lines, size=9):
     t = doc.add_table(rows=1, cols=1)
     t.style = "Table Grid"
+    t.rows[0]._tr.get_or_add_trPr().append(OxmlElement("w:cantSplit"))
     cell = t.cell(0, 0)
     cell.text = ""
     for i, line in enumerate(lines.split("\n")):
@@ -426,6 +433,9 @@ for i, txt in enumerate(["Dr. Deven Gol\nInternal Guide\nAssistant Professor\n"
     cell = _c.cell(0, i)
     cell.text = ""
     p = cell.paragraphs[0]
+    # Left-aligned: the body style is justified, which spreads each line of a
+    # short multi-line signature block across the whole cell.
+    p.alignment = WD_ALIGN_PARAGRAPH.LEFT
     p.paragraph_format.line_spacing = LINE
     p.paragraph_format.space_after = Pt(0)
     r = p.add_run(txt)
@@ -536,10 +546,13 @@ para("The following are outside the scope of the system: it does not move money 
      "model is identified as future work.")
 section("1.3 Document Overview")
 para("Chapter 2 describes the system as a whole. Chapter 3 states the functional, "
-     "non-functional and security requirements. Chapter 4 presents the system design "
-     "and data flow. Chapter 5 contains the UML models. Chapter 6 specifies the "
-     "database design. The conclusion, the references and the list of definitions and "
-     "acronyms follow at the end of the document.")
+     "non-functional and security requirements. Chapter 4 presents the system design: "
+     "the architecture, the data flow at three levels, and the component and "
+     "deployment views. Chapter 5 contains the use case, activity, sequence, class and "
+     "state diagrams. Chapter 6 specifies the database design, from the entity "
+     "relationship diagram to the data dictionary. The conclusion, the references and "
+     "the definitions follow, and the appendices give the application screen, sample "
+     "records from each data store and the commands that reproduce the measured results.")
 
 # ───────────────────────── CHAPTER 2 ─────────────────────────
 chapter("Overall Description")
@@ -644,7 +657,7 @@ table("Functional requirements — decision and persistence",
       [["FR-10", "Execute the rule and graph layers concurrently and return the decision from those two; score the retrieval and language-model layer after the response and fold its result into the stored record.", "routes/transactions"],
        ["FR-11", "Compute the composite score as the sum of the layer scores, clamped to 100.", "services/decision_engine"],
        ["FR-12", "Map the composite score to APPROVE, REVIEW or BLOCK using configured thresholds.", "services/decision_engine"],
-       ["FR-13", "Include the triggered signals and the model's reasoning in every response.", "services/decision_engine"],
+       ["FR-13", "Include the triggered signals in every response, and add the model's reasoning to the stored record when the language-model layer completes.", "services/decision_engine"],
        ["FR-14", "Persist every analysed transaction with its score, decision, explanation and note.", "models/transaction"],
        ["FR-15", "Return a previously analysed transaction by identifier, or a not-found response.", "routes/transactions"],
        ["FR-16", "List recent transactions, optionally filtered by decision.", "routes/transactions"],
@@ -675,7 +688,7 @@ para("Non-functional requirements are grouped below under performance, reliabili
      "requirements are stated separately in section 3.3.")
 para("Performance. The values below were measured on the development machine, an "
      "Apple Silicon computer running without a graphics processor, and are reproduced by "
-     "the commands in Appendix B.")
+     "the commands in Appendix C.")
 para("An earlier revision of this document reported a complete-pipeline latency of "
      "14,046 milliseconds, of which about 13.9 seconds was the language model. That "
      "measurement was taken when the language model was still inside the decision "
@@ -720,13 +733,14 @@ table("Software quality attributes", ["Attribute", "How it is achieved"],
                        "submission returns a defined conflict response."],
        ["Maintainability", "Each layer is a single function with one input and one "
                            "output type, so a layer can be replaced independently."],
-       ["Testability", "Thirty-six automated tests run with no database or network."],
+       ["Testability", "Forty-one automated tests run with no database or network."],
        ["Portability", "The entire stack is defined in one container composition file."],
        ["Usability", "Every decision is accompanied by a written explanation."],
        ["Accuracy", f"Precision {FLAGGED['precision']:.3f}, recall {FLAGGED['recall']:.3f}, "
                     f"F1 {FLAGGED['f1']:.3f} over {COUNTS['total']} transactions; "
                     f"{GRAPH['graph_flagged']} of {GRAPH['ring_transactions']} ring "
-                    "transactions detected."]],
+                    f"transactions flagged by the graph layer, {CYCLE_HITS} of them by "
+                    "the circular-flow check."]],
       widths=[1.3, 4.7])
 para("The precision figure above is measured on a dataset that is 25 per cent "
      "fraud, because a test set has to contain enough fraud to measure. A live "
@@ -781,7 +795,7 @@ para("Two of the scoring layers are adapted from published work. The graph layer
      "documentation [9]. The fourth layer applies retrieval-augmented generation, in "
      "which documents retrieved from a knowledge base are supplied to a language model "
      "as context for its answer [5].")
-figure("final-architecture.png", "System architecture — five-layer pipeline")
+figure("01-architecture.png", "System architecture — five-layer pipeline")
 section("4.2 Context Diagram")
 para("The context diagram shows the system as a single process together with the "
      "external entities that exchange data with it.")
@@ -790,6 +804,31 @@ section("4.3 Data Flow Diagram — Level 1")
 para("The level 1 diagram decomposes the system into its seven principal processes and "
      "shows the data stores each process reads from and writes to.")
 figure("final-dfd1.png", "Data flow diagram — Level 1")
+section("4.4 Data Flow Diagram — Level 2")
+para("The level 2 diagram decomposes process 3.0, the rule engine, into its individual "
+     "checks. The blacklist check runs first and ends the evaluation at the maximum of "
+     "40 points when either party is blacklisted. Otherwise the velocity check adds the "
+     "transaction's timestamp to a ten-minute window held in Redis and counts the "
+     "entries, and the amount, merchant and risk-tier checks follow. The checks read the "
+     "profiles already loaded by process 2.0; the velocity check is the only one that "
+     "touches a data store.")
+figure("12-dfd2.png", "Data flow diagram — Level 2, process 3.0")
+section("4.5 Component Diagram")
+para("The component diagram shows the parts of the FastAPI application and the stores "
+     "and services each one depends on. The routers call the rule engine, the graph "
+     "analyzer and the decision engine directly, and hand the language-model layer to a "
+     "background task limited to four concurrent assessments with a 180-second timeout. "
+     "The API-key guard applies only to the three routes that change stored state: the "
+     "decision override, the blacklist toggle and fraud label propagation.")
+figure("07-component.png", "Component diagram")
+section("4.6 Deployment Diagram")
+para("The deployment diagram follows docker-compose.yml: five containers on one host, "
+     "with named volumes for MongoDB, Neo4j and Redis and a bind mount for the ChromaDB "
+     "files. The API container waits until the three databases report healthy, seeds "
+     "MongoDB and Neo4j, then starts. Ollama runs on the host outside Docker and is "
+     "reached through host.docker.internal. On the development machine the same services "
+     "run natively and are started by scripts/run_local.sh.")
+figure("08-deployment.png", "Deployment diagram — Docker Compose")
 
 # ───────────────────────── CHAPTER 5 ─────────────────────────
 chapter("UML Diagrams")
@@ -797,18 +836,44 @@ section("5.1 Use Case Diagram")
 para("The use case diagram identifies the three actors and the services each may invoke.")
 figure("final-usecase.png", "Use case diagram")
 section("5.2 Activity Diagram")
-para("The activity diagram shows the workflow of a transaction across the participants, "
-     "including the concurrent evaluation of the three scoring layers and the manual "
-     "review path.")
-figure("final-activity.png", "Activity diagram — transaction analysis workflow")
-section("5.3 Class Diagram")
+para("The activity diagram follows one transaction across the participants. The rule "
+     "and graph layers score in parallel and set a provisional decision, the record is "
+     "stored and the response returned, and the language-model layer then runs in the "
+     "background. If it answers within the time limit its score and explanation are "
+     "added and the decision is banded again; if not, the provisional decision stands. "
+     "An analyst can approve or block a transaction held for review.")
+figure("03-activity.png", "Activity diagram — transaction analysis workflow")
+section("5.3 Sequence Diagram")
+para("The sequence diagram shows the calls behind one POST /api/v1/transactions/analyze "
+     "request in the order they occur. The response is sent after the insert and before "
+     "the language model is called, so the client receives rag_pending set to true and "
+     "polls GET /api/v1/transactions/{tx_id} until the flag clears. A duplicate tx_id "
+     "is rejected by the unique index with 409 Conflict, and no background task is "
+     "started for it.")
+figure("04-sequence.png", "Sequence diagram — transaction analysis")
+section("5.4 Class Diagram")
 para("The class diagram shows the domain classes, the abstract analysis layer with its "
      "three concrete implementations, and the relationships between them.")
 figure("final-class.png", "Class diagram — core domain and service classes")
+section("5.5 State Diagram")
+para("The state diagram gives the lifecycle of a transaction record. A record is created "
+     "only after scoring, so a request rejected at validation or as a duplicate never "
+     "reaches the store. Every stored record passes through a provisional state while "
+     "its language-model assessment is outstanding, and if that assessment fails or "
+     "times out the provisional decision becomes the final one. The dashboard offers the "
+     "approve and block actions only on a transaction under review.")
+figure("06-state.png", "State diagram — lifecycle of a transaction")
 
 # ───────────────────────── CHAPTER 6 ─────────────────────────
 chapter("Database Design")
-section("6.1 Logical Data Schema")
+section("6.1 Entity Relationship Diagram")
+para("The entity relationship diagram spans two stores. Accounts and transactions are "
+     "MongoDB collections; devices, IP addresses and the relationships between accounts "
+     "are held in Neo4j, where the graph layer queries them. The keys marked as foreign "
+     "keys are logical ones, enforced by the application, because neither store imposes "
+     "referential constraints across collections or between stores.")
+figure("09-er.png", "Entity relationship diagram", max_h=5.3)
+section("6.2 Logical Data Schema")
 para("The document store is schemaless, so the schema below is the logical one enforced "
      "by the application: the Beanie document models declare the fields, their types and "
      "their indexes, and those indexes are created when the application starts, so no "
@@ -837,15 +902,17 @@ table("Transactions collection", ["Field", "Type", "Constraint", "Description"],
        ["amount", "Float", "Greater than 0", "Transaction value."],
        ["currency", "String", "Default INR", "Currency code."],
        ["merchant_category", "String", "Optional", "Drives the merchant rule."],
+       ["merchant_id", "String", "Optional", "Merchant identifier, when supplied."],
        ["device_id", "String", "Optional", "Identity signal for the graph layer."],
        ["ip_address", "String", "Optional", "Identity signal for the graph layer."],
        ["composite_score", "Integer", "0 to 100", "Final risk score."],
        ["decision", "String", "Indexed", "APPROVE, REVIEW or BLOCK."],
        ["explanation", "String", "Bounded length", "Signals and model reasoning."],
        ["note", "String", "Optional", "Free text supplied at submission."],
+       ["rag_pending", "Boolean", "Default false", "True until the language-model layer updates the record."],
        ["created_at", "DateTime", "Default now", "Supports recent-first listing."]],
       widths=[1.6, 0.9, 1.2, 2.3], size=10)
-section("6.2 Data Dictionary")
+section("6.3 Data Dictionary")
 para("Every entity held outside the document store is defined below, one table per "
      "store. Together with the two collection tables above these cover all persisted "
      "data in the system.")
@@ -863,9 +930,9 @@ table("Graph node types (Neo4j)",
       widths=[0.9, 1.7, 1.2, 2.2], size=9.5)
 table("Graph relationship types (Neo4j)",
       ["Relationship", "From", "To", "Properties", "Purpose"],
-      [["SENT", "Account", "Account", "tx_id, amount",
+      [["SENT", "Account", "Account", "tx_id, amount, timestamp",
         "One money movement. Circular-flow and fee-skimming patterns are found "
-        "by traversing two to four of these."],
+        "by traversing two to four of these within 72 hours."],
        ["USED_DEVICE", "Account", "Device", "—",
         "Supports shared-device cluster detection."],
        ["USED_IP", "Account", "IPAddress", "—",
@@ -885,15 +952,14 @@ table("Cache keys (Redis)",
       widths=[1.6, 1.1, 2.3, 1.0], size=9.5)
 table("Vector store (ChromaDB)",
       ["Collection", "Field", "Type", "Description"],
-      [["fraud_patterns", "id", "String", "Stable identifier of the pattern document."],
+      [["fraud_patterns", "id", "String", "Stable identifier of the pattern document, p01 to p58."],
        ["fraud_patterns", "document", "Text",
-        "Description of one fraud typology; 58 documents are seeded on startup."],
+        "Description of one fraud typology; 58 documents are upserted on startup."],
        ["fraud_patterns", "embedding", "Vector",
         "Embedding used for similarity retrieval by the RAG layer."],
-       ["fraud_patterns", "metadata.category", "String",
-        "Typology group, for example mule ring, card testing or account takeover."],
-       ["fraud_patterns", "metadata.severity", "String",
-        "Indicative severity, used to weight the retrieved context."]],
+       ["fraud_patterns", "metadata.type", "String",
+        "Typology group, for example synthetic_identity, money_mule, "
+        "account_takeover or wire_fraud."]],
       widths=[1.2, 1.4, 0.9, 2.5], size=9.5)
 para("Transaction records are retained indefinitely to preserve the audit trail, and no "
      "deletion path is exposed through the interface. Referential integrity between "
@@ -921,9 +987,18 @@ para("Indus11 shows that detection capability and explainability need not be tra
      f"{FLAGGED['recall']*100:.1f} per cent recall on a labelled synthetic dataset of "
      f"{COUNTS['total']} transactions, while every decision carries the list of signals "
      "that caused it.")
-para("The graph layer justified its inclusion. It detected all "
-     f"{GRAPH['ring_transactions']} planted mule-ring transactions, which rules that "
-     "examine a single transaction cannot detect by construction.")
+para("The graph layer justified its inclusion. It flagged "
+     f"{GRAPH['graph_flagged']} of the {GRAPH['ring_transactions']} planted mule-ring "
+     "transactions, which rules that examine a single transaction cannot detect by "
+     f"construction. The circular-flow check itself fired on {CYCLE_HITS} of them; the "
+     "rest were flagged because the receiving account lies within two hops of a known "
+     "fraud account.")
+para("That check has a limitation found while rehearsing the review demonstration. It "
+     "follows a cycle outward from the sender and requires every hop to be later than "
+     "the one before, but the transaction that closes a ring is always the newest hop, "
+     "so the closing transfer never matches. A ring is recognised only when its "
+     "originator sends again. Following the path back from the receiver to the sender "
+     "instead would catch the ring on the transfer that completes it.")
 para("The evaluation also produced a negative result worth recording. No transaction "
      "reached the configured block threshold, so nothing is blocked automatically and "
      "every detection reaches an analyst. Lowering the threshold would automate "
@@ -931,6 +1006,8 @@ para("The evaluation also produced a negative result worth recording. No transac
      "decision requiring evidence rather than a change of configuration.")
 para("Planned enhancements, in order of priority:")
 for e in ["Resolve the block-threshold trade-off using the recorded transaction scores.",
+          "Detect a money-mule ring on the transfer that closes it, and re-run the "
+          "evaluation to measure the change.",
           "Extend the present shared-key check on the decision-altering routes to "
           "per-user authentication, and add structured request logging.",
           "Build an interactive fraud-ring visualisation on the existing graph endpoint.",
@@ -1043,19 +1120,83 @@ section("Appendix A — Application Screen")
 if os.path.exists(SHOT):
     doc.add_picture(SHOT, width=Inches(USABLE_W))
     doc.paragraphs[-1].alignment = WD_ALIGN_PARAGRAPH.CENTER
-    para("Figure A.1: Analyst dashboard showing risk metrics, decision mix, score "
-         "distribution, accuracy results and flagged transactions", size=11, bold=True,
+    para("Figure A.1: Analyst dashboard showing the decision split, decision mix, score "
+         "distribution, analysis form and accuracy results, captured from the running "
+         "system on 11 September 2026", size=11, bold=True,
          align=WD_ALIGN_PARAGRAPH.CENTER, after=10, spacing=LINE)
-section("Appendix B — Reproducing the Measured Results")
-code_block("""# 1. Start the complete stack
+section("Appendix B — Sample Database Records")
+para("The records below were read from the running system on 11 September 2026, one "
+     "from each store. MongoDB object identifiers are omitted, and the transaction's "
+     "explanation is shortened where marked.")
+para("MongoDB — accounts collection", bold=True, align=WD_ALIGN_PARAGRAPH.LEFT,
+     after=4).paragraph_format.keep_with_next = True
+code_block("""{
+  "account_id": "ACC-014",
+  "owner_name": "Nadia Osei",
+  "avg_monthly_transaction": 88000.0,
+  "is_blacklisted": true,
+  "country_code": "CA",
+  "risk_tier": "high"
+}""")
+para("MongoDB — transactions collection", bold=True, align=WD_ALIGN_PARAGRAPH.LEFT,
+     after=4).paragraph_format.keep_with_next = True
+code_block("""{
+  "tx_id": "REHEARSE-1789102514-2",
+  "sender_account_id": "ACC-013",
+  "receiver_account_id": "ACC-451",
+  "amount": 704000.0,
+  "currency": "INR",
+  "merchant_category": "wire_transfer",
+  "merchant_id": null,
+  "device_id": "DEV-FRAUD-A",
+  "ip_address": "203.0.113.66",
+  "composite_score": 83,
+  "decision": "BLOCK",
+  "explanation": "Triggered signals: AMOUNT_ANOMALY (₹704000 vs avg
+      ₹52000); HIGH_RISK_MERCHANT (wire_transfer); HIGH_RISK_SENDER_TIER;
+      SHARED_DEVICE (8 accounts on device DEV-FRAUD-A); SHARED_IP (12
+      accounts on IP 203.0.113.66); FRAUD_CLUSTER_PROXIMITY (5 fraud
+      neighbors); wire_fraud. A massive wire transfer from a high-risk
+      sender account, with a confirmed amount anomaly, [...]",
+  "note": null,
+  "rag_pending": false,
+  "created_at": "2026-09-11T04:55:16.568000"
+}""")
+para("Neo4j — node and relationships", bold=True, align=WD_ALIGN_PARAGRAPH.LEFT,
+     after=4).paragraph_format.keep_with_next = True
+code_block("""(:Account {account_id: "ACC-451", risk_label: "fraud"})
+  -[:SENT {tx_id: "STX-00001", amount: 7197.13,
+           timestamp: "2026-06-01T00:00:00"}]->
+(:Account {account_id: "ACC-452"})
+
+(:Account {account_id: "ACC-451"})
+  -[:USED_DEVICE]->
+(:Device {device_id: "DEV-FRAUD-A"})""")
+para("Redis — velocity window", bold=True, align=WD_ALIGN_PARAGRAPH.LEFT,
+     after=4).paragraph_format.keep_with_next = True
+code_block("""key     velocity:ACC-953          (sorted set, 600 second window)
+member  "1789103111.565832:1e9ec825"
+score   1789103111.565832""")
+para("ChromaDB — fraud_patterns collection", bold=True, align=WD_ALIGN_PARAGRAPH.LEFT,
+     after=4).paragraph_format.keep_with_next = True
+code_block("""id        p05
+metadata  {"type": "money_mule"}
+document  Mule fee skimming: funds pass through a chain of accounts with
+          each hop forwarding 85-95% of the amount received, the remainder
+          kept as the mule's cut. Amounts that shrink hop-by-hop are the
+          signature.""")
+section("Appendix C — Reproducing the Measured Results")
+code_block("""# 1. Start the stack in containers; the API container seeds both databases
 docker compose up --build
 
-# 2. Seed the synthetic datasets (run automatically by the API container)
-python -m scripts.seed_mongo
-python -m scripts.seed_neo4j
+#    or run it natively on the development machine, with a fresh seed
+./scripts/run_local.sh --seed
 
-# 3. Replay the labelled dataset through the pipeline
+# 2. Replay the labelled dataset (over an hour with the language model)
 python -m scripts.evaluate
+
+# 3. Measure response latency on the decision path
+python -m scripts.benchmark_latency
 
 # 4. Run the automated test suite (no databases required)
 pytest -q""")

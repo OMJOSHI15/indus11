@@ -1,0 +1,2766 @@
+{
+ "_provenance": "Per-layer split of the 31 August 2026 evaluation (docs/eval-results.json). That run was recovered from stored transaction records, which keep the composite score and the triggered flag codes but not the per-layer scores. The rule and graph points here are recomputed from the recorded flag codes using the fixed weights in app/services/rule_engine.py and graph_analyzer.py (each capped at its layer maximum); the language-model points are the composite minus both. Every row's derived language-model score falls within 0-30, as it must. Regenerate with: python docs/report_assets.py --from-api",
+ "rows": [
+  {
+   "tx_id": "EVAL-0831054332-0001",
+   "label": "fraud",
+   "pattern": "mule_ring",
+   "composite_score": 68,
+   "rule_score": 10,
+   "graph_score": 30,
+   "rag_score": 28,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "CIRCULAR_FLOW",
+    "MONEY_MULE_PATTERN",
+    "SHARED_IP",
+    "FRAUD_CLUSTER_PROXIMITY",
+    "wire_fraud"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0002",
+   "label": "fraud",
+   "pattern": "mule_ring",
+   "composite_score": 68,
+   "rule_score": 10,
+   "graph_score": 30,
+   "rag_score": 28,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "CIRCULAR_FLOW",
+    "MONEY_MULE_PATTERN",
+    "FRAUD_CLUSTER_PROXIMITY",
+    "wire_fraud",
+    "CEO_fraud"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0003",
+   "label": "fraud",
+   "pattern": "mule_ring",
+   "composite_score": 68,
+   "rule_score": 10,
+   "graph_score": 30,
+   "rag_score": 28,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "CIRCULAR_FLOW",
+    "MONEY_MULE_PATTERN",
+    "FRAUD_CLUSTER_PROXIMITY",
+    "wire_fraud",
+    "account_takeover"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0004",
+   "label": "fraud",
+   "pattern": "mule_ring",
+   "composite_score": 68,
+   "rule_score": 10,
+   "graph_score": 30,
+   "rag_score": 28,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "CIRCULAR_FLOW",
+    "MONEY_MULE_PATTERN",
+    "FRAUD_CLUSTER_PROXIMITY",
+    "wire_fraud",
+    "CEO_fraud"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0005",
+   "label": "fraud",
+   "pattern": "mule_ring",
+   "composite_score": 68,
+   "rule_score": 10,
+   "graph_score": 30,
+   "rag_score": 28,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "CIRCULAR_FLOW",
+    "MONEY_MULE_PATTERN",
+    "SHARED_IP",
+    "FRAUD_CLUSTER_PROXIMITY",
+    "wire_fraud",
+    "CEO_fraud"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0006",
+   "label": "fraud",
+   "pattern": "mule_ring",
+   "composite_score": 68,
+   "rule_score": 10,
+   "graph_score": 30,
+   "rag_score": 28,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "CIRCULAR_FLOW",
+    "MONEY_MULE_PATTERN",
+    "FRAUD_CLUSTER_PROXIMITY",
+    "wire_fraud",
+    "account_takeover"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0007",
+   "label": "fraud",
+   "pattern": "mule_ring",
+   "composite_score": 68,
+   "rule_score": 10,
+   "graph_score": 30,
+   "rag_score": 28,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "CIRCULAR_FLOW",
+    "MONEY_MULE_PATTERN",
+    "FRAUD_CLUSTER_PROXIMITY",
+    "wire_fraud"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0008",
+   "label": "fraud",
+   "pattern": "mule_ring",
+   "composite_score": 68,
+   "rule_score": 10,
+   "graph_score": 30,
+   "rag_score": 28,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "CIRCULAR_FLOW",
+    "MONEY_MULE_PATTERN",
+    "FRAUD_CLUSTER_PROXIMITY",
+    "wire_fraud",
+    "CEO_fraud"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0009",
+   "label": "fraud",
+   "pattern": "mule_ring",
+   "composite_score": 68,
+   "rule_score": 10,
+   "graph_score": 30,
+   "rag_score": 28,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "CIRCULAR_FLOW",
+    "MONEY_MULE_PATTERN",
+    "SHARED_IP",
+    "FRAUD_CLUSTER_PROXIMITY",
+    "wire_fraud",
+    "account_takeover"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0010",
+   "label": "fraud",
+   "pattern": "mule_ring",
+   "composite_score": 68,
+   "rule_score": 10,
+   "graph_score": 30,
+   "rag_score": 28,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "CIRCULAR_FLOW",
+    "MONEY_MULE_PATTERN",
+    "FRAUD_CLUSTER_PROXIMITY",
+    "wire_fraud",
+    "CEO_fraud"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0011",
+   "label": "fraud",
+   "pattern": "mule_ring",
+   "composite_score": 68,
+   "rule_score": 10,
+   "graph_score": 30,
+   "rag_score": 28,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "CIRCULAR_FLOW",
+    "MONEY_MULE_PATTERN",
+    "FRAUD_CLUSTER_PROXIMITY",
+    "wire_fraud",
+    "account_takeover"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0012",
+   "label": "fraud",
+   "pattern": "mule_ring",
+   "composite_score": 68,
+   "rule_score": 10,
+   "graph_score": 30,
+   "rag_score": 28,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "CIRCULAR_FLOW",
+    "MONEY_MULE_PATTERN",
+    "FRAUD_CLUSTER_PROXIMITY",
+    "wire_fraud",
+    "CEO_fraud"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0013",
+   "label": "fraud",
+   "pattern": "mule_ring",
+   "composite_score": 56,
+   "rule_score": 10,
+   "graph_score": 18,
+   "rag_score": 28,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "SHARED_IP",
+    "FRAUD_CLUSTER_PROXIMITY",
+    "wire_fraud",
+    "CEO_fraud"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0014",
+   "label": "fraud",
+   "pattern": "mule_ring",
+   "composite_score": 48,
+   "rule_score": 10,
+   "graph_score": 10,
+   "rag_score": 28,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "FRAUD_CLUSTER_PROXIMITY",
+    "wire_fraud",
+    "CEO_fraud"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0015",
+   "label": "fraud",
+   "pattern": "mule_ring",
+   "composite_score": 48,
+   "rule_score": 10,
+   "graph_score": 10,
+   "rag_score": 28,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "FRAUD_CLUSTER_PROXIMITY",
+    "wire_fraud",
+    "account_takeover"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0016",
+   "label": "fraud",
+   "pattern": "mule_ring",
+   "composite_score": 48,
+   "rule_score": 10,
+   "graph_score": 10,
+   "rag_score": 28,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "FRAUD_CLUSTER_PROXIMITY",
+    "wire_fraud",
+    "CEO_fraud"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0017",
+   "label": "fraud",
+   "pattern": "mule_ring",
+   "composite_score": 48,
+   "rule_score": 10,
+   "graph_score": 10,
+   "rag_score": 28,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "FRAUD_CLUSTER_PROXIMITY",
+    "wire_fraud",
+    "CEO_fraud"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0018",
+   "label": "fraud",
+   "pattern": "mule_ring",
+   "composite_score": 56,
+   "rule_score": 10,
+   "graph_score": 18,
+   "rag_score": 28,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "SHARED_IP",
+    "FRAUD_CLUSTER_PROXIMITY",
+    "wire_fraud",
+    "CEO_fraud"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0019",
+   "label": "fraud",
+   "pattern": "mule_ring",
+   "composite_score": 48,
+   "rule_score": 10,
+   "graph_score": 10,
+   "rag_score": 28,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "FRAUD_CLUSTER_PROXIMITY",
+    "wire_fraud",
+    "business_email_compromise"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0020",
+   "label": "fraud",
+   "pattern": "mule_ring",
+   "composite_score": 48,
+   "rule_score": 10,
+   "graph_score": 10,
+   "rag_score": 28,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "FRAUD_CLUSTER_PROXIMITY",
+    "wire_fraud",
+    "account_takeover"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0021",
+   "label": "fraud",
+   "pattern": "mule_ring",
+   "composite_score": 48,
+   "rule_score": 10,
+   "graph_score": 10,
+   "rag_score": 28,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "FRAUD_CLUSTER_PROXIMITY",
+    "wire_fraud",
+    "account_takeover"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0022",
+   "label": "fraud",
+   "pattern": "mule_ring",
+   "composite_score": 48,
+   "rule_score": 10,
+   "graph_score": 10,
+   "rag_score": 28,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "FRAUD_CLUSTER_PROXIMITY",
+    "wire_fraud",
+    "CEO_fraud"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0023",
+   "label": "fraud",
+   "pattern": "mule_ring",
+   "composite_score": 56,
+   "rule_score": 10,
+   "graph_score": 18,
+   "rag_score": 28,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "SHARED_IP",
+    "FRAUD_CLUSTER_PROXIMITY",
+    "wire_fraud",
+    "account_takeover"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0024",
+   "label": "fraud",
+   "pattern": "mule_ring",
+   "composite_score": 63,
+   "rule_score": 25,
+   "graph_score": 10,
+   "rag_score": 28,
+   "codes": [
+    "VELOCITY_EXCEEDED",
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "FRAUD_CLUSTER_PROXIMITY",
+    "wire_fraud",
+    "CEO_fraud"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0025",
+   "label": "fraud",
+   "pattern": "mule_ring",
+   "composite_score": 48,
+   "rule_score": 10,
+   "graph_score": 10,
+   "rag_score": 28,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "FRAUD_CLUSTER_PROXIMITY",
+    "wire_fraud",
+    "account_takeover"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0026",
+   "label": "fraud",
+   "pattern": "mule_ring",
+   "composite_score": 48,
+   "rule_score": 10,
+   "graph_score": 10,
+   "rag_score": 28,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "FRAUD_CLUSTER_PROXIMITY",
+    "wire_fraud",
+    "CEO_fraud"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0027",
+   "label": "fraud",
+   "pattern": "mule_ring",
+   "composite_score": 48,
+   "rule_score": 10,
+   "graph_score": 10,
+   "rag_score": 28,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "FRAUD_CLUSTER_PROXIMITY",
+    "wire_fraud"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0028",
+   "label": "fraud",
+   "pattern": "mule_ring",
+   "composite_score": 68,
+   "rule_score": 10,
+   "graph_score": 30,
+   "rag_score": 28,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "CIRCULAR_FLOW",
+    "MONEY_MULE_PATTERN",
+    "SHARED_IP",
+    "FRAUD_CLUSTER_PROXIMITY",
+    "wire_fraud",
+    "account_takeover"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0029",
+   "label": "fraud",
+   "pattern": "mule_ring",
+   "composite_score": 68,
+   "rule_score": 10,
+   "graph_score": 30,
+   "rag_score": 28,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "CIRCULAR_FLOW",
+    "MONEY_MULE_PATTERN",
+    "FRAUD_CLUSTER_PROXIMITY",
+    "wire_fraud",
+    "CEO_fraud"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0030",
+   "label": "fraud",
+   "pattern": "mule_ring",
+   "composite_score": 68,
+   "rule_score": 10,
+   "graph_score": 30,
+   "rag_score": 28,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "CIRCULAR_FLOW",
+    "MONEY_MULE_PATTERN",
+    "FRAUD_CLUSTER_PROXIMITY",
+    "wire_fraud",
+    "account_takeover"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0031",
+   "label": "fraud",
+   "pattern": "mule_ring",
+   "composite_score": 68,
+   "rule_score": 10,
+   "graph_score": 30,
+   "rag_score": 28,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "CIRCULAR_FLOW",
+    "MONEY_MULE_PATTERN",
+    "SHARED_IP",
+    "FRAUD_CLUSTER_PROXIMITY",
+    "wire_fraud",
+    "CEO_fraud"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0032",
+   "label": "fraud",
+   "pattern": "mule_ring",
+   "composite_score": 40,
+   "rule_score": 10,
+   "graph_score": 30,
+   "rag_score": 0,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "CIRCULAR_FLOW",
+    "MONEY_MULE_PATTERN",
+    "FRAUD_CLUSTER_PROXIMITY"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0033",
+   "label": "fraud",
+   "pattern": "mule_ring",
+   "composite_score": 68,
+   "rule_score": 10,
+   "graph_score": 30,
+   "rag_score": 28,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "CIRCULAR_FLOW",
+    "MONEY_MULE_PATTERN",
+    "FRAUD_CLUSTER_PROXIMITY",
+    "wire_fraud",
+    "account_takeover"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0034",
+   "label": "fraud",
+   "pattern": "mule_ring",
+   "composite_score": 68,
+   "rule_score": 10,
+   "graph_score": 30,
+   "rag_score": 28,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "CIRCULAR_FLOW",
+    "MONEY_MULE_PATTERN",
+    "SHARED_IP",
+    "FRAUD_CLUSTER_PROXIMITY",
+    "wire_fraud",
+    "business_email_compromise"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0035",
+   "label": "fraud",
+   "pattern": "mule_ring",
+   "composite_score": 68,
+   "rule_score": 10,
+   "graph_score": 30,
+   "rag_score": 28,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "CIRCULAR_FLOW",
+    "MONEY_MULE_PATTERN",
+    "FRAUD_CLUSTER_PROXIMITY",
+    "wire_fraud",
+    "CEO_fraud"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0036",
+   "label": "fraud",
+   "pattern": "mule_ring",
+   "composite_score": 68,
+   "rule_score": 10,
+   "graph_score": 30,
+   "rag_score": 28,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "CIRCULAR_FLOW",
+    "MONEY_MULE_PATTERN",
+    "FRAUD_CLUSTER_PROXIMITY",
+    "wire_fraud"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0037",
+   "label": "fraud",
+   "pattern": "shared_device",
+   "composite_score": 42,
+   "rule_score": 10,
+   "graph_score": 30,
+   "rag_score": 2,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "SHARED_DEVICE",
+    "CIRCULAR_FLOW",
+    "MONEY_MULE_PATTERN"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0038",
+   "label": "fraud",
+   "pattern": "shared_device",
+   "composite_score": 42,
+   "rule_score": 10,
+   "graph_score": 30,
+   "rag_score": 2,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "SHARED_DEVICE",
+    "CIRCULAR_FLOW",
+    "MONEY_MULE_PATTERN"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0039",
+   "label": "fraud",
+   "pattern": "shared_device",
+   "composite_score": 42,
+   "rule_score": 10,
+   "graph_score": 30,
+   "rag_score": 2,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "SHARED_DEVICE",
+    "CIRCULAR_FLOW",
+    "MONEY_MULE_PATTERN"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0040",
+   "label": "fraud",
+   "pattern": "shared_device",
+   "composite_score": 27,
+   "rule_score": 10,
+   "graph_score": 15,
+   "rag_score": 2,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "SHARED_DEVICE"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0041",
+   "label": "fraud",
+   "pattern": "shared_device",
+   "composite_score": 27,
+   "rule_score": 10,
+   "graph_score": 15,
+   "rag_score": 2,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "SHARED_DEVICE"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0042",
+   "label": "fraud",
+   "pattern": "shared_device",
+   "composite_score": 27,
+   "rule_score": 10,
+   "graph_score": 15,
+   "rag_score": 2,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "SHARED_DEVICE"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0043",
+   "label": "fraud",
+   "pattern": "shared_device",
+   "composite_score": 27,
+   "rule_score": 10,
+   "graph_score": 15,
+   "rag_score": 2,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "SHARED_DEVICE"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0044",
+   "label": "fraud",
+   "pattern": "shared_device",
+   "composite_score": 27,
+   "rule_score": 10,
+   "graph_score": 15,
+   "rag_score": 2,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "SHARED_DEVICE"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0045",
+   "label": "fraud",
+   "pattern": "shared_device",
+   "composite_score": 27,
+   "rule_score": 10,
+   "graph_score": 15,
+   "rag_score": 2,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "SHARED_DEVICE"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0046",
+   "label": "fraud",
+   "pattern": "shared_device",
+   "composite_score": 27,
+   "rule_score": 10,
+   "graph_score": 15,
+   "rag_score": 2,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "SHARED_DEVICE"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0047",
+   "label": "fraud",
+   "pattern": "shared_ip",
+   "composite_score": 66,
+   "rule_score": 10,
+   "graph_score": 28,
+   "rag_score": 28,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "CIRCULAR_FLOW",
+    "MONEY_MULE_PATTERN",
+    "SHARED_IP",
+    "account_takeover",
+    "transaction_laundering"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0048",
+   "label": "fraud",
+   "pattern": "shared_ip",
+   "composite_score": 46,
+   "rule_score": 10,
+   "graph_score": 8,
+   "rag_score": 28,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "SHARED_IP",
+    "account_takeover",
+    "transaction_laundering"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0049",
+   "label": "fraud",
+   "pattern": "shared_ip",
+   "composite_score": 66,
+   "rule_score": 10,
+   "graph_score": 28,
+   "rag_score": 28,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "CIRCULAR_FLOW",
+    "MONEY_MULE_PATTERN",
+    "SHARED_IP",
+    "account_takeover",
+    "card-not-present_fraud"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0050",
+   "label": "fraud",
+   "pattern": "shared_ip",
+   "composite_score": 46,
+   "rule_score": 10,
+   "graph_score": 8,
+   "rag_score": 28,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "SHARED_IP",
+    "account_takeover",
+    "card-not-present_fraud"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0051",
+   "label": "fraud",
+   "pattern": "shared_ip",
+   "composite_score": 46,
+   "rule_score": 10,
+   "graph_score": 8,
+   "rag_score": 28,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "SHARED_IP",
+    "account_takeover",
+    "transaction_laundering"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0052",
+   "label": "fraud",
+   "pattern": "shared_ip",
+   "composite_score": 46,
+   "rule_score": 10,
+   "graph_score": 8,
+   "rag_score": 28,
+   "codes": [
+    "HIGH_RISK_MERCHANT",
+    "ELEVATED_RISK_SENDER_TIER",
+    "SHARED_IP",
+    "account_takeover",
+    "card-not-present_fraud"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0053",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0054",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0055",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0056",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 16,
+   "rule_score": 2,
+   "graph_score": 12,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER",
+    "CIRCULAR_FLOW"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0057",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0058",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0059",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 30,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 28,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER",
+    "account_takeover",
+    "card_testing_burst"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0060",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0061",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0062",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0063",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0064",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0065",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0066",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0067",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0068",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0069",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0070",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0071",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0072",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0073",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0074",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0075",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0076",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0077",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0078",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0079",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0080",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0081",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0082",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0083",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 16,
+   "rule_score": 2,
+   "graph_score": 12,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER",
+    "CIRCULAR_FLOW"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0084",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0085",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0086",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0087",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0088",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0089",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0090",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0091",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0092",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0093",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0094",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0095",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0096",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 2,
+   "rule_score": 0,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": []
+  },
+  {
+   "tx_id": "EVAL-0831054332-0097",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0098",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0099",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0100",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0101",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0102",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0103",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0104",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 16,
+   "rule_score": 2,
+   "graph_score": 12,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER",
+    "CIRCULAR_FLOW"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0105",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0106",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 30,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 28,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER",
+    "account_takeover",
+    "bin_attack"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0107",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0108",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0109",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0110",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0111",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 30,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 28,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER",
+    "account_takeover"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0112",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0113",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0114",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0115",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0116",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0117",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0118",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0119",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0120",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0121",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0122",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0123",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0124",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0125",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0126",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0127",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0128",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0129",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0130",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0131",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0132",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0133",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0134",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0135",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0136",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0137",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0138",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0139",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0140",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0141",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0142",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0143",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0144",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 30,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 28,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER",
+    "account_takeover"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0145",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0146",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0147",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0148",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0149",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 30,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 28,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER",
+    "account_takeover",
+    "bin_attack"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0150",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0151",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0152",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0153",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0154",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0155",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0156",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0157",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 30,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 28,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER",
+    "account_takeover",
+    "bin_attack"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0158",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 2,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 0,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0159",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0160",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0161",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0162",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0163",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 30,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 28,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER",
+    "card-not-present fraud",
+    "card testing burst"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0164",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0165",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0166",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 30,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 28,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER",
+    "structuring",
+    "card-not-present fraud"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0167",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0168",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0169",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0170",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 30,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 28,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER",
+    "account_takeover",
+    "bin_attack"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0171",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 30,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 28,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER",
+    "card-not-present fraud",
+    "card testing burst"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0172",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 2,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 0,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0173",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0174",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0175",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0176",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0177",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0178",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0179",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0180",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 2,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 0,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0181",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0182",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 30,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 28,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER",
+    "account_takeover",
+    "bin_attack"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0183",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0184",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 2,
+   "rule_score": 0,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": []
+  },
+  {
+   "tx_id": "EVAL-0831054332-0185",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0186",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0187",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0188",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0189",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0190",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0191",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0192",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0193",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0194",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0195",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0196",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0197",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0198",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0199",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0200",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 42,
+   "rule_score": 40,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "BLACKLISTED_ACCOUNT"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0201",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0202",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0203",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 30,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 28,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER",
+    "account_takeover",
+    "card_testing_burst"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0204",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0205",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0206",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0207",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  },
+  {
+   "tx_id": "EVAL-0831054332-0208",
+   "label": "legit",
+   "pattern": "normal",
+   "composite_score": 4,
+   "rule_score": 2,
+   "graph_score": 0,
+   "rag_score": 2,
+   "codes": [
+    "ELEVATED_RISK_SENDER_TIER"
+   ]
+  }
+ ]
+}

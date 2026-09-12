@@ -1,41 +1,76 @@
 @startuml
-' Part 1 of the workflow: intake, validation and concurrent scoring. The
-' workflow is drawn as two diagrams because a single five-lane version has to be
-' scaled so far down to fit the page width that its text stops being readable.
-skinparam dpi 200
-skinparam backgroundColor white
-skinparam shadowing false
-skinparam defaultFontName Times New Roman
-skinparam defaultFontSize 13
-skinparam ArrowColor #333333
+!include _theme.iuml
 skinparam activity {
-  BorderColor #2F4F6F
-  BackgroundColor #F7FAFF
-  DiamondBorderColor #2F4F6F
-  DiamondBackgroundColor #FBFBF4
+  BackgroundColor #0F3B39
+  BorderColor #FFFFFF
+  FontColor #FFFFFF
+  DiamondBackgroundColor #0F3B39
+  DiamondBorderColor #FFFFFF
+  DiamondFontColor #FFFFFF
+  StartColor #FFFFFF
+  EndColor #FFFFFF
+  BarColor #FFFFFF
 }
+skinparam swimlane {
+  BorderColor #9A9A9A
+  TitleFontColor #FFFFFF
+}
+<style>
+activityDiagram {
+  circle {
+    BackgroundColor #FFFFFF
+    LineColor #FFFFFF
+  }
+}
+</style>
+title Activity Diagram — Transaction Analysis Workflow
 |Payment Client|
 start
 :Submit transaction;
 |API Gateway|
 :Validate request;
 if (Request well formed?) then (no)
-  :Reject request;
   |Payment Client|
-  :Receive rejection;
+  :Receive 422 rejection;
   stop
 else (yes)
 endif
 |API Gateway|
-:Load account profiles;
+:Load sender and receiver profiles;
 |Analysis Layers|
 fork
-  :Rule scoring;
+  :Rule scoring 0–40;
 fork again
-  :Graph scoring;
-fork again
-  :RAG scoring;
+  :Graph scoring 0–30;
 end fork
-:Emit three layer scores;
+|Decision Engine|
+:Band the rule + graph score;
+|API Gateway|
+if (tx_id already stored?) then (yes)
+  |Payment Client|
+  :Receive 409 conflict;
+  stop
+else (no)
+  :Store record, rag_pending = true;
+endif
+|Payment Client|
+:Receive provisional decision;
+|Analysis Layers|
+:RAG scoring 0–30 with explanation
+(background, 180 s limit);
+|Decision Engine|
+if (Model answered in time?) then (yes)
+  :Re-band the composite score;
+else (no)
+  :Keep the provisional decision;
+endif
+|API Gateway|
+:Update record, rag_pending = false;
+|Fraud Analyst|
+if (Decision is REVIEW?) then (yes)
+  :Inspect transaction;
+  :Approve or block;
+else (no)
+endif
 stop
 @enduml
