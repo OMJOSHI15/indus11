@@ -24,7 +24,7 @@ cleanup() {
   echo "${BOLD}Stopping…${OFF}"
   [[ -n "${API_PID:-}"  ]] && kill "$API_PID"  2>/dev/null && info "API stopped"
   [[ -n "${DASH_PID:-}" ]] && kill "$DASH_PID" 2>/dev/null && info "dashboard stopped"
-  info "databases left running (brew services stop neo4j redis mongodb-community@7.0)"
+  info "databases left running (stop: pkill -f mongodb-community@7.0/bin/mongod; brew services stop neo4j redis)"
   exit 0
 }
 trap cleanup INT TERM
@@ -52,11 +52,17 @@ if brew services list 2>/dev/null | grep -Eq "^mongodb-community +(started|error
   brew services stop mongodb-community >/dev/null 2>&1 \
     && info "stopped mongodb-community (8.x cannot open this 7.0 data)"
 fi
-if brew services list 2>/dev/null | grep -q "^mongodb-community@7.0 .*started"; then
+# Started directly rather than through `brew services`. Homebrew 6 renamed its
+# service files from homebrew.mxcl.* to sh.brew.*, and the installed 7.0 keg
+# predates the rename, so `brew services start` silently finds nothing to load.
+# Running mongod with the same config file does not depend on that naming.
+MONGOD=/opt/homebrew/opt/mongodb-community@7.0/bin/mongod
+if nc -z localhost 27017 >/dev/null 2>&1; then
   ok "mongodb 7.0 already running"
+elif "$MONGOD" --config /opt/homebrew/etc/mongod.conf --fork >/tmp/indus11-mongod.log 2>&1; then
+  ok "mongodb 7.0 started"
 else
-  # restart, not start: a service left in the error state is not restarted by start
-  brew services restart mongodb-community@7.0 >/dev/null 2>&1 && ok "mongodb 7.0 started"
+  fail "mongod did not start. See /tmp/indus11-mongod.log and /opt/homebrew/var/log/mongodb/mongo.log"
 fi
 
 if brew services list 2>/dev/null | grep -q "^redis .*started"; then

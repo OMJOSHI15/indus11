@@ -107,13 +107,24 @@ brew services restart neo4j
 
 ### MongoDB will not start
 
-Two formulas are installed and only `@7.0` works:
+Only MongoDB 7.0 can open this data. `run_local.sh` starts it directly, not
+through `brew services`: Homebrew 6 renamed its service files, and the installed
+7.0 has none under the new name, so `brew services start` quietly does nothing.
+To start it by hand:
 
 ```bash
-brew services start mongodb-community@7.0
+/opt/homebrew/opt/mongodb-community@7.0/bin/mongod --config /opt/homebrew/etc/mongod.conf --fork
 ```
 
-The unversioned `mongodb-community` is broken and can be ignored.
+The unversioned `mongodb-community` is MongoDB 8.x. It refuses this data and
+exits, and if it is registered as a service it also takes port 27017 at login,
+so leave it stopped.
+
+### Stopping everything
+
+```bash
+lsof -ti:8000,5175 | xargs kill 2>/dev/null; pkill -f mongodb-community@7.0/bin/mongod; brew services stop neo4j redis
+```
 
 ### A port is already in use
 
