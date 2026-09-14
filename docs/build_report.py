@@ -447,6 +447,10 @@ def term_table(items, widths=(1.6, 4.4)):
 
 
 # ───────────────────────── FRONT MATTER ─────────────────────────
+# The icon alone, not the wordmark: the registered title below is still Indus11.
+doc.add_picture(os.path.join(HERE, "brand", "nirix-icon.png"), width=Inches(1.15))
+doc.paragraphs[-1].alignment = WD_ALIGN_PARAGRAPH.CENTER
+doc.paragraphs[-1].paragraph_format.space_after = Pt(14)
 para("PROJECT REPORT", CHAP, True, WD_ALIGN_PARAGRAPH.CENTER, 10)
 para("INDUS11 — AI FINANCIAL RISK AND FRAUD DECISION ENGINE", CHAP, True,
      WD_ALIGN_PARAGRAPH.CENTER, 20)
