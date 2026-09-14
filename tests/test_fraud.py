@@ -2,8 +2,10 @@
 Basic tests for the fraud detection pipeline.
 Run with: pytest tests/ -v
 """
+import asyncio
+
 import pytest
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 from fastapi import HTTPException
 
@@ -87,6 +89,23 @@ async def test_graph_analyzer_degrades_on_neo4j_failure():
         result = await run_graph_analyzer(tx)
     assert result.score == 0
     assert "GRAPH_ANALYZER_ERROR" in result.flags
+    assert result.failed and "connection refused" in result.error
+
+
+@pytest.mark.asyncio
+async def test_rule_engine_marks_itself_failed_instead_of_raising():
+    """Redis down used to raise through asyncio.gather and fail the whole request."""
+    with patch("app.services.rule_engine.increment_velocity", new_callable=AsyncMock,
+               side_effect=ConnectionError("redis down")):
+        result = await run_rule_engine(make_tx(), make_profile(), make_profile(account_id="ACC-002"))
+    assert result.failed and result.score == 0
+    assert result.flags == ["RULE_ENGINE_ERROR"]
+    assert "redis down" in result.error
+
+
+def test_layer_failure_names_an_exception_that_has_no_message():
+    """asyncio.TimeoutError has an empty message; the analyst still needs a reason."""
+    assert LayerScore.failure(30, "RAG_PIPELINE_ERROR", asyncio.TimeoutError()).error == "TimeoutError"
 
 
 # ── API-key guard Tests ───────────────────────────────────────────────────────
@@ -189,7 +208,10 @@ async def test_rag_returns_score_and_explanation_on_both_paths():
 
     assert score.score == 0
     assert score.flags == ["RAG_PIPELINE_ERROR"]
-    assert "chroma down" in explanation
+    # The error travels on the score, where the decision engine names the failed
+    # layer; there is no model text to show, so the explanation is empty.
+    assert score.failed and "chroma down" in score.error
+    assert explanation == ""
 
 
 # ── Decision Engine Tests ─────────────────────────────────────────────────────
@@ -278,3 +300,97 @@ def test_pending_rag_explanation_skips_validation():
     )
     assert result.rag_pending is True
     assert "Pending" in result.explanation
+
+
+# ── Layer failure handling ────────────────────────────────────────────────────
+
+def failed_layer(max_score, flag):
+    return LayerScore.failure(max_score, flag, ConnectionError("down"))
+
+
+def test_failed_layer_sends_a_would_be_approval_to_review():
+    result = make_decision(make_tx(), failed_layer(40, "RULE_ENGINE_ERROR"), make_layer(0, 30),
+                           make_layer(0, 30), "Routine purchase.", 50.0)
+    assert result.decision.value == "REVIEW"
+    assert result.composite_score == 0
+    assert result.layer_failures == {"rule_engine": "ConnectionError: down"}
+    assert "Rule engine failed, so this transaction was sent for review" in result.explanation
+
+
+def test_failed_layer_keeps_a_block_the_other_layers_earned():
+    result = make_decision(make_tx(), make_layer(40, 40, ["BLACKLISTED_ACCOUNT"]),
+                           failed_layer(30, "GRAPH_ANALYZER_ERROR"), make_layer(30, 30),
+                           "Blacklisted sender.", 50.0)
+    assert result.decision.value == "BLOCK"
+    assert "graph_analyzer" in result.layer_failures
+    assert "the block stands on the layers that ran" in result.explanation
+
+
+def test_failed_language_model_shows_no_model_text_and_skips_the_guard():
+    result = make_decision(make_tx(), make_layer(40, 40, ["BLACKLISTED_ACCOUNT"]), make_layer(0, 30),
+                           failed_layer(30, "RAG_PIPELINE_ERROR"), "", 50.0)
+    assert "Language model failed" in result.explanation
+    assert "did not reference" not in result.explanation
+
+
+def test_error_flag_words_do_not_satisfy_the_explanation_guard():
+    """RULE_ENGINE_ERROR is not evidence: prose mentioning "rules" must not pass on it."""
+    result = make_decision(make_tx(), failed_layer(40, "RULE_ENGINE_ERROR"),
+                           make_layer(15, 30, ["SHARED_DEVICE (8 accounts on device DEV-X)"]),
+                           make_layer(10, 30), "Our rules engine saw nothing unusual.", 50.0)
+    assert "did not reference the triggered signals" in result.explanation
+
+
+def test_no_failures_reported_when_every_layer_ran():
+    result = make_decision(make_tx(), make_layer(5, 40), make_layer(0, 30), make_layer(0, 30),
+                           "Low risk.", 50.0)
+    assert result.layer_failures == {}
+
+
+@pytest.mark.asyncio
+async def test_background_timeout_records_the_failure_and_replaces_the_placeholder():
+    """Clearing only rag_pending left "Pending —" on four stored records for good."""
+    from app.api.routes import transactions as route
+    record = MagicMock()
+    record.update = AsyncMock()
+    fake_model = MagicMock()
+    fake_model.find_one.return_value = record
+    with patch.object(route, "run_rag_pipeline", new_callable=AsyncMock, side_effect=asyncio.TimeoutError()), \
+         patch.object(route, "Transaction", fake_model):
+        await route._finish_rag_layer(make_tx(), make_profile(), make_layer(0, 40), make_layer(0, 30), 10.0)
+    fields = record.update.await_args.args[0]["$set"]
+    assert fields["rag_pending"] is False
+    assert fields["decision"] == "REVIEW"
+    assert fields["layer_failures"] == {"rag_pipeline": "TimeoutError"}
+    assert "Pending" not in fields["explanation"]
+
+
+@pytest.mark.asyncio
+async def test_restarting_an_unknown_component_is_404():
+    from app.api.routes.components import restart_component
+    with pytest.raises(HTTPException) as exc:
+        await restart_component("mongodb")
+    assert exc.value.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_restart_resets_the_client_then_reports_the_dependency():
+    from app.api.routes import components
+    reset = AsyncMock()
+    check = AsyncMock(side_effect=ConnectionError("Error 61 connecting to localhost:6390"))
+    with patch.dict(components.COMPONENTS, {"rule_engine": ("Rule engine", "Redis", reset, check)}):
+        status = await components.restart_component("rule_engine")
+    reset.assert_awaited_once()
+    assert status["ok"] is False
+    assert status["detail"].startswith("Redis is not reachable")
+
+
+def test_two_failed_layers_are_named_in_one_sentence():
+    result = make_decision(make_tx(), failed_layer(40, "RULE_ENGINE_ERROR"), make_layer(0, 30),
+                           failed_layer(30, "RAG_PIPELINE_ERROR"), "", 50.0)
+    assert "Rule engine and language model failed" in result.explanation
+
+
+def test_multiline_driver_errors_are_flattened():
+    error = LayerScore.failure(30, "GRAPH_ANALYZER_ERROR", RuntimeError("Couldn't connect:\nattempt 1\nattempt 2")).error
+    assert "\n" not in error and "attempt 1 attempt 2" in error

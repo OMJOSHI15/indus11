@@ -120,6 +120,15 @@ The unversioned `mongodb-community` is MongoDB 8.x. It refuses this data and
 exits, and if it is registered as a service it also takes port 27017 at login,
 so leave it stopped.
 
+### The dashboard shows "Rule engine failed" (or graph analyzer, or language model)
+
+That layer could not reach the service it depends on, so the transaction was sent
+to review instead of being approved on a missing score. Start the service first —
+Redis for the rule engine, Neo4j for the graph analyzer, Ollama for the language
+model — then press **Restart** on the red panel. It reconnects and says whether
+the service now answers. The transaction already scored stays in review; new
+transactions use the restarted component.
+
 ### Stopping everything
 
 ```bash

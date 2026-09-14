@@ -62,6 +62,11 @@ export const analyzeTransaction = async (tx) => {
   return request("/transactions/analyze", { method: "POST", body: JSON.stringify(tx) });
 };
 
+export const restartComponent = async (name) => {
+  if (DEMO) throw new Error(DEMO_WRITE_MESSAGE);
+  return request(`/components/${name}/restart`, { method: "POST" });
+};
+
 export const updateDecision = async (id, decision) => {
   if (DEMO) throw new Error(DEMO_WRITE_MESSAGE);
   return request(`/transactions/${id}/decision`, {

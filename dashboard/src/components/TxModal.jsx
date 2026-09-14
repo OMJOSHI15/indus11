@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { DEMO, getTransaction, updateDecision } from "../api.js";
+import ComponentFailure from "./ComponentFailure.jsx";
 
 const S = {
   overlay: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex",
@@ -70,6 +71,9 @@ export default function TxModal({ txId, onClose, onUpdated }) {
             </dl>
             {tx.note && <p style={S.note}><b>Submitted reason:</b> {tx.note}</p>}
             <p style={S.expl}>{tx.explanation || "No explanation recorded."}</p>
+            {Object.entries(tx.layer_failures ?? {}).map(([name, error]) => (
+              <ComponentFailure key={name} name={name} error={error} />
+            ))}
             {tx.decision === "REVIEW" && DEMO ? (
               <p style={S.final}>
                 Awaiting analyst review. Overriding a decision writes to the

@@ -10,7 +10,7 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
-from app.api.routes import accounts, graph, health, stats, transactions
+from app.api.routes import accounts, components, graph, health, stats, transactions
 from app.config import settings
 from app.core.database import close_db, init_db
 from app.core.neo4j_client import close_driver, ensure_indexes
@@ -46,6 +46,7 @@ app.include_router(transactions.router, prefix="/api/v1")
 app.include_router(accounts.router, prefix="/api/v1")
 app.include_router(graph.router, prefix="/api/v1")
 app.include_router(stats.router, prefix="/api/v1")
+app.include_router(components.router, prefix="/api/v1")
 
 
 # ── Startup / shutdown ────────────────────────────────────────────────────────
@@ -54,10 +55,19 @@ async def startup():
     logger.info("Starting Indus11...")
     await init_db()
     logger.info("MongoDB connected (Beanie indexes ready)")
-    await ensure_indexes()
-    logger.info("Neo4j indexes ready")
-    await seed_knowledge_base()
-    logger.info("ChromaDB knowledge base ready")
+    # MongoDB is required. Neo4j and ChromaDB are not: if either is down the
+    # API still starts, the affected layer marks itself failed per request, and
+    # it can be restarted from the dashboard once the service is back.
+    try:
+        await ensure_indexes()
+        logger.info("Neo4j indexes ready")
+    except Exception as e:
+        logger.warning(f"Neo4j unavailable at startup ({e}); the graph layer will report failures")
+    try:
+        await seed_knowledge_base()
+        logger.info("ChromaDB knowledge base ready")
+    except Exception as e:
+        logger.warning(f"ChromaDB unavailable at startup ({e}); the RAG layer will report failures")
     logger.info("Indus11 is live at http://localhost:8000/docs")
 
 

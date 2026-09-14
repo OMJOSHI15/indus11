@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { DEMO, analyzeTransaction, getTransaction } from "../api.js";
+import ComponentFailure from "./ComponentFailure.jsx";
 import {
   AlertTriangleIcon,
   BanIcon,
@@ -21,7 +22,7 @@ const DECISION_META = {
   BLOCK: { icon: BanIcon, color: "var(--danger)" },
 };
 
-function LayerBar({ name, layer, pending }) {
+function LayerBar({ id, name, layer, pending }) {
   return (
     <div className="layer-bar">
       <div className="meta">
@@ -30,7 +31,7 @@ function LayerBar({ name, layer, pending }) {
           {pending && <span className="pending-tag">scoring…</span>}
         </span>
         <span>
-          {pending ? "—" : `${layer.score}/${layer.max_score}`}
+          {pending ? "—" : layer.failed ? "failed" : `${layer.score}/${layer.max_score}`}
         </span>
       </div>
       <div
@@ -46,6 +47,7 @@ function LayerBar({ name, layer, pending }) {
           style={{ width: `${(layer.score / layer.max_score) * 100}%` }}
         />
       </div>
+      {layer.failed && <ComponentFailure name={id} error={layer.error} />}
     </div>
   );
 }
@@ -113,8 +115,13 @@ export default function AnalyzeForm({ onAnalyzed }) {
                   decision: record.decision,
                   composite_score: record.composite_score,
                   explanation: record.explanation,
+                  layer_failures: record.layer_failures ?? {},
                   rag_pipeline: {
                     ...prev.rag_pipeline,
+                    // The background task records a failed model here, not on
+                    // the layer object the first response carried.
+                    failed: Boolean(record.layer_failures?.rag_pipeline),
+                    error: record.layer_failures?.rag_pipeline ?? null,
                     score: Math.max(
                       record.composite_score -
                         prev.rule_engine.score -
@@ -233,9 +240,10 @@ export default function AnalyzeForm({ onAnalyzed }) {
             </span>
             <span className="latency">{result.processing_time_ms.toFixed(0)} ms</span>
           </div>
-          <LayerBar name="Rule engine" layer={result.rule_engine} />
-          <LayerBar name="Graph analysis" layer={result.graph_analyzer} />
+          <LayerBar id="rule_engine" name="Rule engine" layer={result.rule_engine} />
+          <LayerBar id="graph_analyzer" name="Graph analysis" layer={result.graph_analyzer} />
           <LayerBar
+            id="rag_pipeline"
             name="RAG assessment"
             layer={result.rag_pipeline}
             pending={result.rag_pending}

@@ -97,7 +97,7 @@ async def _finish_rag_layer(
             # The rule and graph findings go with it: an explanation written
             # blind to what actually fired is a plausible-sounding narrative
             # for a decision it played no part in.
-            rag_result = await asyncio.wait_for(
+            rag_score, rag_explanation = await asyncio.wait_for(
                 run_rag_pipeline(
                     tx, sender, rule_result.flags + graph_result.flags
                 ),
@@ -105,14 +105,12 @@ async def _finish_rag_layer(
             )
         except Exception as e:
             # Nothing awaits this task, so an escaping exception would only
-            # surface in the log and leave the record pending forever. Clear
-            # the flag and keep the deterministic decision already persisted.
+            # surface in the log. A timeout is a failed layer like any other:
+            # record it and re-band the decision below. Clearing only the
+            # pending flag used to leave the "Pending —" placeholder on the
+            # record for good.
             logger.warning(f"Background RAG failed for {tx.tx_id}: {e}")
-            await Transaction.find_one(Transaction.tx_id == tx.tx_id).update(
-                {"$set": {"rag_pending": False}}
-            )
-            return
-    rag_score, rag_explanation = rag_result
+            rag_score, rag_explanation = LayerScore.failure(30, "RAG_PIPELINE_ERROR", e), ""
     total_ms = deterministic_ms + (time.perf_counter() - start) * 1000
 
     final = make_decision(tx, rule_result, graph_result, rag_score, rag_explanation, total_ms)
@@ -121,6 +119,7 @@ async def _finish_rag_layer(
             "composite_score": final.composite_score,
             "decision": final.decision.value,
             "explanation": final.explanation[:2000],
+            "layer_failures": final.layer_failures,
             "rag_pending": False,
         }}
     )
@@ -141,11 +140,19 @@ async def analyze_transaction(request: Request, tx: TransactionRequest, backgrou
     """
     start = time.perf_counter()
 
-    # Load account profiles (cached)
-    sender, receiver = await asyncio.gather(
-        _load_account_profile(tx.sender_account_id),
-        _load_account_profile(tx.receiver_account_id),
-    )
+    # Load account profiles (cached). The cache is best effort; MongoDB is the
+    # store of record, and without it nothing can be scored or saved.
+    try:
+        sender, receiver = await asyncio.gather(
+            _load_account_profile(tx.sender_account_id),
+            _load_account_profile(tx.receiver_account_id),
+        )
+    except Exception as e:
+        logger.error(f"Account store unavailable for {tx.tx_id}: {e}")
+        raise HTTPException(
+            status_code=503,
+            detail="The account store is unavailable, so the transaction was not analysed.",
+        )
 
     # Run the two deterministic analyzers concurrently — the RAG/LLM layer is
     # scored separately in the background, see _finish_rag_layer above.
@@ -176,6 +183,7 @@ async def analyze_transaction(request: Request, tx: TransactionRequest, backgrou
         decision=response.decision.value,
         explanation=response.explanation[:2000],
         note=tx.note,
+        layer_failures=response.layer_failures,
         rag_pending=True,
         created_at=datetime.utcnow(),
     )
@@ -187,6 +195,12 @@ async def analyze_transaction(request: Request, tx: TransactionRequest, backgrou
         raise HTTPException(
             status_code=409,
             detail=f"Transaction {tx.tx_id} has already been analysed",
+        )
+    except Exception as e:
+        logger.error(f"Could not store {tx.tx_id}: {e}")
+        raise HTTPException(
+            status_code=503,
+            detail="The transaction was scored but could not be recorded; submit it again.",
         )
 
     background_tasks.add_task(_finish_rag_layer, tx, sender, rule_result, graph_result, elapsed_ms)

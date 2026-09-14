@@ -93,6 +93,7 @@ async def recent_flags(limit: int = Query(default=20, ge=1, le=100)):
             "composite_score": tx.composite_score,
             "decision": tx.decision,
             "explanation": tx.explanation,
+            "layer_failures": tx.layer_failures,
             "created_at": tx.created_at,
         }
         for tx in flagged

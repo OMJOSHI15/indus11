@@ -4,11 +4,13 @@ Owner: Member A
 
 Checks transactions against configurable rules and returns a score (0-40) plus flag reasons.
 """
-from datetime import datetime
+import logging
 
 from app.core.redis_client import increment_velocity
 from app.schemas.transaction import LayerScore, TransactionRequest
 from app.schemas.risk import AccountProfile
+
+logger = logging.getLogger(__name__)
 
 # Merchant categories that always trigger elevated scrutiny
 HIGH_RISK_MERCHANTS = {"crypto_exchange", "wire_transfer", "gambling", "money_service"}
@@ -28,7 +30,24 @@ async def run_rule_engine(
     """
     Evaluate a transaction against all rules.
     Returns a LayerScore with score (0-40) and list of triggered flag reasons.
+
+    If the rules cannot run — Redis unreachable for the velocity window, in
+    practice — the layer is marked failed rather than raising, which would take
+    the whole /analyze request down with it through asyncio.gather(). The
+    decision engine then sends the transaction to review.
     """
+    try:
+        return await _run_rules(tx, sender, receiver)
+    except Exception as e:
+        logger.warning(f"Rule engine error: {e} — layer marked failed")
+        return LayerScore.failure(40, "RULE_ENGINE_ERROR", e)
+
+
+async def _run_rules(
+    tx: TransactionRequest,
+    sender: AccountProfile,
+    receiver: AccountProfile,
+) -> LayerScore:
     score = 0
     flags: list[str] = []
 

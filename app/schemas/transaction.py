@@ -61,6 +61,18 @@ class LayerScore(BaseModel):
     score: int
     max_score: int
     flags: list[str] = []
+    # A layer that raised is marked, not just scored zero: a zero from a layer
+    # that never ran must not look the same as a zero from a clean transaction.
+    failed: bool = False
+    error: Optional[str] = None
+
+    @classmethod
+    def failure(cls, max_score: int, flag: str, exc: BaseException) -> "LayerScore":
+        """The score a layer returns when it could not run."""
+        # asyncio.TimeoutError has an empty message, so fall back to its type.
+        detail = f"{type(exc).__name__}: {exc}" if str(exc) else type(exc).__name__
+        detail = " ".join(detail.split())    # driver errors span several lines
+        return cls(score=0, max_score=max_score, flags=[flag], failed=True, error=detail[:200])
 
 
 class AnalysisResponse(BaseModel):
@@ -79,4 +91,10 @@ class AnalysisResponse(BaseModel):
         description="True if the RAG/LLM layer hasn't scored this transaction yet — "
                      "the rule+graph decision returned within budget and the written "
                      "explanation attaches once the language model finishes.",
+    )
+    layer_failures: dict[str, str] = Field(
+        default_factory=dict,
+        description="Layers that could not run, mapped to their error. A transaction "
+                    "that would otherwise be approved is sent to review when this is "
+                    "not empty.",
     )

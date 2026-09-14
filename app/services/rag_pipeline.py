@@ -38,6 +38,13 @@ def _get_collection():
     return _collection
 
 
+def reset_clients() -> None:
+    """Drop the cached ChromaDB client so the next call reconnects. Used by the
+    component restart route."""
+    global _chroma_client, _collection
+    _chroma_client = _collection = None
+
+
 def _ollama() -> Ollama:
     """
     Local Ollama client. temperature=0 is not optional: at Ollama's default
@@ -225,8 +232,8 @@ async def run_rag_pipeline(
         ), parsed.get("explanation", "No explanation provided.")
 
     except Exception as e:
-        logger.warning(f"RAG pipeline error: {e} — defaulting to score 0")
-        return LayerScore(score=0, max_score=30, flags=["RAG_PIPELINE_ERROR"]), str(e)
+        logger.warning(f"RAG pipeline error: {e} — layer marked failed")
+        return LayerScore.failure(30, "RAG_PIPELINE_ERROR", e), ""
 
 
 async def _invoke_with_fallback(prompt: ChatPromptTemplate, inputs: dict) -> str:

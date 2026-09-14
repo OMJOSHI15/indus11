@@ -30,12 +30,12 @@ async def run_graph_analyzer(tx: TransactionRequest) -> LayerScore:
     try:
         return await _run_checks(tx)
     except Exception as e:
-        # Matches the RAG layer's fallback (app/services/rag_pipeline.py): a
-        # Neo4j outage must not crash the whole /analyze request through
-        # asyncio.gather() — it degrades this layer to 0 instead, same as
-        # Review 1 asked for.
-        logger.warning(f"Graph analyzer error: {e} — defaulting to score 0")
-        return LayerScore(score=0, max_score=30, flags=["GRAPH_ANALYZER_ERROR"])
+        # A Neo4j outage must not crash the whole /analyze request through
+        # asyncio.gather(). The layer is marked failed, which the decision
+        # engine turns into a review — Review 1 asked what an analyst sees when
+        # the graph component is missing.
+        logger.warning(f"Graph analyzer error: {e} — layer marked failed")
+        return LayerScore.failure(30, "GRAPH_ANALYZER_ERROR", e)
 
 
 async def _run_checks(tx: TransactionRequest) -> LayerScore:
