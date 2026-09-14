@@ -671,7 +671,7 @@ table("Functional requirements — accounts, graph, reporting and operations",
        ["FR-19", "Return the graph neighbourhood of an account to a depth of one to three hops.", "routes/graph"],
        ["FR-20", "Propagate fraud labels to accounts within two hops and assign a cluster identifier.", "services/graph_analyzer"],
        ["FR-21", "Report graph statistics for accounts, devices, addresses, transactions and labels.", "routes/graph"],
-       ["FR-22", "Report dashboard statistics: decision counts and score histogram, the most recent review/block transactions, and the latest accuracy results.", "routes/stats"],
+       ["FR-22", "Report dashboard statistics: decision counts and score histogram; aggregates over all transactions by day, merchant category, amount band and triggered flag; the most recent review/block transactions; and the latest accuracy results.", "routes/stats"],
        ["FR-23", "Replay a labelled dataset and report precision, recall, F1, a confusion matrix and ring detection.", "scripts/evaluate"],
        ["FR-24", "Derive decisions again across candidate thresholds and report no block threshold when none is reachable.", "scripts/evaluate"],
        ["FR-25", "Limit each client to 120 requests per minute overall and 30 on the analysis endpoint.", "core/rate_limit"],
@@ -680,7 +680,7 @@ table("Functional requirements — accounts, graph, reporting and operations",
       widths=[0.5, 4.2, 1.3], size=9)
 table("Functional requirements — dashboard, security and resilience",
       ["ID", "Requirement", "Module"],
-      [["FR-28", "Display metrics, decision mix, score distribution, accuracy and flagged transactions with detail and override.", "dashboard"],
+      [["FR-28", "Display key figures, decisions by day, decision mix, graph entity counts, category and signal breakdowns, score distribution, flag rate by amount, accuracy, and the review queue with detail and override, in a light or dark theme.", "dashboard"],
        ["FR-29", "Require a shared key on the routes that override a decision, change blacklist status, propagate fraud labels, or report or restart a scoring component.", "core/security"],
        ["FR-30", "Restrict the graph layer's circular-flow detection to hops occurring within a configured window and in chronological order.", "services/graph_analyzer"],
        ["FR-31", "Withhold a written explanation that does not reference any triggered signal, and show the signal list alone in its place.", "services/decision_engine"],
@@ -741,7 +741,7 @@ table("Software quality attributes", ["Attribute", "How it is achieved"],
                        "submission returns a defined conflict response."],
        ["Maintainability", "Each layer is a single function with one input and one "
                            "output type, so a layer can be replaced independently."],
-       ["Testability", "Fifty-three automated tests run with no database or network."],
+       ["Testability", "Fifty-five automated tests run with no database or network."],
        ["Portability", "The entire stack is defined in one container composition file."],
        ["Usability", "Every decision is accompanied by a written explanation."],
        ["Accuracy", f"Precision {FLAGGED['precision']:.3f}, recall {FLAGGED['recall']:.3f}, "
@@ -1132,9 +1132,9 @@ section("Appendix A — Application Screen")
 if os.path.exists(SHOT):
     doc.add_picture(SHOT, width=Inches(USABLE_W))
     doc.paragraphs[-1].alignment = WD_ALIGN_PARAGRAPH.CENTER
-    para("Figure A.1: Analyst dashboard showing the decision split, decision mix, score "
-         "distribution, analysis form and accuracy results, captured from the running "
-         "system on 11 September 2026", size=11, bold=True,
+    para("Figure A.1: Analyst dashboard showing the key figures, decisions by day, decision "
+         "mix, graph entity counts and the category and signal breakdowns, captured from the "
+         "running system on 14 September 2026", size=11, bold=True,
          align=WD_ALIGN_PARAGRAPH.CENTER, after=10, spacing=LINE)
 section("Appendix B — Sample Database Records")
 para("The records below were read from the running system on 11 September 2026, one "

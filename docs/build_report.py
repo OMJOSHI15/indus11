@@ -680,7 +680,7 @@ bullets([
     "time from 260 ms to about 20 ms.",
     "An evaluation harness that replays a labelled dataset through the live API, sweeps the "
     "decision thresholds and reports precision at a realistic fraud prevalence.",
-    "An analyst dashboard and a one-command local stack, with 53 automated tests run in "
+    "An analyst dashboard and a one-command local stack, with 55 automated tests run in "
     "continuous integration.",
 ])
 section("1.8 Report Organization")
@@ -1084,18 +1084,26 @@ code_block("""def _explanation_matches_flags(explanation, all_flags):
         if len(word) >= 4 and word not in GENERIC_FLAG_WORDS
     )""")
 section("4.8 Prototype/User Interface")
-para("The analyst dashboard is a single React page served by Vite (Figure 4.2). The top row "
-     "shows the number of transactions analysed and the approve, review and block split. "
-     "Below it are the decision mix, the composite-score histogram, a form for analysing a "
-     "transaction and the accuracy results of the latest evaluation. The form shows the "
+para("The analyst dashboard is a single React page served by Vite (Figure 4.2), laid out as an "
+     "analytics console with a light and a dark theme. A row of six figures gives the "
+     "transactions scored, the number flagged and blocked, the rupee value flagged, the average "
+     "risk score and the count of layer failures. The charts below it are computed over every "
+     "stored transaction by one aggregation route, GET /api/v1/stats/overview: decisions per "
+     "active day, the decision mix, the Neo4j entity counts, decisions within each merchant "
+     "category, how often each flag fired on flagged transactions, the score distribution, the "
+     "flag rate by amount band, and precision, recall and F1 from the latest evaluation. Chart "
+     "colours were checked for colour-blind separation; green and red failed, so an approval "
+     "is shown in teal. The Analyze transaction button opens a side panel that shows the "
      "rule-and-graph decision immediately, marks the language-model layer as scoring, and "
      "replaces it with the final score and explanation when the background task finishes.")
-figure(SHOT, "Dashboard — decision split, charts, analysis form and accuracy panel")
-para("The flagged-transactions table (Figure 4.3) lists recent REVIEW and BLOCK decisions with "
-     "filters, search and sorting. Selecting a row opens its detail, where a transaction under "
-     "review can be approved or blocked. Colour is used only for decisions, and every decision "
-     "also carries a text label and an icon.")
-figure(os.path.join(ASSETS, "dashboard-flags.png"), "Dashboard — flagged transactions table")
+figure(SHOT, "Dashboard — key figures, decisions by day, decision mix, category and signal breakdowns")
+para("The review queue (Figure 4.3) lists recent REVIEW and BLOCK decisions with filters, "
+     "search and sorting, and shows the signals that fired as labels, with a failed layer "
+     "marked in the row. Selecting a row opens a side panel with the transaction's details, its "
+     "signals grouped by the layer that raised them, the model's explanation and a one-hop "
+     "drawing of the sender's graph neighbourhood; a transaction under review can be approved "
+     "or blocked from there. Every decision carries a text label and an icon as well as a colour.")
+figure(os.path.join(ASSETS, "dashboard-flags.png"), "Dashboard — review queue with triggered signals")
 section("4.9 System Integration")
 para("The layers are integrated in the analyse route. The rule engine and graph analyzer run "
      "under asyncio.gather, so the response waits for the slower of the two rather than their "
@@ -1113,7 +1121,7 @@ para("Two component routes support recovery. One reports whether Redis, Neo4j, C
      "failed layer appears on the dashboard as a highlighted panel with its error and a button "
      "that calls the restart route; the transaction stays in review, and later transactions use "
      "the restarted component.")
-figure(os.path.join(ASSETS, "api-docs.png"), "Interactive API documentation — 16 routes")
+figure(os.path.join(ASSETS, "api-docs.png"), "Interactive API documentation — 17 routes")
 para("For deployment the stack is defined in Docker Compose as five containers, with the "
      "language model on the host (Figure 4.5).")
 figure("08-deployment.png", "Deployment diagram — Docker Compose")
@@ -1439,7 +1447,7 @@ bullets([
     "transactions.",
     "A retried submission returns a conflict response instead of creating a duplicate decision.",
     "Scores are deterministic for identical input.",
-    "53 automated tests, which need no database or network, run on every push.",
+    "55 automated tests, which need no database or network, run on every push.",
 ])
 section("7.7 Deployment Risks")
 table("Deployment risks",
@@ -1617,10 +1625,10 @@ document  Mule fee skimming: funds pass through a chain of accounts with
     code_block(block)
 
 section("Appendix B — Automated Test Suite")
-para("The 53 tests run without a database or network connection (pytest tests/ -q) and are "
+para("The 55 tests run without a database or network connection (pytest tests/ -q) and are "
      "grouped below by what they protect.")
 for heading, items in [
-    ("tests/test_fraud.py — scoring layers, decision engine, failures and security (32 tests)", [
+    ("tests/test_fraud.py — scoring layers, decision engine, failures and security (34 tests)", [
         "Rule engine: blacklist returns the maximum score; amount-anomaly and velocity flags; a "
         "clean transaction scores zero.",
         "Layer failures: Redis down marks the rule engine as failed and Neo4j down the graph "
@@ -1631,6 +1639,8 @@ for heading, items in [
         "Component restart: an unknown component is rejected; restart resets the client and "
         "reports the dependency's status.",
         "API key: a wrong or missing key is rejected; the configured key is accepted.",
+        "Dashboard statistics: flag codes are read from an explanation whose details contain "
+        "full stops; per-decision counts are pivoted with their totals.",
         "RAG pipeline: the prompt carries the rule and graph flags, renders “(none)” when "
         "there are none, and returns a score and explanation on success and on failure.",
         "Decision engine: the approve, review and block bands; the composite cap at 100; the "
