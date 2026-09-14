@@ -12,7 +12,7 @@ const FILTERS = [
   { key: "BLOCK", label: "Blocked" },
 ];
 
-const MAX_CHIPS = 2;
+const MAX_CHIPS = 3;
 
 export function DecisionBadge({ decision }) {
   const Bicon = BADGE_ICONS[decision];

@@ -394,3 +394,19 @@ def test_two_failed_layers_are_named_in_one_sentence():
 def test_multiline_driver_errors_are_flattened():
     error = LayerScore.failure(30, "GRAPH_ANALYZER_ERROR", RuntimeError("Couldn't connect:\nattempt 1\nattempt 2")).error
     assert "\n" not in error and "attempt 1 attempt 2" in error
+
+
+def test_flag_codes_survive_full_stops_inside_details():
+    from app.api.routes.stats import flag_codes
+    text = ("Triggered signals: SHARED_IP (12 accounts on IP 203.0.113.66); HIGH_RISK_SENDER_TIER; "
+            "RULE_ENGINE_ERROR (x). Rule engine failed. Model text.")
+    assert flag_codes(text) == ["SHARED_IP", "HIGH_RISK_SENDER_TIER"]
+    assert flag_codes("No fraud signals triggered. ok") == []
+    assert flag_codes(None) == []
+
+
+def test_by_decision_pivots_counts_and_totals():
+    from app.api.routes.stats import by_decision
+    rows = [{"_id": {"day": "d1", "decision": "APPROVE"}, "count": 3},
+            {"_id": {"day": "d1", "decision": "BLOCK"}, "count": 1}]
+    assert by_decision(rows, "day") == [{"day": "d1", "APPROVE": 3, "REVIEW": 0, "BLOCK": 1, "total": 4}]

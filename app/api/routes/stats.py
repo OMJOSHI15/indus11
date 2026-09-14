@@ -1,8 +1,10 @@
 """Dashboard statistics routes. Owner: Member C"""
 import json
 from pathlib import Path
+from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Query
+from pydantic import BaseModel
 
 from app.models.transaction import Transaction
 
@@ -56,6 +58,122 @@ async def risk_distribution():
             for low, high in SCORE_BUCKETS
         ],
         "total": sum(decisions.values()),
+    }
+
+
+# Upper bound is a sentinel: $bucket needs a finite last boundary.
+AMOUNT_BOUNDARIES = [0, 1_000, 10_000, 100_000, 1_000_000, 10**15]
+AMOUNT_LABELS = ["< ₹1K", "₹1K–10K", "₹10K–1L", "₹1L–10L", "₹10L+"]
+SIGNAL_PREFIX = "Triggered signals: "
+FLAGGED = ["REVIEW", "BLOCK"]
+
+
+def flag_codes(explanation: str | None) -> list[str]:
+    """
+    Flag codes from a stored explanation, "Triggered signals: A (x); B. <prose>".
+    Details can contain full stops (IP addresses), so the list ends at the first
+    ". " outside parentheses. Layer-error codes are failures, not signals.
+    """
+    if not explanation or not explanation.startswith(SIGNAL_PREFIX):
+        return []
+    body, depth = explanation[len(SIGNAL_PREFIX):], 0
+    end = len(body)
+    for i, ch in enumerate(body):
+        depth += (ch == "(") - (ch == ")")
+        if ch == "." and depth == 0 and body[i + 1:i + 2] in ("", " "):
+            end = i
+            break
+    codes = (part.split(" (", 1)[0].strip() for part in body[:end].split("; "))
+    return [c for c in codes if c and not c.endswith("_ERROR")]
+
+
+def by_decision(rows: list[dict], key: str) -> list[dict]:
+    """Pivot [{_id: {key, decision}, count}] into [{key, APPROVE, REVIEW, BLOCK, total}]."""
+    table: dict = {}
+    for row in rows:
+        value, decision = row["_id"][key], row["_id"]["decision"]
+        entry = table.setdefault(value, {key: value, "APPROVE": 0, "REVIEW": 0, "BLOCK": 0})
+        if decision in entry:
+            entry[decision] = row["count"]
+    for entry in table.values():
+        entry["total"] = entry["APPROVE"] + entry["REVIEW"] + entry["BLOCK"]
+    return list(table.values())
+
+
+class _ExplanationOnly(BaseModel):
+    explanation: Optional[str] = None
+
+
+@router.get("/overview", summary="Aggregates for the analytics dashboard")
+async def overview():
+    decided = {"$match": {"decision": {"$ne": None}}}
+    is_flagged = {"$in": ["$decision", FLAGGED]}
+
+    totals = await Transaction.aggregate([
+        decided,
+        {"$group": {
+            "_id": None,
+            "total": {"$sum": 1},
+            "flagged": {"$sum": {"$cond": [is_flagged, 1, 0]}},
+            "flagged_amount": {"$sum": {"$cond": [is_flagged, "$amount", 0]}},
+            "avg_score": {"$avg": "$composite_score"},
+            "layer_failures": {"$sum": {"$cond": [
+                {"$gt": [{"$size": {"$objectToArray": {"$ifNull": ["$layer_failures", {}]}}}, 0]}, 1, 0]}},
+            "rag_pending": {"$sum": {"$cond": ["$rag_pending", 1, 0]}},
+        }},
+    ]).to_list()
+
+    days = await Transaction.aggregate([
+        decided,
+        {"$group": {"_id": {"day": {"$dateToString": {"format": "%Y-%m-%d", "date": "$created_at"}},
+                            "decision": "$decision"}, "count": {"$sum": 1}}},
+    ]).to_list()
+
+    categories = await Transaction.aggregate([
+        decided,
+        {"$group": {"_id": {"category": {"$ifNull": ["$merchant_category", "unknown"]},
+                            "decision": "$decision"}, "count": {"$sum": 1}}},
+    ]).to_list()
+
+    amounts = await Transaction.aggregate([
+        decided,
+        {"$bucket": {
+            "groupBy": "$amount",
+            "boundaries": AMOUNT_BOUNDARIES,
+            "default": "other",
+            "output": {"total": {"$sum": 1}, "flagged": {"$sum": {"$cond": [is_flagged, 1, 0]}}},
+        }},
+    ]).to_list()
+    amount_rows = {row["_id"]: row for row in amounts}
+
+    # Flags are only stored inside the explanation text, so they are counted here
+    # rather than in the database. ponytail: scans every flagged record per call;
+    # store flags as an array field if the flagged set grows past ~100k.
+    signal_counts: dict[str, int] = {}
+    async for tx in Transaction.find({"decision": {"$in": FLAGGED}}).project(_ExplanationOnly):
+        for code in set(flag_codes(tx.explanation)):
+            signal_counts[code] = signal_counts.get(code, 0) + 1
+
+    t = totals[0] if totals else {}
+    return {
+        "totals": {
+            "total": t.get("total", 0),
+            "flagged": t.get("flagged", 0),
+            "flagged_amount": round(t.get("flagged_amount", 0)),
+            "avg_score": round(t.get("avg_score") or 0, 1),
+            "layer_failures": t.get("layer_failures", 0),
+            "rag_pending": t.get("rag_pending", 0),
+        },
+        "by_day": sorted(by_decision(days, "day"), key=lambda r: r["day"]),
+        "by_category": sorted(by_decision(categories, "category"), key=lambda r: -r["total"]),
+        "by_amount": [
+            {"band": label,
+             "total": amount_rows.get(low, {}).get("total", 0),
+             "flagged": amount_rows.get(low, {}).get("flagged", 0)}
+            for low, label in zip(AMOUNT_BOUNDARIES, AMOUNT_LABELS)
+        ],
+        "signals": sorted(({"code": c, "count": n} for c, n in signal_counts.items()),
+                          key=lambda r: -r["count"])[:10],
     }
 
 

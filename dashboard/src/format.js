@@ -19,3 +19,9 @@ export function ago(iso) {
 
 export const fullTime = (iso) =>
   toDate(iso).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
+
+/** ₹11.5 Cr, ₹4.2 L — Indian units, since the amounts here are rupees. */
+export const moneyShort = (amount) =>
+  amount >= 1e7 ? `₹${(amount / 1e7).toFixed(1)} Cr`
+    : amount >= 1e5 ? `₹${(amount / 1e5).toFixed(1)} L`
+      : money(amount);

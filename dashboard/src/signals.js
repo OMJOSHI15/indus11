@@ -23,7 +23,7 @@ export const LAYERS = [
   { key: "model", label: "Language model" },
 ];
 
-const layerOf = (code) =>
+export const layerOf = (code) =>
   code.endsWith("_ERROR") ? "error"
     : RULE_CODES.has(code) ? "rule"
       : GRAPH_CODES.has(code) ? "graph"

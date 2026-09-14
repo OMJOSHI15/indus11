@@ -42,6 +42,13 @@ const DEMO_WRITE_MESSAGE =
 export const getRiskDistribution = async () =>
   DEMO ? (await demoData()).risk_distribution : request("/stats/risk-distribution");
 
+// Demo snapshots predate these aggregates; null lets the panels say so.
+export const getOverview = async () =>
+  DEMO ? (await demoData()).overview ?? null : request("/stats/overview");
+
+export const getGraphStats = async () =>
+  DEMO ? (await demoData()).graph_stats ?? null : request("/graph/stats");
+
 export const getAccuracy = async () =>
   DEMO ? (await demoData()).accuracy : request("/stats/accuracy");
 

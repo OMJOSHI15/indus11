@@ -1,38 +1,52 @@
 // Chart palette — the one place SVG colours are defined.
 //
-// Recharts sets colours as SVG attributes, which cannot read the CSS custom
-// properties in index.css, so the values live here too. They are deliberately
-// the same hexes as --approve / --review / --block: when a decision colour
-// changes it has to change in both files, and having them together in one
-// module makes that obvious rather than leaving literals scattered per chart.
+// Recharts writes colours as SVG attributes, which cannot read CSS custom
+// properties, so the values live here and index.css mirrors the ones it needs.
 //
-// The system rule these follow: colour is signal. Nothing in a chart is
-// coloured unless it encodes a decision. Axes, grids and labels stay neutral.
+// Every set below was run through the dataviz validator on the #ffffff card
+// surface, all-pairs (a donut wraps, so first and last slots touch):
+//   decisions  #2a9d8f,#eda100,#d03b3b  worst CVD ΔE 11.3, normal ΔE 24.1
+//   layers     #2a78d6,#4a3aa7,#e87ba4  worst CVD ΔE 13.0, normal ΔE 16.3
+// Green/red failed (deutan ΔE 4.1), which is why approve is teal, not green.
+// Amber and pink sit under 3:1 on white, so every chart using them carries a
+// legend with counts and a tooltip.
 
 export const DECISION_COLORS = {
-  APPROVE: "#30d158",
-  REVIEW: "#ff9f0a",
-  BLOCK: "#ff453a",
+  APPROVE: "#2a9d8f",
+  REVIEW: "#eda100",
+  BLOCK: "#d03b3b",
 };
 
-export const CHART_NEUTRALS = {
-  grid: "rgba(84, 84, 88, 0.36)",
-  axis: "rgba(84, 84, 88, 0.6)",
-  label: "rgba(235, 235, 245, 0.52)",
-  border: "rgba(255, 255, 255, 0.08)",
-  text: "#f5f5f7",
+export const DECISION_LABELS = { APPROVE: "Approved", REVIEW: "In review", BLOCK: "Blocked" };
+export const DECISIONS = ["APPROVE", "REVIEW", "BLOCK"];
+
+export const LAYER_COLORS = { rule: "#2a78d6", graph: "#4a3aa7", model: "#e87ba4" };
+
+export const SERIES = "#2a78d6"; // single-series charts
+
+export const CHART = {
+  grid: "#ebeae5",
+  axis: "#c3c2b7",
+  label: "#6f6e69",
+  ink: "#0b0b0b",
+  surface: "#ffffff",
+  track: "#eef3fb",
 };
 
-export const MONO = "SF Mono, ui-monospace, JetBrains Mono, monospace";
+export const FONT = "-apple-system, BlinkMacSystemFont, Inter, system-ui, sans-serif";
+
+export const axisTick = { fill: CHART.label, fontSize: 11, fontFamily: FONT };
 
 export const tooltipStyle = {
-  background: "rgba(30, 30, 33, 0.78)",
-  backdropFilter: "saturate(180%) blur(20px)",
-  WebkitBackdropFilter: "saturate(180%) blur(20px)",
-  border: `0.5px solid ${CHART_NEUTRALS.border}`,
+  background: "#ffffff",
+  border: "1px solid rgba(11, 11, 11, 0.08)",
   borderRadius: 10,
   fontSize: 12,
-  fontFamily: "-apple-system, BlinkMacSystemFont, Inter, system-ui, sans-serif",
-  color: CHART_NEUTRALS.text,
-  boxShadow: "0 12px 32px -12px rgba(0, 0, 0, 0.75)",
+  fontFamily: FONT,
+  color: CHART.ink,
+  boxShadow: "0 8px 24px -8px rgba(16, 24, 40, 0.18)",
+  padding: "8px 10px",
 };
+
+export const compact = (n) =>
+  Intl.NumberFormat("en-IN", { notation: "compact", maximumFractionDigits: 1 }).format(n);

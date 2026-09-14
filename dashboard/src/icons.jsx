@@ -90,3 +90,49 @@ export const XIcon = (p) => (
     <path d="m6 6 12 12" />
   </Icon>
 );
+
+export const LayoutIcon = (p) => (
+  <Icon {...p}>
+    <rect x="3" y="3" width="7" height="9" rx="1.5" />
+    <rect x="14" y="3" width="7" height="5" rx="1.5" />
+    <rect x="14" y="12" width="7" height="9" rx="1.5" />
+    <rect x="3" y="16" width="7" height="5" rx="1.5" />
+  </Icon>
+);
+
+export const ListIcon = (p) => (
+  <Icon {...p}>
+    <path d="M8 6h13M8 12h13M8 18h13" />
+    <path d="M3 6h.01M3 12h.01M3 18h.01" />
+  </Icon>
+);
+
+export const GaugeIcon = (p) => (
+  <Icon {...p}>
+    <path d="m12 14 4-4" />
+    <path d="M3.34 19a10 10 0 1 1 17.32 0" />
+  </Icon>
+);
+
+export const NetworkIcon = (p) => (
+  <Icon {...p}>
+    <circle cx="12" cy="5" r="2.5" />
+    <circle cx="5" cy="19" r="2.5" />
+    <circle cx="19" cy="19" r="2.5" />
+    <path d="M10.8 7.2 6.2 16.8M13.2 7.2l4.6 9.6M7.5 19h9" />
+  </Icon>
+);
+
+export const PlusIcon = (p) => (
+  <Icon {...p}>
+    <path d="M12 5v14M5 12h14" />
+  </Icon>
+);
+
+export const RefreshIcon = (p) => (
+  <Icon {...p}>
+    <path d="M21 12a9 9 0 0 1-15.5 6.2L3 16" />
+    <path d="M3 12a9 9 0 0 1 15.5-6.2L21 8" />
+    <path d="M21 3v5h-5M3 21v-5h5" />
+  </Icon>
+);
