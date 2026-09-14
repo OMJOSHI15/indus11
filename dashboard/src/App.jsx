@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
-import DecisionDonut from "./components/DecisionDonut.jsx";
 import ScoreHistogram from "./components/ScoreHistogram.jsx";
 import RecentFlags from "./components/RecentFlags.jsx";
 import AnalyzeForm from "./components/AnalyzeForm.jsx";
-import TxModal from "./components/TxModal.jsx";
+import TxDrawer from "./components/TxDrawer.jsx";
 import AccuracyPanel from "./components/AccuracyPanel.jsx";
 import { DEMO, getRecentFlags, getRiskDistribution } from "./api.js";
 import useCountUp from "./useCountUp.js";
@@ -12,10 +11,8 @@ import { WifiOffIcon } from "./icons.jsx";
 
 const REFRESH_MS = 10000;
 
-/** KPI figure that counts up when the value changes. */
-function KpiValue({ value }) {
-  const shown = useCountUp(value);
-  return <div className="value">{shown.toLocaleString()}</div>;
+function CountUp({ value }) {
+  return useCountUp(value).toLocaleString("en-IN");
 }
 
 // Ordered by severity, not alphabetically — the bar reads left to right as
@@ -34,10 +31,7 @@ export default function App() {
 
   const refresh = useCallback(async () => {
     try {
-      const [dist, recent] = await Promise.all([
-        getRiskDistribution(),
-        getRecentFlags(20),
-      ]);
+      const [dist, recent] = await Promise.all([getRiskDistribution(), getRecentFlags(20)]);
       setDistribution(dist);
       setFlags(recent);
       setOffline(false);
@@ -57,117 +51,107 @@ export default function App() {
 
   const loading = distribution === null;
   const total = distribution?.total ?? 0;
-
-  const decisionCount = (key) => distribution?.decisions?.[key] ?? 0;
+  const count = (key) => distribution?.decisions?.[key] ?? 0;
+  const waiting = count("REVIEW");
 
   return (
-    <div className="layout">
-      <header className="topbar">
-        <div className="logo-mark" aria-hidden="true">I11</div>
-        <div>
-          <h1>Indus11</h1>
-          <div className="subtitle">Transaction risk &amp; fraud decisioning</div>
+    <>
+      <header className="toolbar">
+        <div className="toolbar__inner">
+          <div className="brand">
+            <span className="brand__mark" aria-hidden="true">I11</span>
+            <span className="brand__name">Indus11</span>
+          </div>
+          <span className="toolbar__title">Fraud review</span>
+          <span className={`status-pill${offline ? " offline" : ""}`}>
+            <span className="dot" aria-hidden="true" />
+            {DEMO ? "Sample data" : offline ? "API offline" : "Live"}
+          </span>
         </div>
-        <div className="spacer" />
-        <span className={`status-pill${offline ? " offline" : ""}`}>
-          <span className="dot" aria-hidden="true" />
-          {DEMO ? "Sample data" : offline ? "API offline" : "Live"}
-        </span>
       </header>
 
-      {!DEMO && offline && (
-        <div className="banner" role="status">
-          <WifiOffIcon size={15} />
-          Backend unreachable. Showing sample data; start the API and databases to
-          see live results.
-        </div>
-      )}
+      <main className="layout">
+        {!DEMO && offline && (
+          <div className="banner" role="status">
+            <WifiOffIcon size={15} />
+            Backend unreachable. Showing sample data; start the API and databases to see live results.
+          </div>
+        )}
 
-      <section className="stat-lead">
-        <div className="stat-lead__figure">
-          <span className="stat-lead__label">Transactions analysed</span>
-          {loading
-            ? <div className="skeleton" style={{ width: 150, height: 56 }} />
-            : <KpiValue value={total} />}
-        </div>
-
-        <div className="stat-lead__split">
-          <div
-            className="split-bar"
-            role="img"
-            aria-label={
-              loading
-                ? "Decision mix loading"
-                : DECISIONS.map((d) => `${decisionCount(d.key)} ${d.label}`).join(", ")
-            }
-          >
-            {DECISIONS.map(({ key, cls }) => (
-              <span
-                key={key}
-                className={`split-bar__seg ${cls}`}
-                // flex-grow, not width: the segments always fill the bar even
-                // before any transaction has been scored.
-                style={{ flexGrow: Math.max(decisionCount(key), total ? 0 : 1) }}
-              />
-            ))}
+        <section className="overview" aria-busy={loading}>
+          <div className="overview__lead">
+            <h1>
+              {loading ? <span className="skeleton" style={{ display: "inline-block", width: 90, height: 40 }} /> : <CountUp value={waiting} />}
+              <span> waiting for review</span>
+            </h1>
+            <p className="dim">
+              {loading ? "Loading…" : `${total.toLocaleString("en-IN")} transactions analysed so far`}
+            </p>
           </div>
 
-          <ul className="split-legend">
-            {DECISIONS.map(({ key, label, cls }) => (
-              <li key={key} className={`split-legend__item ${cls}`}>
-                <span className="split-legend__label">{label}</span>
-                {loading ? (
-                  <div className="skeleton" style={{ width: 48, height: 24 }} />
-                ) : (
-                  <>
-                    <span className="split-legend__value">
-                      {decisionCount(key).toLocaleString()}
-                    </span>
-                    <span className="split-legend__pct">
-                      {total > 0 ? `${((decisionCount(key) / total) * 100).toFixed(1)}%` : "—"}
-                    </span>
-                  </>
-                )}
-              </li>
-            ))}
-          </ul>
+          <div className="overview__split">
+            <div
+              className="split-bar"
+              role="img"
+              aria-label={loading ? "Decision mix loading" : DECISIONS.map((d) => `${count(d.key)} ${d.label}`).join(", ")}
+            >
+              {DECISIONS.map(({ key, cls }) => (
+                <span
+                  key={key}
+                  className={`split-bar__seg ${cls}`}
+                  // flex-grow, not width: the segments always fill the bar even
+                  // before any transaction has been scored.
+                  style={{ flexGrow: Math.max(count(key), total ? 0 : 1) }}
+                />
+              ))}
+            </div>
+            <ul className="split-legend">
+              {DECISIONS.map(({ key, label, cls }) => (
+                <li key={key} className="split-legend__item">
+                  <span className="split-legend__label"><span className={`dot ${cls}`} aria-hidden="true" />{label}</span>
+                  <span className="split-legend__value">{count(key).toLocaleString("en-IN")}</span>
+                  <span className="split-legend__pct">
+                    {total > 0 ? `${((count(key) / total) * 100).toFixed(1)}%` : "—"}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        <div className="workspace">
+          <section className="panel panel--queue" aria-busy={flags === null}>
+            <div className="panel__head">
+              <h2>Review queue</h2>
+              <span className="dim small">20 most recent review and block decisions</span>
+            </div>
+            <RecentFlags flags={flags} onSelect={offline ? undefined : setSelectedId} />
+          </section>
+
+          <aside className="panel panel--analyze">
+            <div className="panel__head"><h2>Analyze a transaction</h2></div>
+            <AnalyzeForm onAnalyzed={refresh} />
+          </aside>
         </div>
-      </section>
 
-      <div className="grid">
-        <section className="panel" aria-busy={loading}>
-          <h2>Decision mix</h2>
-          <DecisionDonut distribution={distribution} />
-        </section>
-
-        <section className="panel" aria-busy={loading}>
-          <h2>Composite score distribution</h2>
-          <ScoreHistogram distribution={distribution} />
-        </section>
-
-        <section className="panel">
-          <h2>Analyze a transaction</h2>
-          <AnalyzeForm onAnalyzed={refresh} />
-        </section>
-
-        <section className="panel wide">
-          <h2>Detection accuracy on the synthetic benchmark</h2>
-          <AccuracyPanel offline={offline} />
-        </section>
-
-        <section className="panel wide" aria-busy={flags === null}>
-          <h2>Recent flags for review and block</h2>
-          <RecentFlags flags={flags} onSelect={offline ? undefined : setSelectedId} />
-        </section>
-      </div>
+        <div className="insights">
+          <section className="panel" aria-busy={loading}>
+            <div className="panel__head"><h2>Score distribution</h2></div>
+            <ScoreHistogram distribution={distribution} />
+          </section>
+          <section className="panel">
+            <div className="panel__head">
+              <h2>Detection accuracy</h2>
+              <span className="dim small">Synthetic benchmark</span>
+            </div>
+            <AccuracyPanel offline={offline} />
+          </section>
+        </div>
+      </main>
 
       {selectedId && (
-        <TxModal
-          txId={selectedId}
-          onClose={() => setSelectedId(null)}
-          onUpdated={refresh}
-        />
+        <TxDrawer txId={selectedId} onClose={() => setSelectedId(null)} onUpdated={refresh} />
       )}
-    </div>
+    </>
   );
 }

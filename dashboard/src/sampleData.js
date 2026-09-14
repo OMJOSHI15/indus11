@@ -24,7 +24,7 @@ export const SAMPLE_FLAGS = [
     composite_score: 82,
     decision: "BLOCK",
     explanation:
-      "Triggered signals: AMOUNT_ANOMALY ($9450 vs avg $650); HIGH_RISK_MERCHANT (wire_transfer); MONEY_MULE_PATTERN (2 fee-skimming cycles). Wire just below the $10k reporting threshold from a high-risk sender into a known mule ring.",
+      "Triggered signals: AMOUNT_ANOMALY (₹9450 vs avg ₹650); HIGH_RISK_MERCHANT (wire_transfer); MONEY_MULE_PATTERN (2 fee-skimming cycles). Wire just below the ₹10k reporting threshold from a high-risk sender into a known mule ring.",
     created_at: "2026-07-04T18:42:10Z",
   },
   {

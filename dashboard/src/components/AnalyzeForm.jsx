@@ -44,7 +44,7 @@ function LayerBar({ id, name, layer, pending }) {
       >
         <div
           className="fill"
-          style={{ width: `${(layer.score / layer.max_score) * 100}%` }}
+          style={{ transform: `scaleX(${layer.score / layer.max_score})` }}
         />
       </div>
       {layer.failed && <ComponentFailure name={id} error={layer.error} />}

@@ -77,30 +77,30 @@ export default function AccuracyPanel({ offline }) {
 
   return (
     <div className="accuracy">
-      <div className="metric-row">
-        <div className="metric">
-          <div className="metric-label">Precision</div>
-          <div className="metric-value">{pct(flagged.precision)}</div>
-          <div className="metric-note">of flagged were fraud</div>
+      <dl className="metric-strip">
+        <div>
+          <dt>Precision</dt>
+          <dd>{pct(flagged.precision)}</dd>
+          <dd className="metric-note">of flagged were fraud</dd>
         </div>
-        <div className="metric">
-          <div className="metric-label">Recall</div>
-          <div className="metric-value">{pct(flagged.recall)}</div>
-          <div className="metric-note">of fraud was caught</div>
+        <div>
+          <dt>Recall</dt>
+          <dd>{pct(flagged.recall)}</dd>
+          <dd className="metric-note">of fraud was caught</dd>
         </div>
-        <div className="metric">
-          <div className="metric-label">F1</div>
-          <div className="metric-value">{pct(flagged.f1)}</div>
-          <div className="metric-note">review + block</div>
+        <div>
+          <dt>F1</dt>
+          <dd>{pct(flagged.f1)}</dd>
+          <dd className="metric-note">review and block</dd>
         </div>
-        <div className="metric">
-          <div className="metric-label">Ring recall</div>
-          <div className="metric-value">{pct(graph.recall)}</div>
-          <div className="metric-note">
-            {graph.graph_flagged}/{graph.ring_transactions} mule-ring hops
-          </div>
+        <div>
+          <dt>Ring coverage</dt>
+          <dd>{pct(graph.recall)}</dd>
+          <dd className="metric-note">
+            {graph.graph_flagged}/{graph.ring_transactions} ring transactions flagged by the graph layer
+          </dd>
         </div>
-      </div>
+      </dl>
 
       <table className="confusion">
         <caption>
@@ -118,7 +118,7 @@ export default function AccuracyPanel({ offline }) {
           {DECISIONS.map((decision) => (
             <tr key={decision}>
               <th scope="row">
-                <span className={`badge ${decision}`}>{decision}</span>
+                <span className={`badge ${decision}`}>{decision.charAt(0) + decision.slice(1).toLowerCase()}</span>
               </th>
               <td>{confusion[decision].fraud}</td>
               <td>{confusion[decision].legit}</td>

@@ -10,28 +10,29 @@
 // coloured unless it encodes a decision. Axes, grids and labels stay neutral.
 
 export const DECISION_COLORS = {
-  APPROVE: "#6f9e78",
-  REVIEW: "#c39a4e",
-  BLOCK: "#c2645a",
+  APPROVE: "#30d158",
+  REVIEW: "#ff9f0a",
+  BLOCK: "#ff453a",
 };
 
 export const CHART_NEUTRALS = {
-  grid: "#232427",
-  axis: "#303135",
-  label: "#8d8d88",
-  surface: "#191a1c",
-  border: "#303135",
-  text: "#ededec",
+  grid: "rgba(84, 84, 88, 0.36)",
+  axis: "rgba(84, 84, 88, 0.6)",
+  label: "rgba(235, 235, 245, 0.52)",
+  border: "rgba(255, 255, 255, 0.08)",
+  text: "#f5f5f7",
 };
 
-export const MONO = "JetBrains Mono, ui-monospace, monospace";
+export const MONO = "SF Mono, ui-monospace, JetBrains Mono, monospace";
 
 export const tooltipStyle = {
-  background: CHART_NEUTRALS.surface,
-  border: `1px solid ${CHART_NEUTRALS.border}`,
-  borderRadius: 8,
+  background: "rgba(30, 30, 33, 0.78)",
+  backdropFilter: "saturate(180%) blur(20px)",
+  WebkitBackdropFilter: "saturate(180%) blur(20px)",
+  border: `0.5px solid ${CHART_NEUTRALS.border}`,
+  borderRadius: 10,
   fontSize: 12,
-  fontFamily: MONO,
+  fontFamily: "-apple-system, BlinkMacSystemFont, Inter, system-ui, sans-serif",
   color: CHART_NEUTRALS.text,
   boxShadow: "0 12px 32px -12px rgba(0, 0, 0, 0.75)",
 };

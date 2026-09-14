@@ -57,6 +57,11 @@ export const getTransaction = async (id) => {
   return found;
 };
 
+// The static demo has no graph database behind it, so it returns null and the
+// drawer leaves the network section out rather than showing an error.
+export const getNeighbors = async (accountId) =>
+  DEMO ? null : request(`/graph/account/${encodeURIComponent(accountId)}/neighbors`);
+
 export const analyzeTransaction = async (tx) => {
   if (DEMO) throw new Error(DEMO_WRITE_MESSAGE);
   return request("/transactions/analyze", { method: "POST", body: JSON.stringify(tx) });

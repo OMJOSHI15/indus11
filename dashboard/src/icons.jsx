@@ -76,3 +76,17 @@ export const WifiOffIcon = (p) => (
     <path d="m2 2 20 20" />
   </Icon>
 );
+
+export const SearchIcon = (p) => (
+  <Icon {...p}>
+    <circle cx="11" cy="11" r="7" />
+    <path d="m20 20-3.5-3.5" />
+  </Icon>
+);
+
+export const XIcon = (p) => (
+  <Icon {...p}>
+    <path d="M18 6 6 18" />
+    <path d="m6 6 12 12" />
+  </Icon>
+);
