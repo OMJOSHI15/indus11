@@ -680,7 +680,7 @@ bullets([
     "time from 260 ms to about 20 ms.",
     "An evaluation harness that replays a labelled dataset through the live API, sweeps the "
     "decision thresholds and reports precision at a realistic fraud prevalence.",
-    "An analyst dashboard and a one-command local stack, with 41 automated tests run in "
+    "An analyst dashboard and a one-command local stack, with 53 automated tests run in "
     "continuous integration.",
 ])
 section("1.8 Report Organization")
@@ -848,14 +848,18 @@ output: provisional decision, returned to the caller
 1  sender, receiver <- load_profile(tx.sender), load_profile(tx.receiver)
 2  (R, rule_flags), (G, graph_flags) <- in parallel:
        rule_engine(tx, sender, receiver), graph_analyzer(tx)
-3  S <- min(R + G, 100);  decision <- band(S)
+3  S <- min(R + G, 100);  decision <- band(S, failed layers)
 4  insert record(tx, S, decision, rag_pending = true)     # 409 if tx_id exists
 5  schedule background (4 at a time, 180 s limit):
 6      (L, text) <- rag_pipeline(tx, sender, rule_flags + graph_flags)
-7      S <- min(R + G + L, 100);  decision <- band(S)
+           on error or timeout: L <- 0, language model marked failed
+7      S <- min(R + G + L, 100);  decision <- band(S, failed layers)
 8      if flags fired and text names none of them: text <- flag list only
-9      update record(S, decision, text, rag_pending = false)
-10 return decision, S, flags""")
+9      update record(S, decision, text, failed layers, rag_pending = false)
+10 return decision, S, flags
+
+band(S, F): APPROVE if S < 40, REVIEW if S < 70, else BLOCK;
+            an APPROVE becomes REVIEW when any layer in F failed""")
 para("The graph layer's cycle check (Algorithm 2) looks for a path of two to four transfers "
      "that leaves the sender and returns to it, restricted to the last 72 hours and to hops in "
      "time order, and stops at the first match. Figure 3.7 decomposes the rule engine's "
@@ -878,6 +882,9 @@ eq("G = min( Σ w_j , 30 ),     L ∈ [0, 30]", "3.2")
 eq("S = min( R + G + L , 100 )", "3.3")
 para("The decision band uses a review threshold τ_r = 40 and a block threshold τ_b = 70:")
 eq("D(S) = APPROVE if S < τ_r;   REVIEW if τ_r ≤ S < τ_b;   BLOCK if S ≥ τ_b", "3.4")
+para("If a layer could not run it contributes no points, and a D(S) of APPROVE is raised to "
+     "REVIEW: a layer that never looked at the transaction is missing evidence, not evidence "
+     "that it is safe. A BLOCK reached by the layers that did run is kept.")
 para("For account a with monthly average μ_a, the velocity count n_a is the number of its "
      "transactions in the last 600 seconds, and the two account-level rules fire when")
 eq("n_a > 5      and      x > 3 μ_a  (with μ_a > 0)", "3.5")
@@ -916,8 +923,8 @@ para("The 40/30/30 split follows the certainty of each layer's evidence. The rul
 section("3.8 Security/Privacy Considerations")
 bullets([
     "The three routes that change stored state — the decision override, the blacklist toggle "
-    "and fraud-label propagation — require a shared key in the X-API-Key header, compared in "
-    "constant time.",
+    "and fraud-label propagation — and the component status and restart routes require a "
+    "shared key in the X-API-Key header, compared in constant time.",
     "Browser access is restricted to configured origins, and every client is rate-limited.",
     "Every request is validated against a schema; the merchant category must be one of 11 "
     "fixed values and the free-text fields are length-capped, so submitted text cannot be "
@@ -931,8 +938,9 @@ bullets([
 ])
 section("3.9 Assumptions")
 bullets([
-    "The four data stores are reachable; if one is not, the affected layer scores zero and "
-    "the others still decide.",
+    "The four data stores are reachable. If one is not, the affected layer is recorded as "
+    "failed, the others still score, and a transaction that would have been approved is held "
+    "for review.",
     "An account with no stored profile is treated as elevated risk rather than as safe.",
     "The synthetic dataset is adequate for comparing configurations with one another, not "
     "for predicting production accuracy.",
@@ -1029,24 +1037,30 @@ sub("Rule engine")
 para("The rule engine is one asynchronous function that receives the transaction and both "
      "profiles. It returns the maximum score immediately for a blacklisted party; otherwise it "
      "records the transaction in a Redis sorted set keyed by account, counts the entries "
-     "within the last ten minutes, and applies the amount, merchant and risk-tier rules.")
+     "within the last ten minutes, and applies the amount, merchant and risk-tier rules. If "
+     "Redis cannot be reached, the layer is marked as failed with RULE_ENGINE_ERROR and the "
+     "error, rather than failing the whole request.")
 sub("Graph analyzer")
 para("The graph analyzer first merges the transaction, its accounts, device and address into "
      "Neo4j, then runs four checks in one session: shared device, circular flow with the mule "
      "sub-check, shared address, and receiver proximity to a known fraud account through "
-     "connection edges. Any failure returns a zero score with the flag GRAPH_ANALYZER_ERROR "
-     "instead of failing the request.")
+     "connection edges. A failure marks the layer as failed with GRAPH_ANALYZER_ERROR and the "
+     "error, instead of failing the request.")
 sub("Retrieval-augmented pipeline")
 para("The pipeline retrieves the three most similar of 58 pattern documents from ChromaDB and "
      "sends the transaction, the retrieved patterns and the flags already raised by the other "
      "two layers to llama3 at temperature zero. It returns a score capped at 30 and an "
-     "explanation. If the model cannot be reached it returns zero with the flag "
-     "RAG_PIPELINE_ERROR.")
+     "explanation. If the model cannot be reached, fails or times out, the layer is marked as "
+     "failed with RAG_PIPELINE_ERROR.")
 sub("Decision engine")
 para("The decision engine sums the three scores, caps the total at 100, applies the bands and "
      "prefixes the explanation with the list of triggered signals. Unless the language-model "
      "result is still pending, it checks that the explanation names at least one triggered "
      "flag and otherwise shows the flag list alone.")
+para("When a layer is marked as failed, the engine names it in the explanation, records it "
+     "with the transaction, and raises an APPROVE to REVIEW. Only flags from layers that ran "
+     "count as evidence for the explanation check, and a failed language model contributes no "
+     "text.")
 section("4.7 Algorithm/Model Implementation")
 para("Two excerpts show how the algorithms of Section 3.5 are implemented. The cycle query "
      "prunes hops by an ISO 8601 cutoff during expansion and stops at the first match, because "
@@ -1087,11 +1101,19 @@ para("The layers are integrated in the analyse route. The rule engine and graph 
      "under asyncio.gather, so the response waits for the slower of the two rather than their "
      "sum. The language-model layer is scheduled with FastAPI background tasks after the "
      "record is inserted; a semaphore allows four such tasks at once and each has a 180-second "
-     "timeout, after which only the pending flag is cleared. The unique index on the "
+     "timeout, after which the language-model layer is recorded as failed and the decision is "
+     "banded again. The unique index on the "
      "transaction identifier turns a retried submission into a 409 response rather than a "
      "duplicate record. The dashboard polls the stored record every three seconds until the "
      "pending flag clears. The API documents itself through its OpenAPI page (Figure 4.4).")
-figure(os.path.join(ASSETS, "api-docs.png"), "Interactive API documentation — 14 routes")
+para("Two component routes support recovery. One reports whether Redis, Neo4j, ChromaDB and "
+     "Ollama are answering; the other restarts a single scoring component by dropping its client "
+     "and checking its dependency again. Both require the API key. They do not start or stop "
+     "the database processes, which would mean running shell commands from a web request. A "
+     "failed layer appears on the dashboard as a highlighted panel with its error and a button "
+     "that calls the restart route; the transaction stays in review, and later transactions use "
+     "the restarted component.")
+figure(os.path.join(ASSETS, "api-docs.png"), "Interactive API documentation — 16 routes")
 para("For deployment the stack is defined in Docker Compose as five containers, with the "
      "language model on the host (Figure 4.5).")
 figure("08-deployment.png", "Deployment diagram — Docker Compose")
@@ -1301,8 +1323,8 @@ bullets([
     "The rule and graph layers need no training data, and a new fraud pattern is added to the "
     "knowledge base as a written document.",
     "The language model cannot delay the decision or block a transaction on its own.",
-    "Each layer degrades independently: a failed data store or model lowers that layer's score "
-    "to zero with a stated reason.",
+    "A failed data store or model is recorded against its layer, holds the transaction for "
+    "review, and can be restarted from the dashboard once the service is back.",
     "The whole stack runs locally on one machine without a graphics processor.",
 ])
 section("6.4 Limitations")
@@ -1356,6 +1378,10 @@ bullets([
     "Unbounded background work: 208 simultaneous model calls stopped the API; now capped at four.",
     "A hung model call held its slot forever and left records pending; each call now times out "
     "after 180 seconds.",
+    "A timed-out model call cleared only the pending flag and left the placeholder text on four "
+    "records; it is now recorded as a failed layer and the decision is banded again.",
+    "The rule engine had no error handling, so a Redis outage failed the whole request; it now "
+    "marks its layer as failed.",
     "The evaluation harness measured the response before the language-model layer finished; "
     "it now waits for it.",
 ])
@@ -1363,7 +1389,7 @@ bullets([
 # ───────────────────────── CHAPTER 7 ─────────────────────────
 chapter("Security, Ethical and Practical Considerations")
 section("7.1 Security")
-para("The controls in place are those in Section 3.8: a shared key on the three routes that "
+para("The controls in place are those in Section 3.8: a shared key on the component routes and the three routes that "
      "change state, compared in constant time; origin restriction; per-client rate limits; "
      "schema validation with a fixed merchant vocabulary and length caps that limit prompt "
      "injection; and parameterised database queries. Four gaps remain. There is no per-user "
@@ -1406,19 +1432,20 @@ para("The RBI's 2024 Master Directions on fraud risk management set expectations
      "prototype has not been assessed for compliance with either.")
 section("7.6 Safety and Reliability")
 bullets([
-    "A failed layer contributes zero with a stated reason and never approves a transaction "
-    "silently.",
+    "A failed layer is named in the explanation and recorded with the transaction, and a "
+    "transaction it would have approved is held for review.",
+    "A failed component can be restarted from the dashboard once its service is back.",
     "Background model calls are bounded in number and time, so a hung call cannot stall later "
     "transactions.",
     "A retried submission returns a conflict response instead of creating a duplicate decision.",
     "Scores are deterministic for identical input.",
-    "41 automated tests, which need no database or network, run on every push.",
+    "53 automated tests, which need no database or network, run on every push.",
 ])
 section("7.7 Deployment Risks")
 table("Deployment risks",
       ["Risk", "Effect", "Mitigation or next step"],
       [["Synthetic-only validation", "Real precision unknown", "Evaluate on a public dataset"],
-       ["Language-model outage or slowness", "No explanations", "Timeout; decision stands"],
+       ["Language-model outage or slowness", "No explanations", "Timeout; layer failed, held for review"],
        ["Graph growth", "Slower queries, more cycles", "Retention or archival policy"],
        ["Shared API key", "No attribution of overrides", "Per-user authentication"],
        ["Default credentials", "Unauthorised database access", "Set secrets per environment"],
@@ -1590,13 +1617,19 @@ document  Mule fee skimming: funds pass through a chain of accounts with
     code_block(block)
 
 section("Appendix B — Automated Test Suite")
-para("The 41 tests run without a database or network connection (pytest tests/ -q) and are "
+para("The 53 tests run without a database or network connection (pytest tests/ -q) and are "
      "grouped below by what they protect.")
 for heading, items in [
-    ("tests/test_fraud.py — scoring layers, decision engine and security (20 tests)", [
+    ("tests/test_fraud.py — scoring layers, decision engine, failures and security (32 tests)", [
         "Rule engine: blacklist returns the maximum score; amount-anomaly and velocity flags; a "
         "clean transaction scores zero.",
-        "Graph analyzer: a Neo4j failure degrades to a zero score with GRAPH_ANALYZER_ERROR.",
+        "Layer failures: Redis down marks the rule engine as failed and Neo4j down the graph "
+        "analyzer; a failed layer raises an approval to review but keeps an earned block; a "
+        "failed model contributes no text; error-flag words are not evidence; two failures are "
+        "named in one sentence; a background timeout is recorded; multi-line errors are "
+        "flattened; an exception with no message is still named.",
+        "Component restart: an unknown component is rejected; restart resets the client and "
+        "reports the dependency's status.",
         "API key: a wrong or missing key is rejected; the configured key is accepted.",
         "RAG pipeline: the prompt carries the rule and graph flags, renders “(none)” when "
         "there are none, and returns a score and explanation on success and on failure.",

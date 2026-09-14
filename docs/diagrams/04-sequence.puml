@@ -45,9 +45,9 @@ BG -> RAG : run_rag_pipeline(tx, sender, rule + graph flags)
 RAG --> BG : LayerScore 0–30 + explanation
 BG -> DEC : make_decision(rule, graph, rag)
 DEC --> BG : final decision
-BG -> MongoDB : update score, decision, explanation, rag_pending = false
+BG -> MongoDB : update score, decision, explanation, layer_failures, rag_pending = false
 deactivate BG
-note over BG, RAG : On a model error or timeout only rag_pending is cleared;\nthe provisional decision stays on the record.
+note over BG, RAG : On a model error or timeout the language model is recorded as failed,\nand a decision that would approve is raised to review.
 Client -> GW : GET /transactions/{tx_id}, polled every 3 s
 GW --> Client : final record
 @enduml

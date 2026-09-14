@@ -22,10 +22,10 @@ Scoring --> Provisional : record inserted
 Provisional : banded on rule + graph score
 Provisional : rag_pending = true
 Provisional --> Final : model returns score and explanation
-Provisional --> Final : model error or 180 s timeout,\nprovisional decision kept
+Provisional --> Final : model error or 180 s timeout,\nlayer recorded as failed
 state Final {
-  [*] --> Approved : composite below 40
-  [*] --> UnderReview : composite 40–69
+  [*] --> Approved : composite below 40,\nno layer failed
+  [*] --> UnderReview : composite 40–69,\nor a layer failed
   [*] --> Blocked : composite 70 or above
   UnderReview --> Approved : analyst approves\n(X-API-Key)
   UnderReview --> Blocked : analyst blocks\n(X-API-Key)

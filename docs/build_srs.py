@@ -617,7 +617,8 @@ for c in ["The system shall run in full on a single machine without a graphics p
     bullet(c)
 section("2.6 Assumptions and Dependencies")
 for a in ["The four data stores are reachable. If a store is unavailable the affected "
-          "layer degrades rather than failing the request.",
+          "layer is recorded as failed rather than failing the request, and a "
+          "transaction it would otherwise have approved is held for review.",
           "A local language model or an external service key is available. Without "
           "either, the rule and graph layers still produce a decision and only the "
           "written explanation is lost.",
@@ -637,9 +638,9 @@ for a in ["The four data stores are reachable. If a store is unavailable the aff
 chapter("System Requirements")
 section("3.1 Functional Requirements")
 para("Each requirement is traceable to the module that implements it. The requirements "
-     "are given in three tables — request handling and scoring, decision and "
-     "persistence, then the surrounding accounts, graph, reporting and operations "
-     "services — sized so that none has to run across a page break.")
+     "are given in four tables — request handling and scoring; decision and "
+     "persistence; accounts, graph, reporting and operations; then the dashboard, "
+     "security and resilience — sized so that none has to run across a page break.")
 table("Functional requirements — request handling and scoring",
       ["ID", "Requirement", "Module"],
       [["FR-1", "Accept a transaction over HTTP POST carrying identifier, sender, receiver, amount, currency and optional merchant, device, address and note fields.", "routes/transactions"],
@@ -650,7 +651,7 @@ table("Functional requirements — request handling and scoring",
        ["FR-6", "Count transactions for an account within an exact ten-minute rolling window and flag more than five.", "core/redis_client"],
        ["FR-7", "Score from 0 to 30 by detecting shared devices, circular flows within four hops, fee-skimming chains and proximity to a known fraud cluster.", "services/graph_analyzer"],
        ["FR-8", "Record the transaction, its accounts, device and address in the graph so later transactions can be evaluated against it.", "services/graph_analyzer"],
-       ["FR-9", "Retrieve similar fraud patterns and obtain a score from 0 to 30 with an explanation from the language model, degrading to a zero score with a stated reason when no language model is reachable.", "services/rag_pipeline"]],
+       ["FR-9", "Retrieve similar fraud patterns and obtain a score from 0 to 30 with an explanation from the language model, marking the layer as failed when no language model is reachable or the assessment times out.", "services/rag_pipeline"]],
       widths=[0.5, 4.2, 1.3], size=9)
 table("Functional requirements — decision and persistence",
       ["ID", "Requirement", "Module"],
@@ -675,12 +676,18 @@ table("Functional requirements — accounts, graph, reporting and operations",
        ["FR-24", "Derive decisions again across candidate thresholds and report no block threshold when none is reachable.", "scripts/evaluate"],
        ["FR-25", "Limit each client to 120 requests per minute overall and 30 on the analysis endpoint.", "core/rate_limit"],
        ["FR-26", "Expose a health endpoint reporting service status.", "routes/health"],
-       ["FR-27", "Provide repeatable seed scripts for account profiles and a synthetic fraud graph.", "scripts/seed"],
-       ["FR-28", "Display metrics, decision mix, score distribution, accuracy and flagged transactions with detail and override.", "dashboard"],
-       ["FR-29", "Require a shared key on the routes that override a decision, change blacklist status or propagate fraud labels.", "core/security"],
+       ["FR-27", "Provide repeatable seed scripts for account profiles and a synthetic fraud graph.", "scripts/seed"]],
+      widths=[0.5, 4.2, 1.3], size=9)
+table("Functional requirements — dashboard, security and resilience",
+      ["ID", "Requirement", "Module"],
+      [["FR-28", "Display metrics, decision mix, score distribution, accuracy and flagged transactions with detail and override.", "dashboard"],
+       ["FR-29", "Require a shared key on the routes that override a decision, change blacklist status, propagate fraud labels, or report or restart a scoring component.", "core/security"],
        ["FR-30", "Restrict the graph layer's circular-flow detection to hops occurring within a configured window and in chronological order.", "services/graph_analyzer"],
        ["FR-31", "Withhold a written explanation that does not reference any triggered signal, and show the signal list alone in its place.", "services/decision_engine"],
-       ["FR-32", "Show an outstanding language-model assessment on the dashboard and replace it with the final score when it arrives.", "dashboard"]],
+       ["FR-32", "Show an outstanding language-model assessment on the dashboard and replace it with the final score when it arrives.", "dashboard"],
+       ["FR-33", "Mark a scoring layer that cannot run as failed, name it in the explanation, record it with the transaction, and send a transaction that would otherwise be approved to review.", "services/decision_engine"],
+       ["FR-34", "Report whether each scoring component's dependency is answering, and let an authorised user restart one component.", "routes/components"],
+       ["FR-35", "Show a failed layer on the dashboard with its error and a control that restarts that component.", "dashboard"]],
       widths=[0.5, 4.2, 1.3], size=9)
 section("3.2 Non-Functional Requirements")
 para("Non-functional requirements are grouped below under performance, reliability, "
@@ -720,7 +727,8 @@ for n in ["The deterministic layers shall complete within 500 milliseconds per t
 para("Reliability and maintainability.")
 for n in ["The service shall hold no state between requests, so that an instance can be "
           "restarted without loss of data.",
-          "An unavailable component shall never cause a transaction to be approved silently.",
+          "An unavailable component shall never cause a transaction to be approved silently: "
+          "a transaction scored while a layer could not run shall be held for review.",
           "The composite score shall be clamped so that no combination exceeds the range.",
           "Every decision shall be persisted with its explanation for audit."]:
     bullet(n)
@@ -729,11 +737,11 @@ for n in ["The automated test suite shall run without any database or network ac
           "The stack shall start with a single command on Linux, macOS or Windows."]:
     bullet(n)
 table("Software quality attributes", ["Attribute", "How it is achieved"],
-      [["Reliability", "The pipeline degrades one component at a time; a duplicate "
+      [["Reliability", "A failed layer is recorded and holds the transaction for review; a duplicate "
                        "submission returns a defined conflict response."],
        ["Maintainability", "Each layer is a single function with one input and one "
                            "output type, so a layer can be replaced independently."],
-       ["Testability", "Forty-one automated tests run with no database or network."],
+       ["Testability", "Fifty-three automated tests run with no database or network."],
        ["Portability", "The entire stack is defined in one container composition file."],
        ["Usability", "Every decision is accompanied by a written explanation."],
        ["Accuracy", f"Precision {FLAGGED['precision']:.3f}, recall {FLAGGED['recall']:.3f}, "
@@ -762,7 +770,7 @@ for s in ["Credentials shall be supplied through environment variables and never
           "Account identifiers are the only data shared between stores; no payment "
           "instrument data is persisted.",
           "The routes that alter a stored decision, change an account's blacklist "
-          "status or rewrite the graph's fraud labels shall require a shared key "
+          "status, rewrite the graph's fraud labels, or report or restart a scoring component shall require a shared key "
           "supplied in a request header, compared in constant time.",
           "Browser access shall be restricted to configured origins rather than "
           "permitted from any origin.",
@@ -818,7 +826,9 @@ para("The component diagram shows the parts of the FastAPI application and the s
      "and services each one depends on. The routers call the rule engine, the graph "
      "analyzer and the decision engine directly, and hand the language-model layer to a "
      "background task limited to four concurrent assessments with a 180-second timeout. "
-     "The API-key guard applies only to the three routes that change stored state: the "
+     "The component routes report whether each layer's dependency is answering and restart "
+     "one layer on request. The API-key guard applies to those routes and to the three "
+     "that change stored data: the "
      "decision override, the blacklist toggle and fraud label propagation.")
 figure("07-component.png", "Component diagram")
 section("4.6 Deployment Diagram")
@@ -840,7 +850,8 @@ para("The activity diagram follows one transaction across the participants. The 
      "and graph layers score in parallel and set a provisional decision, the record is "
      "stored and the response returned, and the language-model layer then runs in the "
      "background. If it answers within the time limit its score and explanation are "
-     "added and the decision is banded again; if not, the provisional decision stands. "
+     "added and the decision is banded again; if not, the layer is recorded as failed and a "
+     "transaction that would have been approved is held for review. "
      "An analyst can approve or block a transaction held for review.")
 figure("03-activity.png", "Activity diagram — transaction analysis workflow")
 section("5.3 Sequence Diagram")
@@ -860,7 +871,8 @@ para("The state diagram gives the lifecycle of a transaction record. A record is
      "only after scoring, so a request rejected at validation or as a duplicate never "
      "reaches the store. Every stored record passes through a provisional state while "
      "its language-model assessment is outstanding, and if that assessment fails or "
-     "times out the provisional decision becomes the final one. The dashboard offers the "
+     "times out the layer is recorded as failed and the decision is banded again, with an "
+     "approval raised to review. The dashboard offers the "
      "approve and block actions only on a transaction under review.")
 figure("06-state.png", "State diagram — lifecycle of a transaction")
 

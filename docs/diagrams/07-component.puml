@@ -5,7 +5,7 @@ component "Analyst Dashboard\n(React + Vite)" as UI
 () "REST /api/v1" as REST
 package "FastAPI application" {
   component "Middleware\nCORS · slowapi rate limit" as MW
-  component "Routers\ntransactions · accounts\ngraph · stats · health" as RT
+  component "Routers\ntransactions · accounts · graph\nstats · health · components" as RT
   component "API-key guard\nrequire_api_key" as KEY
   component "Rule Engine" as RE
   component "Graph Analyzer" as GA

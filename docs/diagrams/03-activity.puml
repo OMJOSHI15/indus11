@@ -60,10 +60,12 @@ endif
 (background, 180 s limit);
 |Decision Engine|
 if (Model answered in time?) then (yes)
-  :Re-band the composite score;
+  :Add the model's score and explanation;
 else (no)
-  :Keep the provisional decision;
+  :Record the language model as failed;
 endif
+:Re-band the composite score
+(APPROVE becomes REVIEW if any layer failed);
 |API Gateway|
 :Update record, rag_pending = false;
 |Fraud Analyst|
