@@ -10,9 +10,9 @@ import {
 import { DEMO, getGraphStats, getOverview, getRecentFlags, getRiskDistribution } from "./api.js";
 import { SAMPLE_DISTRIBUTION, SAMPLE_FLAGS } from "./sampleData.js";
 import { moneyShort } from "./format.js";
-import { DECISION_COLORS } from "./theme.js";
+import { DECISION_COLORS, currentTheme, setTheme } from "./theme.js";
 import {
-  GaugeIcon, LayoutIcon, ListIcon, NetworkIcon, PlusIcon, RefreshIcon, WifiOffIcon,
+  GaugeIcon, LayoutIcon, ListIcon, MoonIcon, NetworkIcon, PlusIcon, RefreshIcon, SunIcon, WifiOffIcon,
 } from "./icons.jsx";
 
 const REFRESH_MS = 15000;
@@ -54,6 +54,13 @@ export default function App() {
   const [selectedId, setSelectedId] = useState(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [updatedAt, setUpdatedAt] = useState(null);
+  const [theme, setThemeState] = useState(currentTheme);
+
+  const toggleTheme = () => {
+    const next = theme === "dark" ? "light" : "dark";
+    setTheme(next);
+    setThemeState(next);
+  };
 
   const refresh = useCallback(async () => {
     try {
@@ -113,6 +120,11 @@ export default function App() {
             <p>Every transaction scored by the rule, graph and language-model layers.</p>
           </div>
           <div className="page-head__actions">
+            <button type="button" className="button button--quiet button--icon" onClick={toggleTheme}
+                    aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+                    title={theme === "dark" ? "Light mode" : "Dark mode"}>
+              {theme === "dark" ? <SunIcon size={16} /> : <MoonIcon size={16} />}
+            </button>
             <button type="button" className="button button--quiet" onClick={refresh}>
               <RefreshIcon size={15} /> Refresh
             </button>

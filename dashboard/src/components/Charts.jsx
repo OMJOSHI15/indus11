@@ -5,13 +5,13 @@ import {
 } from "recharts";
 import {
   CHART, DECISIONS, DECISION_COLORS, DECISION_LABELS, LAYER_COLORS, SERIES,
-  axisTick, compact, tooltipStyle,
+  axisTick, compact, tooltipItemStyle, tooltipStyle,
 } from "../theme.js";
 import { LAYERS, humanize, layerOf } from "../signals.js";
 
 const pct = (part, whole) => (whole ? `${((part / whole) * 100).toFixed(1)}%` : "—");
 const BAR = 24; // thickest a bar may get; the rest of the band stays air
-const INK_2 = "#3d3c39";
+const INK_2 = CHART.ink2;
 
 export function Card({ title, subtitle, action, className = "", children }) {
   return (
@@ -44,7 +44,7 @@ export function Legend({ items }) {
 export const ChartSkeleton = ({ height = 240 }) => <div className="skeleton" style={{ height }} />;
 
 const DECISION_LEGEND = DECISIONS.map((d) => ({ color: DECISION_COLORS[d], label: DECISION_LABELS[d] }));
-const cursor = { fill: "rgba(11,11,11,0.04)" };
+const cursor = { fill: CHART.hover };
 const shareOfRow = (v, name, item) => [`${v.toLocaleString("en-IN")} (${pct(v, item.payload.total)})`, name];
 
 const stackBars = (radiusEnd) =>
@@ -70,7 +70,7 @@ export function DecisionDonut({ distribution }) {
                  isAnimationActive={false}>
               {data.map((e) => <Cell key={e.key} fill={DECISION_COLORS[e.key]} />)}
             </Pie>
-            <Tooltip contentStyle={tooltipStyle} formatter={(v, name) => [`${v.toLocaleString("en-IN")} (${pct(v, total)})`, name]} />
+            <Tooltip contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} formatter={(v, name) => [`${v.toLocaleString("en-IN")} (${pct(v, total)})`, name]} />
           </PieChart>
         </ResponsiveContainer>
         <div className="donut__center">
@@ -118,7 +118,7 @@ export function DecisionsByDay({ overview }) {
           <XAxis dataKey="label" tick={axisTick} axisLine={{ stroke: CHART.axis }} tickLine={false} />
           <YAxis tick={axisTick} axisLine={false} tickLine={false} width={44}
                  tickFormatter={(v) => (share ? `${Math.round(v * 100)}%` : compact(v))} />
-          <Tooltip contentStyle={tooltipStyle} cursor={cursor} formatter={shareOfRow} />
+          <Tooltip contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} cursor={cursor} formatter={shareOfRow} />
           {stackBars([4, 4, 0, 0])}
         </BarChart>
       </ResponsiveContainer>
@@ -139,7 +139,7 @@ export function CategoryRisk({ overview }) {
           <CartesianGrid stroke={CHART.grid} horizontal={false} />
           <XAxis type="number" tick={axisTick} axisLine={false} tickLine={false} tickFormatter={compact} />
           <YAxis type="category" dataKey="label" tick={{ ...axisTick, fill: INK_2 }} axisLine={false} tickLine={false} width={112} />
-          <Tooltip contentStyle={tooltipStyle} cursor={cursor} formatter={shareOfRow} />
+          <Tooltip contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} cursor={cursor} formatter={shareOfRow} />
           {stackBars([0, 4, 4, 0])}
         </BarChart>
       </ResponsiveContainer>
@@ -161,7 +161,7 @@ export function TopSignals({ overview }) {
           <CartesianGrid stroke={CHART.grid} horizontal={false} />
           <XAxis type="number" tick={axisTick} axisLine={false} tickLine={false} tickFormatter={compact} />
           <YAxis type="category" dataKey="label" tick={{ ...axisTick, fill: INK_2 }} axisLine={false} tickLine={false} width={160} />
-          <Tooltip contentStyle={tooltipStyle} cursor={cursor}
+          <Tooltip contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} cursor={cursor}
                    formatter={(v, _n, item) => [`${v} of ${flagged} flagged (${pct(v, flagged)})`,
                      LAYERS.find((l) => l.key === item.payload.layer)?.label]} />
           <Bar dataKey="count" maxBarSize={16} radius={[0, 4, 4, 0]} isAnimationActive={false}>
@@ -185,7 +185,7 @@ export function AmountBands({ overview }) {
         <XAxis dataKey="band" tick={axisTick} axisLine={{ stroke: CHART.axis }} tickLine={false} interval={0} />
         <YAxis tick={axisTick} axisLine={false} tickLine={false} width={44} domain={[0, 1]}
                tickFormatter={(v) => `${Math.round(v * 100)}%`} />
-        <Tooltip contentStyle={tooltipStyle} cursor={cursor}
+        <Tooltip contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} cursor={cursor}
                  formatter={(_v, _n, item) => [`${item.payload.flagged} of ${item.payload.total} flagged`, "Flag rate"]} />
         <Bar dataKey="rate" fill={SERIES} maxBarSize={36} radius={[4, 4, 0, 0]} isAnimationActive={false}>
           <LabelList dataKey="rate" position="top" formatter={(v) => `${Math.round(v * 100)}%`}
@@ -212,7 +212,7 @@ export function ScoreHistogram({ distribution }) {
           <CartesianGrid stroke={CHART.grid} vertical={false} />
           <XAxis dataKey="bucket" tick={axisTick} axisLine={{ stroke: CHART.axis }} tickLine={false} />
           <YAxis tick={axisTick} axisLine={false} tickLine={false} width={44} tickFormatter={compact} />
-          <Tooltip contentStyle={tooltipStyle} cursor={cursor} formatter={(v) => [v.toLocaleString("en-IN"), "Transactions"]} />
+          <Tooltip contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} cursor={cursor} formatter={(v) => [v.toLocaleString("en-IN"), "Transactions"]} />
           <Bar dataKey="count" maxBarSize={36} radius={[4, 4, 0, 0]} isAnimationActive={false}>
             {distribution.score_histogram.map((b, i) => <Cell key={b.bucket} fill={DECISION_COLORS[BUCKET_DECISION[i]]} />)}
             <LabelList dataKey="count" position="top" formatter={compact} style={{ ...axisTick, fill: INK_2 }} />

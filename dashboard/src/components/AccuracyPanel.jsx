@@ -59,7 +59,7 @@ export default function AccuracyPanel() {
     ["Blocked", confusion.BLOCK],
   ];
   const max = Math.max(...cells.flatMap(([, c]) => [c.fraud, c.legit]));
-  const shade = (n) => ({ background: `rgba(42, 120, 214, ${0.06 + (n / max) * 0.5})`, color: n / max > 0.55 ? "#fff" : undefined });
+  const shade = (n) => ({ background: `color-mix(in srgb, ${SERIES} ${Math.round(8 + (n / max) * 62)}%, transparent)` });
 
   return (
     <div className="accuracy">

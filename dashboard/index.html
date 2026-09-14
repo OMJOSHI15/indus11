@@ -14,6 +14,14 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
+    <script>
+      // Set the theme before first paint so a dark-mode reload never flashes white.
+      try {
+        const saved = localStorage.getItem("indus11-theme");
+        document.documentElement.dataset.theme =
+          saved || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      } catch { document.documentElement.dataset.theme = "light"; }
+    </script>
     <title>Indus11 · Fraud Intelligence</title>
   </head>
   <body>
