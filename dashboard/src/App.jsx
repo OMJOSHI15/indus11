@@ -93,9 +93,9 @@ export default function App() {
     <div className="app">
       <aside className="sidebar">
         <div className="brand">
-          <span className="brand__mark" aria-hidden="true">I11</span>
+          <img className="brand__mark" src={`${import.meta.env.BASE_URL}nirix-icon.png`} alt="" width="34" height="34" />
           <div>
-            <strong>Indus11</strong>
+            <strong>Nirix</strong>
             <span>Fraud intelligence</span>
           </div>
         </div>
