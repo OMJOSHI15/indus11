@@ -53,7 +53,7 @@
   ],
   "Table 6.6": [
     "account:<account_id>",
-    "velocity:<account_id>"
+    "inbound:<account_id>"
   ],
   "Table 6.7": [
     "fraud_patterns",

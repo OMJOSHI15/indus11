@@ -24,3 +24,6 @@ dashboard/dist/
 # Local AI assistant config (not for repo)
 .claude/
 CLAUDE.md
+
+# Public datasets downloaded for replay (PaySim is ~470 MB)
+data/*.csv

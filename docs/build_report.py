@@ -150,6 +150,21 @@ def new_page():
     doc.add_paragraph().add_run().add_break(WD_BREAK.PAGE)
 
 
+# The member responsible for each chapter, printed under its heading. The guide
+# asked for chapter-level ownership after the 15 September review.
+CHAPTER_OWNERS = {
+    "Introduction": "Joshi Om (24DCE052)",
+    "Literature Review": "Joshi Om (24DCE052)",
+    "Proposed Methodology": "Krish Gajera (24DCE040)",
+    "Implementation": "Joshi Om (gateway, persistence, rule engine), Krish Gajera (graph analyzer), "
+                      "Drashti Dedaniya (RAG pipeline, decision engine, dashboard)",
+    "Experimental Setup and Evaluation": "Krish Gajera (24DCE040)",
+    "Results and Discussion": "Drashti Dedaniya (24DCE029)",
+    "Security, Ethical and Practical Considerations": "Joshi Om (24DCE052)",
+    "Conclusion and Future Work": "Drashti Dedaniya (24DCE029)",
+}
+
+
 def chapter(title, numbered=True, new_page_first=True):
     """Chapter heading: own page, centred, 16 pt bold."""
     global _chapter, _fig_n, _tbl_n
@@ -169,6 +184,9 @@ def chapter(title, numbered=True, new_page_first=True):
     r = p.add_run(text)
     r.font.size, r.bold, r.font.color.rgb, r.font.name = Pt(CHAP), True, INK, FONT
     contents.append((1, text))
+    if numbered and title in CHAPTER_OWNERS:
+        p.paragraph_format.space_after = Pt(4)
+        para(f"Responsible: {CHAPTER_OWNERS[title]}", align=WD_ALIGN_PARAGRAPH.CENTER, after=14)
     return p
 
 
@@ -684,7 +702,7 @@ bullets([
     "time from 260 ms to about 20 ms.",
     "An evaluation harness that replays a labelled dataset through the live API, sweeps the "
     "decision thresholds and reports precision at a realistic fraud prevalence.",
-    "An analyst dashboard and a one-command local stack, with 55 automated tests run in "
+    "An analyst dashboard and a one-command local stack, with 63 automated tests run in "
     "continuous integration.",
 ])
 section("1.8 Report Organization")
@@ -892,6 +910,12 @@ para("If a layer could not run it contributes no points, and a D(S) of APPROVE i
 para("For account a with monthly average μ_a, the velocity count n_a is the number of its "
      "transactions in the last 600 seconds, and the two account-level rules fire when")
 eq("n_a > 5      and      x > 3 μ_a  (with μ_a > 0)", "3.5")
+para("The banking anomaly rules use the sender's history kept in Redis: the time of its last "
+     "payment t_prev, whether it has paid this receiver before, the number of distinct payees "
+     "p_24 in the last day and the amount I_24 it received in the last day. With x the amount "
+     "and T = ₹10,00,000 the reporting threshold, they fire when")
+eq("0.9 T ≤ x < T;   t − t_prev ≥ 180 d;   new payee ∧ x ≥ ₹50,000;   "
+   "I_24 ≥ ₹10,000 ∧ x ≥ 0.8 I_24;   p_24 > 5", "3.5a")
 para("A cycle of k hops with timestamps t_1 … t_k and amounts a_1 … a_k counts as circular "
      "flow, and as a mule chain, when")
 eq("2 ≤ k ≤ 4,   t − 72 h ≤ t_1 ≤ t_2 ≤ … ≤ t_k;     0.75 a_i ≤ a_(i+1) ≤ a_i", "3.6")
@@ -907,8 +931,11 @@ table("Parameters and their configured values",
       ["Parameter", "Value", "Where set"],
       [["Review / block thresholds", "40 / 70", "REVIEW_THRESHOLD, BLOCK_THRESHOLD"],
        ["Layer budgets (rule / graph / LLM)", "40 / 30 / 30", "Layer code"],
-       ["Rule weights", "Blacklist 40, velocity 15, amount 12, merchant 8, tier 5 or 2",
+       ["Rule weights", "Blacklist 40, velocity 15, amount 12, merchant 8, tier 5 or 2; banking anomalies: pass-through 12, structuring 10, dormant account 10, new beneficiary 8, fan-out 8, odd hour 5",
         "rule_engine.py"],
+       ["Banking anomaly thresholds", "Structuring 90–100% of ₹10,00,000; dormant 180 days; new "
+        "beneficiary ≥ ₹50,000; pass-through ≥ 80% of ≥ ₹10,000 received in 24 h; fan-out > 5 "
+        "payees in 24 h; odd hour 00:00–04:59 IST", "rule_engine.py"],
        ["Velocity window and limit", "600 s, more than 5", "rule_engine.py"],
        ["Amount anomaly multiplier", "3 × monthly average", "rule_engine.py"],
        ["Graph weights", "Device 15, cycle 12, cluster 10, mule 8, IP 8", "graph_analyzer.py"],
@@ -1041,7 +1068,13 @@ sub("Rule engine")
 para("The rule engine is one asynchronous function that receives the transaction and both "
      "profiles. It returns the maximum score immediately for a blacklisted party; otherwise it "
      "records the transaction in a Redis sorted set keyed by account, counts the entries "
-     "within the last ten minutes, and applies the amount, merchant and risk-tier rules. If "
+     "within the last ten minutes, and applies the amount, merchant and risk-tier rules. Six "
+     "banking anomaly rules follow, taken from the red-flag indicators FIU-IND and the RBI "
+     "publish for suspicious-transaction reporting: an amount just under the ₹10 lakh "
+     "reporting threshold, a dormant account becoming active, a large first payment to a new "
+     "beneficiary, money passed straight through the account, payments to many beneficiaries "
+     "in a day, and a large payment in the early hours. They read the sender's history from "
+     "Redis in the same round trip that records the payment. If "
      "Redis cannot be reached, the layer is marked as failed with RULE_ENGINE_ERROR and the "
      "error, rather than failing the whole request.")
 sub("Graph analyzer")
@@ -1451,7 +1484,7 @@ bullets([
     "transactions.",
     "A retried submission returns a conflict response instead of creating a duplicate decision.",
     "Scores are deterministic for identical input.",
-    "55 automated tests, which need no database or network, run on every push.",
+    "63 automated tests, which need no database or network, run on every push.",
 ])
 section("7.7 Deployment Risks")
 table("Deployment risks",
@@ -1629,12 +1662,15 @@ document  Mule fee skimming: funds pass through a chain of accounts with
     code_block(block)
 
 section("Appendix B — Automated Test Suite")
-para("The 55 tests run without a database or network connection (pytest tests/ -q) and are "
+para("The 63 tests run without a database or network connection (pytest tests/ -q) and are "
      "grouped below by what they protect.")
 for heading, items in [
-    ("tests/test_fraud.py — scoring layers, decision engine, failures and security (34 tests)", [
+    ("tests/test_fraud.py — scoring layers, decision engine, failures and security (41 tests)", [
         "Rule engine: blacklist returns the maximum score; amount-anomaly and velocity flags; a "
         "clean transaction scores zero.",
+        "Banking anomalies: structuring only just under the threshold; dormancy after 180 days; "
+        "a new beneficiary only for an account with history and a large amount; pass-through, "
+        "fan-out and odd-hour boundaries in India time; all anomalies share the 40-point cap.",
         "Layer failures: Redis down marks the rule engine as failed and Neo4j down the graph "
         "analyzer; a failed layer raises an approval to review but keeps an earned block; a "
         "failed model contributes no text; error-flag words are not evidence; two failures are "
@@ -1650,7 +1686,7 @@ for heading, items in [
         "Decision engine: the approve, review and block bands; the composite cap at 100; the "
         "explanation guard's fallback, acceptance, generic-word handling, flag-detail matching "
         "and skipping while pending."]),
-    ("tests/test_eval.py — evaluation harness (21 tests)", [
+    ("tests/test_eval.py — evaluation harness (22 tests)", [
         "Classification bands match the decision engine.",
         "Precision, recall and F1, including empty inputs without division by zero.",
         "Confusion-matrix counting and the flagged versus blocked views.",
@@ -1658,7 +1694,8 @@ for heading, items in [
         "Ring recall, deterministic generation of the labelled set and namespaced run "
         "identifiers.",
         "Parsing the language model's JSON when it echoes an example or adds prose.",
-        "Precision at realistic prevalence and its edge cases."]),
+        "Precision at realistic prevalence and its edge cases.",
+        "PaySim replay: row-to-transaction mapping and the per-rule and threshold summary."]),
 ]:
     para(heading, bold=True, align=WD_ALIGN_PARAGRAPH.LEFT, after=4).paragraph_format.keep_with_next = True
     bullets(items)

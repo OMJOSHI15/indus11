@@ -35,6 +35,18 @@ def make_profile(**kwargs) -> AccountProfile:
     return AccountProfile(**defaults)
 
 
+NEUTRAL_HISTORY = {"last_seen": None, "known_payee": False, "payees_24h": 1, "inbound_24h": 0.0}
+
+
+@pytest.fixture(autouse=True)
+def no_redis_history():
+    """Rule tests run without Redis: the banking-anomaly history reads as a fresh
+    account unless a test patches it with something else."""
+    with patch("app.services.rule_engine.account_history", new_callable=AsyncMock,
+               return_value=dict(NEUTRAL_HISTORY)) as mock:
+        yield mock
+
+
 # ── Rule Engine Tests ─────────────────────────────────────────────────────────
 
 @pytest.mark.asyncio
@@ -410,3 +422,77 @@ def test_by_decision_pivots_counts_and_totals():
     rows = [{"_id": {"day": "d1", "decision": "APPROVE"}, "count": 3},
             {"_id": {"day": "d1", "decision": "BLOCK"}, "count": 1}]
     assert by_decision(rows, "day") == [{"day": "d1", "APPROVE": 3, "REVIEW": 0, "BLOCK": 1, "total": 4}]
+
+
+# ── Banking anomaly rules ─────────────────────────────────────────────────────
+
+async def _rules_with(history=None, **tx_kwargs):
+    from datetime import datetime
+    tx_kwargs.setdefault("timestamp", datetime(2026, 9, 17, 6, 0))   # 11:30 IST, not an odd hour
+    tx = make_tx(**tx_kwargs)
+    sender = make_profile(avg_monthly_transaction=0.0)
+    receiver = make_profile(account_id="ACC-002")
+    with patch("app.services.rule_engine.increment_velocity", new_callable=AsyncMock, return_value=1), \
+         patch("app.services.rule_engine.account_history", new_callable=AsyncMock,
+               return_value={**NEUTRAL_HISTORY, **(history or {})}):
+        return await run_rule_engine(tx, sender, receiver)
+
+
+def _codes(result):
+    return [f.split(" (")[0] for f in result.flags]
+
+
+@pytest.mark.asyncio
+async def test_structuring_just_under_reporting_threshold():
+    assert "STRUCTURING" in _codes(await _rules_with(amount=950_000))
+    assert "STRUCTURING" not in _codes(await _rules_with(amount=1_000_000))   # at the limit it is reported anyway
+    assert "STRUCTURING" not in _codes(await _rules_with(amount=850_000))
+
+
+@pytest.mark.asyncio
+async def test_dormant_account_reactivated_after_180_days():
+    from datetime import datetime, timezone
+    now = datetime(2026, 9, 17, 6, 0).replace(tzinfo=timezone.utc).timestamp()
+    assert "DORMANT_ACCOUNT_REACTIVATED" in _codes(await _rules_with({"last_seen": now - 200 * 86400}))
+    assert "DORMANT_ACCOUNT_REACTIVATED" not in _codes(await _rules_with({"last_seen": now - 30 * 86400}))
+
+
+@pytest.mark.asyncio
+async def test_new_beneficiary_needs_history_and_a_large_amount():
+    seen = {"last_seen": 1.0, "known_payee": False}
+    assert "NEW_BENEFICIARY_HIGH_VALUE" in _codes(await _rules_with(seen, amount=75_000))
+    assert "NEW_BENEFICIARY_HIGH_VALUE" not in _codes(await _rules_with(seen, amount=5_000))
+    assert "NEW_BENEFICIARY_HIGH_VALUE" not in _codes(await _rules_with({**seen, "known_payee": True}, amount=75_000))
+    # a brand-new account has no payees yet, so every payee is "new": not a signal
+    assert "NEW_BENEFICIARY_HIGH_VALUE" not in _codes(await _rules_with(amount=75_000))
+
+
+@pytest.mark.asyncio
+async def test_pass_through_when_most_of_the_inflow_leaves_within_a_day():
+    assert "PASS_THROUGH" in _codes(await _rules_with({"inbound_24h": 200_000}, amount=190_000))
+    assert "PASS_THROUGH" not in _codes(await _rules_with({"inbound_24h": 200_000}, amount=40_000))
+    assert "PASS_THROUGH" not in _codes(await _rules_with({"inbound_24h": 3_000}, amount=2_900))
+
+
+@pytest.mark.asyncio
+async def test_fan_out_to_many_payees_in_a_day():
+    assert "BENEFICIARY_FAN_OUT" in _codes(await _rules_with({"payees_24h": 6}))
+    assert "BENEFICIARY_FAN_OUT" not in _codes(await _rules_with({"payees_24h": 5}))
+
+
+@pytest.mark.asyncio
+async def test_odd_hour_uses_india_time_and_needs_a_large_amount():
+    from datetime import datetime
+    late = datetime(2026, 9, 16, 21, 0)          # 02:30 IST
+    assert "ODD_HOUR_HIGH_VALUE" in _codes(await _rules_with(amount=80_000, timestamp=late))
+    assert "ODD_HOUR_HIGH_VALUE" not in _codes(await _rules_with(amount=500, timestamp=late))
+    assert "ODD_HOUR_HIGH_VALUE" not in _codes(await _rules_with(amount=80_000))   # 11:30 IST
+
+
+@pytest.mark.asyncio
+async def test_anomaly_rules_share_the_rule_engine_cap():
+    loud = {"last_seen": 1.0, "known_payee": False, "payees_24h": 9, "inbound_24h": 999_000}
+    from datetime import datetime
+    result = await _rules_with(loud, amount=960_000, merchant_category="wire_transfer",
+                               timestamp=datetime(2026, 9, 16, 21, 0))
+    assert result.score == 40 and len(result.flags) >= 6

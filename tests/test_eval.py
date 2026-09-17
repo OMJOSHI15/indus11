@@ -234,3 +234,19 @@ def test_precision_collapses_at_real_prevalence():
 def test_precision_at_prevalence_edges():
     assert precision_at_prevalence(0.9, 0.0, 0.001) == 1.0   # no false alarms
     assert precision_at_prevalence(0.0, 0.0, 0.001) == 0.0   # detects nothing
+
+
+def test_paysim_row_mapping_and_rule_summary():
+    from scripts.replay_paysim import summarise, to_transaction
+    row = {"step": "3", "type": "TRANSFER", "amount": "181.0", "nameOrig": "C1305486145",
+           "nameDest": "C553264065", "isFraud": "1"}
+    tx = to_transaction(row, 7)
+    assert tx.merchant_category == "wire_transfer" and tx.sender_account_id == "C1305486145"
+    assert tx.timestamp.hour == 2 and tx.timestamp.second == 7        # step 3 -> third hour, spread by row
+
+    report = summarise([(20, ["STRUCTURING"], True), (8, ["HIGH_RISK_MERCHANT"], False),
+                        (0, [], False), (12, ["STRUCTURING", "HIGH_RISK_MERCHANT"], True)])
+    assert report["fraud"] == 2 and report["legit"] == 2
+    assert report["rules"]["STRUCTURING"] == {"fraud": 2, "legit": 0, "precision": 1.0, "recall": 1.0}
+    at_10 = next(s for s in report["threshold_sweep"] if s["min_rule_score"] == 10)
+    assert (at_10["precision"], at_10["recall"]) == (1.0, 1.0)

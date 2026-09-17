@@ -651,7 +651,7 @@ table("Functional requirements — request handling and scoring",
        ["FR-2", "Validate every request against a schema and reject a malformed or non-positive amount before any analysis is performed.", "schemas/transaction"],
        ["FR-3", "Reject a duplicate transaction identifier with a conflict response so that a retried request does not produce a server error.", "routes/transactions"],
        ["FR-4", "Load sender and receiver profiles from cache, falling back to the document store, treating an unknown account as elevated risk.", "routes/transactions"],
-       ["FR-5", "Score from 0 to 40 using blacklist, velocity, amount-anomaly, merchant and risk-tier rules, returning the reason for each rule that fired; return the maximum score immediately when either party is blacklisted.", "services/rule_engine"],
+       ["FR-5", "Score from 0 to 40 using blacklist, velocity, amount-anomaly, merchant and risk-tier rules and six banking anomaly rules (structuring below the ₹10 lakh reporting threshold, dormant-account reactivation, large first payment to a new beneficiary, pass-through of funds, beneficiary fan-out, large payment at an unusual hour), returning the reason for each rule that fired; return the maximum score immediately when either party is blacklisted.", "services/rule_engine"],
        ["FR-6", "Count transactions for an account within an exact ten-minute rolling window and flag more than five.", "core/redis_client"],
        ["FR-7", "Score from 0 to 30 by detecting shared devices, circular flows within four hops, fee-skimming chains and proximity to a known fraud cluster.", "services/graph_analyzer"],
        ["FR-8", "Record the transaction, its accounts, device and address in the graph so later transactions can be evaluated against it.", "services/graph_analyzer"],
@@ -745,7 +745,7 @@ table("Software quality attributes", ["Attribute", "How it is achieved"],
                        "submission returns a defined conflict response."],
        ["Maintainability", "Each layer is a single function with one input and one "
                            "output type, so a layer can be replaced independently."],
-       ["Testability", "Fifty-five automated tests run with no database or network."],
+       ["Testability", "Sixty-three automated tests run with no database or network."],
        ["Portability", "The entire stack is defined in one container composition file."],
        ["Usability", "Every decision is accompanied by a written explanation."],
        ["Accuracy", f"Precision {FLAGGED['precision']:.3f}, recall {FLAGGED['recall']:.3f}, "
@@ -822,8 +822,9 @@ para("The level 2 diagram decomposes process 3.0, the rule engine, into its indi
      "40 points when either party is blacklisted. Otherwise the velocity check adds the "
      "transaction's timestamp to a ten-minute window held in Redis and counts the "
      "entries, and the amount, merchant and risk-tier checks follow. The checks read the "
-     "profiles already loaded by process 2.0; the velocity check is the only one that "
-     "touches a data store.")
+     "profiles already loaded by process 2.0. The six banking anomaly checks then read "
+     "the sender's payment history from Redis and record the new payment in the same "
+     "round trip; with the velocity check they are the only checks that touch a data store.")
 figure("12-dfd2.png", "Data flow diagram — Level 2, process 3.0")
 section("4.5 Component Diagram")
 para("The component diagram shows the parts of the FastAPI application and the stores "
@@ -964,7 +965,13 @@ table("Cache keys (Redis)",
         "Transaction timestamps scored by epoch second", "600 second rolling window"],
        ["velocity:<account_id> member", "String",
         "Event timestamp with a random suffix, so simultaneous events are distinct",
-        "Aged out with its window"]],
+        "Aged out with its window"],
+       ["lastseen:<account_id>", "String", "Epoch second of the account's last payment",
+        "400 days"],
+       ["payees:<account_id>", "Sorted set", "Receivers paid, scored by last payment time",
+        "400 days"],
+       ["inbound:<account_id>", "Sorted set",
+        "Amounts received, scored by time; read for pass-through", "2 days"]],
       widths=[1.6, 1.1, 2.3, 1.0], size=9.5)
 table("Vector store (ChromaDB)",
       ["Collection", "Field", "Type", "Description"],
