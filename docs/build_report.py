@@ -702,7 +702,7 @@ bullets([
     "time from 260 ms to about 20 ms.",
     "An evaluation harness that replays a labelled dataset through the live API, sweeps the "
     "decision thresholds and reports precision at a realistic fraud prevalence.",
-    "An analyst dashboard and a one-command local stack, with 63 automated tests run in "
+    "An analyst dashboard and a one-command local stack, with 101 automated tests run in "
     "continuous integration.",
 ])
 section("1.8 Report Organization")
@@ -915,7 +915,7 @@ para("The banking anomaly rules use the sender's history kept in Redis: the time
      "p_24 in the last day and the amount I_24 it received in the last day. With x the amount "
      "and T = ₹10,00,000 the reporting threshold, they fire when")
 eq("0.9 T ≤ x < T;   t − t_prev ≥ 180 d;   new payee ∧ x ≥ ₹50,000;   "
-   "I_24 ≥ ₹10,000 ∧ x ≥ 0.8 I_24;   p_24 > 5", "3.5a")
+   "I_24 ≥ ₹10,000 ∧ 0.8 I_24 ≤ x ≤ 1.1 I_24;   p_24 > 5", "3.5a")
 para("A cycle of k hops with timestamps t_1 … t_k and amounts a_1 … a_k counts as circular "
      "flow, and as a mule chain, when")
 eq("2 ≤ k ≤ 4,   t − 72 h ≤ t_1 ≤ t_2 ≤ … ≤ t_k;     0.75 a_i ≤ a_(i+1) ≤ a_i", "3.6")
@@ -931,11 +931,11 @@ table("Parameters and their configured values",
       ["Parameter", "Value", "Where set"],
       [["Review / block thresholds", "40 / 70", "REVIEW_THRESHOLD, BLOCK_THRESHOLD"],
        ["Layer budgets (rule / graph / LLM)", "40 / 30 / 30", "Layer code"],
-       ["Rule weights", "Blacklist 40, velocity 15, amount 12, merchant 8, tier 5 or 2; banking anomalies: pass-through 12, structuring 10, dormant account 10, new beneficiary 8, fan-out 8, odd hour 5",
-        "rule_engine.py"],
-       ["Banking anomaly thresholds", "Structuring 90–100% of ₹10,00,000; dormant 180 days; new "
-        "beneficiary ≥ ₹50,000; pass-through ≥ 80% of ≥ ₹10,000 received in 24 h; fan-out > 5 "
-        "payees in 24 h; odd hour 00:00–04:59 IST", "rule_engine.py"],
+       ["Rule weights", "Blacklist 40, velocity 15, amount 12, merchant 8, tier 5 or 2; the 25 "
+        "banking anomaly weights are listed in Tables 4.5 and 4.6", "rule_engine.py"],
+       ["Banking anomaly thresholds", "Reporting limit ₹10,00,000; UPI limit ₹1,00,000; large "
+        "payment ₹50,000; dormant 180 days; 24 h history windows; impossible travel 900 km/h over "
+        "at least 100 km", "rule_engine.py"],
        ["Velocity window and limit", "600 s, more than 5", "rule_engine.py"],
        ["Amount anomaly multiplier", "3 × monthly average", "rule_engine.py"],
        ["Graph weights", "Device 15, cycle 12, cluster 10, mule 8, IP 8", "graph_analyzer.py"],
@@ -1068,15 +1068,79 @@ sub("Rule engine")
 para("The rule engine is one asynchronous function that receives the transaction and both "
      "profiles. It returns the maximum score immediately for a blacklisted party; otherwise it "
      "records the transaction in a Redis sorted set keyed by account, counts the entries "
-     "within the last ten minutes, and applies the amount, merchant and risk-tier rules. Six "
-     "banking anomaly rules follow, taken from the red-flag indicators FIU-IND and the RBI "
-     "publish for suspicious-transaction reporting: an amount just under the ₹10 lakh "
-     "reporting threshold, a dormant account becoming active, a large first payment to a new "
-     "beneficiary, money passed straight through the account, payments to many beneficiaries "
-     "in a day, and a large payment in the early hours. They read the sender's history from "
-     "Redis in the same round trip that records the payment. If "
+     "within the last ten minutes, and applies the amount, merchant and risk-tier rules. "
+     "Twenty-five banking anomaly rules follow, taken from the red-flag indicators FIU-IND and "
+     "the RBI publish for suspicious-transaction reporting, FATF money-laundering typologies "
+     "and card-network fraud patterns. They read each account's recent history from Redis "
+     "(last payment, payees, devices, IP addresses, location, merchant categories, money in "
+     "and out over 24 hours) in the same round trip that records the payment, so every read "
+     "describes the account before this transaction. If "
      "Redis cannot be reached, the layer is marked as failed with RULE_ENGINE_ERROR and the "
      "error, rather than failing the whole request.")
+para("Fifty banking anomalies were catalogued. Thirty-five are detected, thirty by the rule "
+     "engine and five by the graph analyzer (Tables 4.5 and 4.6). The other fifteen need data this "
+     "system does not receive, such as balances, KYC records, channels and login events, and "
+     "are listed with that data in Table 4.7. The rule engine's total stays capped at 40, so "
+     "many rules firing together cannot decide a transaction on their own.")
+table("Banking anomalies detected (1 to 18)",
+      ["#", "Anomaly", "Layer", "Points"],
+      [['1', 'Blacklisted sender or receiver', 'Rule', '40'],
+       ['2', 'Velocity burst, more than 5 payments in 10 min', 'Rule', '15'],
+       ['3', "Amount over 3 × the account's average", 'Rule', '12'],
+       ['4', 'High-risk merchant category', 'Rule', '8'],
+       ['5', 'High or elevated customer risk tier', 'Rule', '5 / 2'],
+       ['6', 'Structuring just under the ₹10 lakh reporting limit', 'Rule', '10'],
+       ['7', 'Dormant account reactivated after 180 days', 'Rule', '10'],
+       ['8', 'Large first payment to a new beneficiary', 'Rule', '8'],
+       ['9', 'Pass-through: 80–110% of money received in 24 h sent on', 'Rule', '12'],
+       ['10', 'Fan-out to more than 5 payees in 24 h', 'Rule', '8'],
+       ['11', 'Large payment between 00:00 and 04:59 IST', 'Rule', '5'],
+       ['12', 'Smurfing: payments under ₹10 lakh totalling over it in 24 h', 'Rule', '12'],
+       ['13', 'Fan-in: more than 10 senders into one account in 24 h', 'Rule', '8'],
+       ['14', 'Payment of ₹10 or less followed within an hour by ₹10,000 or more', 'Rule', '10'],
+       ['15', 'Impossible travel: over 900 km/h between located payments', 'Rule', '12'],
+       ['16', 'New device on an established account, ₹50,000 or more', 'Rule', '8'],
+       ['17', 'New IP address on an established account, ₹50,000 or more', 'Rule', '6'],
+       ['18', 'Device hopping: more than 3 devices in 24 h', 'Rule', '8']],
+      widths=[0.35, 4.3, 0.7, 0.65], size=9)
+table("Banking anomalies detected (19 to 35)",
+      ["#", "Anomaly", "Layer", "Points"],
+      [['19', 'Daily outflow over 10 × the usual payment', 'Rule', '8'],
+       ['20', 'Three or more round-amount payments in 24 h', 'Rule', '5'],
+       ['21', 'Same amount to the same payee three or more times in 24 h', 'Rule', '8'],
+       ['22', 'Back-and-forth: receiver paid the sender in the last 24 h', 'Rule', '8'],
+       ['23', 'Repeated payments just under the ₹1 lakh UPI limit', 'Rule', '6'],
+       ['24', "A new account's first payment is ₹50,000 or more", 'Rule', '6'],
+       ['25', 'First-ever payment to a high-risk merchant category', 'Rule', '6'],
+       ['26', 'Foreign currency on an Indian account', 'Rule', '4'],
+       ['27', 'Receiver in a FATF high-risk jurisdiction', 'Rule', '10'],
+       ['28', 'Payment note uses scam phrases (KYC, OTP, lottery, refund…)', 'Rule', '8'],
+       ['29', 'More than 10 payers to one merchant ID in 10 min', 'Rule', '10'],
+       ['30', 'Account draining: three payments of ₹50,000 or more in 1 h', 'Rule', '10'],
+       ['31', 'Device shared by more than 2 accounts', 'Graph', '15'],
+       ['32', 'IP address shared by more than 3 accounts', 'Graph', '8'],
+       ['33', 'Circular flow back to the sender within 4 hops and 72 h', 'Graph', '12'],
+       ['34', 'Mule chain keeping 75–100% at each hop', 'Graph', '8'],
+       ['35', 'Receiver within two links of a known fraud account', 'Graph', '10']],
+      widths=[0.35, 4.3, 0.7, 0.65], size=9)
+table("Banking anomalies not detected, and the data each would need",
+      ["#", "Anomaly", "Data needed"],
+      [['36', 'Cash deposits spread across many branches', 'Channel and branch of each deposit'],
+       ['37', 'Deposit followed by an ATM withdrawal in another city', 'Channel and ATM location'],
+       ['38', 'Account emptied to near zero', 'Account balance'],
+       ['39', 'Volume out of line with occupation or income', 'KYC profile'],
+       ['40', 'Salary account receiving third-party credits', 'Account type'],
+       ['41', 'Loan disbursal moved out immediately', 'Loan records'],
+       ['42', 'Several accounts sharing a PAN, phone or address', 'KYC identity data'],
+       ['43', 'Mobile number or e-mail changed before a large payment', 'Account change events'],
+       ['44', 'SIM swap shortly before a transaction', 'Telecom operator data'],
+       ['45', 'Failed logins or OTP attempts before a payment', 'Authentication logs'],
+       ['46', 'Beneficiary added and paid within minutes', 'Beneficiary-added timestamp'],
+       ['47', 'History of chargebacks or disputes', 'Dispute records'],
+       ['48', 'Cheque kiting', 'Cheque clearing data (out of scope)'],
+       ['49', 'Trade-based laundering through over- or under-invoicing', 'Trade documents (out of scope)'],
+       ['50', 'Politically exposed person or sanctions match', 'External watch lists (out of scope)']],
+      widths=[0.35, 3.3, 2.35], size=9)
 sub("Graph analyzer")
 para("The graph analyzer first merges the transaction, its accounts, device and address into "
      "Neo4j, then runs four checks in one session: shared device, circular flow with the mule "
@@ -1484,7 +1548,7 @@ bullets([
     "transactions.",
     "A retried submission returns a conflict response instead of creating a duplicate decision.",
     "Scores are deterministic for identical input.",
-    "63 automated tests, which need no database or network, run on every push.",
+    "101 automated tests, which need no database or network, run on every push.",
 ])
 section("7.7 Deployment Risks")
 table("Deployment risks",
@@ -1662,15 +1726,17 @@ document  Mule fee skimming: funds pass through a chain of accounts with
     code_block(block)
 
 section("Appendix B — Automated Test Suite")
-para("The 63 tests run without a database or network connection (pytest tests/ -q) and are "
+para("The 101 tests run without a database or network connection (pytest tests/ -q) and are "
      "grouped below by what they protect.")
 for heading, items in [
-    ("tests/test_fraud.py — scoring layers, decision engine, failures and security (41 tests)", [
+    ("tests/test_fraud.py — scoring layers, decision engine, failures and security (79 tests)", [
         "Rule engine: blacklist returns the maximum score; amount-anomaly and velocity flags; a "
         "clean transaction scores zero.",
         "Banking anomalies: structuring only just under the threshold; dormancy after 180 days; "
         "a new beneficiary only for an account with history and a large amount; pass-through, "
-        "fan-out and odd-hour boundaries in India time; all anomalies share the 40-point cap.",
+        "fan-out and odd-hour boundaries in India time; all anomalies share the 40-point cap. "
+        "Each of the other nineteen anomaly rules has one case that fires and one just outside "
+        "its condition.",
         "Layer failures: Redis down marks the rule engine as failed and Neo4j down the graph "
         "analyzer; a failed layer raises an approval to review but keeps an earned block; a "
         "failed model contributes no text; error-flag words are not evidence; two failures are "

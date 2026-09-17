@@ -13,6 +13,12 @@ const RULE_CODES = new Set([
   "HIGH_RISK_MERCHANT", "HIGH_RISK_SENDER_TIER", "ELEVATED_RISK_SENDER_TIER",
   "STRUCTURING", "DORMANT_ACCOUNT_REACTIVATED", "NEW_BENEFICIARY_HIGH_VALUE",
   "PASS_THROUGH", "BENEFICIARY_FAN_OUT", "ODD_HOUR_HIGH_VALUE",
+  "SMURFING", "FAN_IN_COLLECTION_ACCOUNT", "MICRO_TEST_THEN_LARGE", "IMPOSSIBLE_TRAVEL",
+  "NEW_DEVICE_HIGH_VALUE", "NEW_IP_HIGH_VALUE", "DEVICE_HOPPING", "DAILY_OUTFLOW_SPIKE",
+  "REPEATED_ROUND_AMOUNTS", "SPLIT_PAYMENTS", "BACK_AND_FORTH", "NEAR_UPI_LIMIT_REPEATED",
+  "LARGE_FIRST_TRANSACTION", "FIRST_HIGH_RISK_MERCHANT", "CURRENCY_MISMATCH",
+  "HIGH_RISK_JURISDICTION", "SOCIAL_ENGINEERING_NOTE", "MERCHANT_COLLUSION_BURST",
+  "ACCOUNT_DRAINING",
 ]);
 const GRAPH_CODES = new Set([
   "SHARED_DEVICE", "SHARED_IP", "CIRCULAR_FLOW",
@@ -33,7 +39,7 @@ export const layerOf = (code) =>
 
 /** "SHARED_DEVICE" → "Shared device", "wire_fraud" → "Wire fraud". */
 export const humanize = (code) => {
-  const words = code.toLowerCase().replace(/_/g, " ").replace(/\bip\b/g, "IP");
+  const words = code.toLowerCase().replace(/_/g, " ").replace(/\bip\b/g, "IP").replace(/\bupi\b/g, "UPI");
   return words.charAt(0).toUpperCase() + words.slice(1);
 };
 

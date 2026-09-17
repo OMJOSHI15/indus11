@@ -53,7 +53,7 @@
   ],
   "Table 6.6": [
     "account:<account_id>",
-    "inbound:<account_id>"
+    "merchant:<merchant_id>"
   ],
   "Table 6.7": [
     "fraud_patterns",

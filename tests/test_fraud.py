@@ -35,7 +35,12 @@ def make_profile(**kwargs) -> AccountProfile:
     return AccountProfile(**defaults)
 
 
-NEUTRAL_HISTORY = {"last_seen": None, "known_payee": False, "payees_24h": 1, "inbound_24h": 0.0}
+NEUTRAL_HISTORY = {
+    "last_seen": None, "known_payee": False, "payees_24h": 1, "inbound_24h": 0.0,
+    "paid_by_receiver": False, "outbound_24h": [], "receiver_senders_24h": 1,
+    "known_device": None, "devices_24h": 0, "known_ip": None, "last_location": None,
+    "known_category": False, "merchant_senders_10m": 0,
+}
 
 
 @pytest.fixture(autouse=True)
@@ -426,12 +431,12 @@ def test_by_decision_pivots_counts_and_totals():
 
 # ── Banking anomaly rules ─────────────────────────────────────────────────────
 
-async def _rules_with(history=None, **tx_kwargs):
+async def _rules_with(history=None, sender_kw=None, receiver_kw=None, **tx_kwargs):
     from datetime import datetime
     tx_kwargs.setdefault("timestamp", datetime(2026, 9, 17, 6, 0))   # 11:30 IST, not an odd hour
     tx = make_tx(**tx_kwargs)
-    sender = make_profile(avg_monthly_transaction=0.0)
-    receiver = make_profile(account_id="ACC-002")
+    sender = make_profile(**{"avg_monthly_transaction": 0.0, **(sender_kw or {})})
+    receiver = make_profile(**{"account_id": "ACC-002", **(receiver_kw or {})})
     with patch("app.services.rule_engine.increment_velocity", new_callable=AsyncMock, return_value=1), \
          patch("app.services.rule_engine.account_history", new_callable=AsyncMock,
                return_value={**NEUTRAL_HISTORY, **(history or {})}):
@@ -472,6 +477,8 @@ async def test_pass_through_when_most_of_the_inflow_leaves_within_a_day():
     assert "PASS_THROUGH" in _codes(await _rules_with({"inbound_24h": 200_000}, amount=190_000))
     assert "PASS_THROUGH" not in _codes(await _rules_with({"inbound_24h": 200_000}, amount=40_000))
     assert "PASS_THROUGH" not in _codes(await _rules_with({"inbound_24h": 3_000}, amount=2_900))
+    # sending far more than came in is not forwarding the money on
+    assert "PASS_THROUGH" not in _codes(await _rules_with({"inbound_24h": 25_000}, amount=600_000))
 
 
 @pytest.mark.asyncio
@@ -496,3 +503,72 @@ async def test_anomaly_rules_share_the_rule_engine_cap():
     result = await _rules_with(loud, amount=960_000, merchant_category="wire_transfer",
                                timestamp=datetime(2026, 9, 16, 21, 0))
     assert result.score == 40 and len(result.flags) >= 6
+
+
+# ── Extended anomaly rules (12-30): each fires, and stays quiet just outside its condition ──
+
+def _at(offset_seconds):
+    from datetime import datetime, timezone
+    return datetime(2026, 9, 17, 6, 0).replace(tzinfo=timezone.utc).timestamp() + offset_seconds
+
+
+EXTENDED_CASES = [
+    # code, history, tx kwargs, sender kw, receiver kw, fires
+    ("SMURFING", {"outbound_24h": [(_at(-3600), 600_000, "X")]}, {"amount": 500_000}, None, None, True),
+    ("SMURFING", {"outbound_24h": [(_at(-3600), 100_000, "X")]}, {"amount": 50_000}, None, None, False),
+    ("FAN_IN_COLLECTION_ACCOUNT", {"receiver_senders_24h": 11}, {}, None, None, True),
+    ("FAN_IN_COLLECTION_ACCOUNT", {"receiver_senders_24h": 10}, {}, None, None, False),
+    ("MICRO_TEST_THEN_LARGE", {"outbound_24h": [(_at(-600), 5, "M")]}, {"amount": 20_000}, None, None, True),
+    ("MICRO_TEST_THEN_LARGE", {"outbound_24h": [(_at(-7200), 5, "M")]}, {"amount": 20_000}, None, None, False),
+    ("IMPOSSIBLE_TRAVEL", {"last_location": (19.07, 72.87, _at(-1800))},
+     {"latitude": 28.61, "longitude": 77.21}, None, None, True),               # Mumbai to Delhi in 30 min
+    ("IMPOSSIBLE_TRAVEL", {"last_location": (19.07, 72.87, _at(-6 * 3600))},
+     {"latitude": 28.61, "longitude": 77.21}, None, None, False),              # 6 h: a flight
+    ("NEW_DEVICE_HIGH_VALUE", {"last_seen": 1.0, "known_device": False}, {"device_id": "D9", "amount": 60_000}, None, None, True),
+    ("NEW_DEVICE_HIGH_VALUE", {"last_seen": 1.0, "known_device": True}, {"device_id": "D9", "amount": 60_000}, None, None, False),
+    ("NEW_IP_HIGH_VALUE", {"last_seen": 1.0, "known_ip": False}, {"ip_address": "9.9.9.9", "amount": 60_000}, None, None, True),
+    ("NEW_IP_HIGH_VALUE", {"last_seen": 1.0, "known_ip": False}, {"ip_address": "9.9.9.9", "amount": 1_000}, None, None, False),
+    ("DEVICE_HOPPING", {"devices_24h": 4}, {}, None, None, True),
+    ("DEVICE_HOPPING", {"devices_24h": 3}, {}, None, None, False),
+    ("DAILY_OUTFLOW_SPIKE", {"outbound_24h": [(_at(-3600), 6_000, "X")]}, {"amount": 5_000},
+     {"avg_monthly_transaction": 1_000}, None, True),
+    ("DAILY_OUTFLOW_SPIKE", {"outbound_24h": [(_at(-3600), 6_000, "X")]}, {"amount": 3_000},
+     {"avg_monthly_transaction": 1_000}, None, False),
+    ("REPEATED_ROUND_AMOUNTS", {"outbound_24h": [(_at(-100), 20_000, "X"), (_at(-200), 30_000, "Y")]},
+     {"amount": 10_000}, None, None, True),
+    ("REPEATED_ROUND_AMOUNTS", {"outbound_24h": [(_at(-100), 20_000, "X"), (_at(-200), 30_000, "Y")]},
+     {"amount": 10_500}, None, None, False),
+    ("SPLIT_PAYMENTS", {"outbound_24h": [(_at(-100), 4_999, "ACC-002"), (_at(-200), 4_999, "ACC-002")]},
+     {"amount": 4_999}, None, None, True),
+    ("SPLIT_PAYMENTS", {"outbound_24h": [(_at(-100), 4_999, "ACC-003"), (_at(-200), 4_999, "ACC-004")]},
+     {"amount": 4_999}, None, None, False),
+    ("BACK_AND_FORTH", {"paid_by_receiver": True}, {}, None, None, True),
+    ("BACK_AND_FORTH", {"paid_by_receiver": False}, {}, None, None, False),
+    ("NEAR_UPI_LIMIT_REPEATED", {"outbound_24h": [(_at(-100), 95_000, "X")]}, {"amount": 92_000}, None, None, True),
+    ("NEAR_UPI_LIMIT_REPEATED", {}, {"amount": 92_000}, None, None, False),
+    ("LARGE_FIRST_TRANSACTION", {"last_seen": None}, {"amount": 60_000}, None, None, True),
+    ("LARGE_FIRST_TRANSACTION", {"last_seen": 1.0}, {"amount": 60_000}, None, None, False),
+    ("FIRST_HIGH_RISK_MERCHANT", {"last_seen": 1.0, "known_category": False}, {"merchant_category": "crypto_exchange"}, None, None, True),
+    ("FIRST_HIGH_RISK_MERCHANT", {"last_seen": 1.0, "known_category": True}, {"merchant_category": "crypto_exchange"}, None, None, False),
+    ("CURRENCY_MISMATCH", {}, {"currency": "USD"}, {"country_code": "IN"}, None, True),
+    ("CURRENCY_MISMATCH", {}, {"currency": "INR"}, {"country_code": "IN"}, None, False),
+    ("HIGH_RISK_JURISDICTION", {}, {}, None, {"country_code": "KP"}, True),
+    ("HIGH_RISK_JURISDICTION", {}, {}, None, {"country_code": "IN"}, False),
+    ("SOCIAL_ENGINEERING_NOTE", {}, {"note": "Urgent KYC update needed"}, None, None, True),
+    ("SOCIAL_ENGINEERING_NOTE", {}, {"note": "rent for september"}, None, None, False),
+    ("MERCHANT_COLLUSION_BURST", {"merchant_senders_10m": 11}, {"merchant_id": "M1"}, None, None, True),
+    ("MERCHANT_COLLUSION_BURST", {"merchant_senders_10m": 10}, {"merchant_id": "M1"}, None, None, False),
+    ("ACCOUNT_DRAINING", {"outbound_24h": [(_at(-600), 60_000, "X"), (_at(-1200), 70_000, "Y")]},
+     {"amount": 55_000}, None, None, True),
+    ("ACCOUNT_DRAINING", {"outbound_24h": [(_at(-7200), 60_000, "X"), (_at(-7300), 70_000, "Y")]},
+     {"amount": 55_000}, None, None, False),
+]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("code,history,tx_kw,sender_kw,receiver_kw,fires", EXTENDED_CASES,
+                         ids=[f"{c[0]}-{'fires' if c[5] else 'quiet'}" for c in EXTENDED_CASES])
+async def test_extended_anomaly_rule(code, history, tx_kw, sender_kw, receiver_kw, fires):
+    result = await _rules_with(history, sender_kw, receiver_kw, **tx_kw)
+    assert not result.failed, result.error
+    assert (code in _codes(result)) is fires, result.flags
