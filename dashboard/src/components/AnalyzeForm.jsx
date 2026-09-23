@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { DEMO, analyzeTransaction, getTransaction } from "../api.js";
 import ComponentFailure from "./ComponentFailure.jsx";
+import { DECISION_COLORS } from "../theme.js";
 import {
   AlertTriangleIcon,
   BanIcon,
@@ -16,10 +17,13 @@ const CATEGORIES = [
   "wire_transfer", "crypto_exchange", "gambling", "money_service",
 ];
 
-const DECISION_META = {
-  APPROVE: { icon: CheckCircleIcon, color: "var(--success)" },
-  REVIEW: { icon: AlertTriangleIcon, color: "var(--warning)" },
-  BLOCK: { icon: BanIcon, color: "var(--danger)" },
+// Colours come from theme.js, which the charts and badges also read. The
+// earlier local copy named --success/--warning/--danger, none of which are
+// defined, so the score rendered in the inherited colour.
+const DECISION_ICONS = {
+  APPROVE: CheckCircleIcon,
+  REVIEW: AlertTriangleIcon,
+  BLOCK: BanIcon,
 };
 
 function LayerBar({ id, name, layer, pending }) {
@@ -149,8 +153,7 @@ export default function AnalyzeForm({ onAnalyzed }) {
     };
   }, [result?.tx_id, result?.rag_pending, onAnalyzed]);
 
-  const meta = result ? DECISION_META[result.decision] : null;
-  const DecisionIcon = meta?.icon;
+  const DecisionIcon = result ? DECISION_ICONS[result.decision] : null;
 
   return (
     <>
@@ -234,7 +237,7 @@ export default function AnalyzeForm({ onAnalyzed }) {
               <DecisionIcon size={12} />
               {result.decision}
             </span>
-            <span className="score" style={{ color: meta.color }}>
+            <span className="score" style={{ color: DECISION_COLORS[result.decision] }}>
               {result.composite_score}
               <span style={{ fontSize: 12, color: "var(--text-dim)" }}>/100</span>
             </span>

@@ -624,10 +624,15 @@ def test_transaction_stores_each_layer_score():
     ("No signals fired.", []),
     (None, []),
 ])
-def test_stored_flags_survive_full_stops_inside_details(explanation, expected):
-    from scripts.drain_pending import stored_flags
+def test_signal_parts_keep_the_detail_the_model_needs(explanation, expected):
+    """
+    The drain script feeds these back to the language model, and the detail is
+    the evidence — "sent ₹60000 vs ₹2000 average" is the whole finding. Codes
+    alone are what the dashboard aggregate wants, and it strips them itself.
+    """
+    from app.services.explanation import signal_parts
 
-    assert stored_flags(explanation) == expected
+    assert signal_parts(explanation) == expected
 
 
 # ── Every write route is behind the key ──────────────────────────────────────

@@ -295,16 +295,9 @@ async def _drain_pending(client: httpx.AsyncClient, bodies: dict[str, dict],
             if record.get("rag_pending", False):
                 continue
             body = bodies[tx_id]
-            # The stored record carries the final composite and decision but not
-            # the per-layer split, so derive the RAG score from the difference.
             body["composite_score"] = record["composite_score"]
             body["decision"] = record["decision"]
-            body["rag_pipeline"]["score"] = max(
-                record["composite_score"]
-                - body["rule_engine"]["score"]
-                - body["graph_analyzer"]["score"],
-                0,
-            )
+            body["rag_pipeline"]["score"] = record.get("rag_score") or 0
             done.add(tx_id)
         outstanding -= done
         if outstanding:

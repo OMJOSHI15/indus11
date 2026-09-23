@@ -28,7 +28,7 @@ export function Card({ title, subtitle, action, className = "", children }) {
   );
 }
 
-export function Legend({ items }) {
+function Legend({ items }) {
   return (
     <ul className="legend">
       {items.map(({ color, label }) => (

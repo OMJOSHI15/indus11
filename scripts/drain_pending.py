@@ -33,6 +33,7 @@ import asyncio
 import time
 from datetime import datetime
 
+from app.services.explanation import signal_parts
 from app.core.database import close_db, init_db
 from app.models.account import Account
 from app.models.transaction import Transaction
@@ -41,34 +42,10 @@ from app.schemas.transaction import AnalysisResponse, LayerScore, TransactionReq
 from app.services.decision_engine import make_decision
 from app.services.rag_pipeline import run_rag_pipeline
 
-PREFIX = "Triggered signals: "
 RAG_TIMEOUT_S = 180
 # Matches the API's own limit on concurrent language-model calls, so a drain
 # does not queue behind itself or overload a laptop running the model locally.
 CONCURRENCY = 4
-
-
-def stored_flags(explanation: str | None) -> list[str]:
-    """
-    The flag list out of a stored explanation. Details can hold full stops of
-    their own (IP addresses, amounts), so the list ends at the first one
-    outside brackets — the same rule the dashboard parser follows.
-    """
-    text = explanation or ""
-    if not text.startswith(PREFIX):
-        return []
-    depth = 0
-    end = len(text)
-    for i in range(len(PREFIX), len(text)):
-        ch = text[i]
-        if ch == "(":
-            depth += 1
-        elif ch == ")":
-            depth -= 1
-        elif ch == "." and depth == 0 and text[i + 1: i + 2] in ("", " "):
-            end = i
-            break
-    return [part.strip() for part in text[len(PREFIX):end].split("; ") if part.strip()]
 
 
 async def profile_for(account_id: str) -> AccountProfile:
@@ -98,7 +75,7 @@ async def drain_one(record: Transaction) -> tuple[str, str]:
         note=record.note,
         timestamp=record.created_at,
     )
-    flags = stored_flags(record.explanation)
+    flags = signal_parts(record.explanation)
     sender = await profile_for(record.sender_account_id)
 
     try:

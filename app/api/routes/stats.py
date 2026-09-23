@@ -7,6 +7,7 @@ from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 
 from app.models.transaction import Transaction
+from app.services.explanation import flag_codes
 
 router = APIRouter(prefix="/stats", tags=["stats"])
 
@@ -64,27 +65,7 @@ async def risk_distribution():
 # Upper bound is a sentinel: $bucket needs a finite last boundary.
 AMOUNT_BOUNDARIES = [0, 1_000, 10_000, 100_000, 1_000_000, 10**15]
 AMOUNT_LABELS = ["< ₹1K", "₹1K–10K", "₹10K–1L", "₹1L–10L", "₹10L+"]
-SIGNAL_PREFIX = "Triggered signals: "
 FLAGGED = ["REVIEW", "BLOCK"]
-
-
-def flag_codes(explanation: str | None) -> list[str]:
-    """
-    Flag codes from a stored explanation, "Triggered signals: A (x); B. <prose>".
-    Details can contain full stops (IP addresses), so the list ends at the first
-    ". " outside parentheses. Layer-error codes are failures, not signals.
-    """
-    if not explanation or not explanation.startswith(SIGNAL_PREFIX):
-        return []
-    body, depth = explanation[len(SIGNAL_PREFIX):], 0
-    end = len(body)
-    for i, ch in enumerate(body):
-        depth += (ch == "(") - (ch == ")")
-        if ch == "." and depth == 0 and body[i + 1:i + 2] in ("", " "):
-            end = i
-            break
-    codes = (part.split(" (", 1)[0].strip() for part in body[:end].split("; "))
-    return [c for c in codes if c and not c.endswith("_ERROR")]
 
 
 def by_decision(rows: list[dict], key: str) -> list[dict]:

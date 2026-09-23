@@ -10,9 +10,3 @@ class AccountProfile(BaseModel):
     country_code: str = "CA"
     risk_tier: str = "standard"  # standard | elevated | high
 
-
-class RiskSummary(BaseModel):
-    account_id: str
-    total_transactions: int
-    flagged_count: int
-    last_block_reason: str | None = None
