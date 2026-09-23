@@ -1,6 +1,5 @@
 {
-  "generated_at": "2026-08-31T06:53:06.197055Z",
-  "provenance": "Recovered from the stored transaction records after the client-side wait timed out mid-run; the server had continued scoring. Composite scores, decisions, labels and all headline metrics are the pipeline's real output. The per-row rule_score and rag_score fields are NOT real \u2014 the per-layer split is not persisted, so they are zeroed, and graph_score is 0/1 derived from the graph flags in the stored explanation (enough for ring recall, which only asks whether the graph layer fired). Re-run scripts/evaluate.py end to end if a per-layer breakdown is needed.",
+  "generated_at": "2026-09-23T16:18:14.679404Z",
   "dataset": "synthetic (seeded mule rings, device/IP clusters, normal traffic)",
   "thresholds": {
     "review": 40,
@@ -14,32 +13,32 @@
   "metrics": {
     "confusion": {
       "APPROVE": {
-        "fraud": 7,
-        "legit": 155
+        "fraud": 0,
+        "legit": 154
       },
       "REVIEW": {
-        "fraud": 45,
-        "legit": 1
+        "fraud": 27,
+        "legit": 2
       },
       "BLOCK": {
-        "fraud": 0,
+        "fraud": 25,
         "legit": 0
       }
     },
     "flagged": {
-      "precision": 0.9783,
-      "recall": 0.8654,
-      "f1": 0.9184
+      "precision": 0.963,
+      "recall": 1.0,
+      "f1": 0.9811
     },
     "blocked": {
-      "precision": 0.0,
-      "recall": 0.0,
-      "f1": 0.0
+      "precision": 1.0,
+      "recall": 0.4808,
+      "f1": 0.6494
     },
     "realistic": {
       "prevalence": 0.001,
-      "false_positive_rate": 0.00641,
-      "precision": 0.119,
+      "false_positive_rate": 0.01282,
+      "precision": 0.0724,
       "note": "Precision the flagged view would show at production fraud prevalence, holding this run's recall and false-positive rate constant. Recall is unchanged by prevalence."
     }
   },
@@ -49,2091 +48,2091 @@
     "recall": 1.0
   },
   "suggested_thresholds": {
-    "review_threshold": 35,
-    "block_threshold": 40,
-    "f1": 0.9184,
-    "blocked_f1": 0.9184
+    "review_threshold": 45,
+    "block_threshold": 50,
+    "f1": 0.9905,
+    "blocked_f1": 0.94
   },
   "scored": [
     {
-      "tx_id": "EVAL-0831054332-0001",
-      "label": "fraud",
-      "pattern": "mule_ring",
-      "composite_score": 68,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0002",
-      "label": "fraud",
-      "pattern": "mule_ring",
-      "composite_score": 68,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0003",
-      "label": "fraud",
-      "pattern": "mule_ring",
-      "composite_score": 68,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0004",
-      "label": "fraud",
-      "pattern": "mule_ring",
-      "composite_score": 68,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0005",
-      "label": "fraud",
-      "pattern": "mule_ring",
-      "composite_score": 68,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0006",
-      "label": "fraud",
-      "pattern": "mule_ring",
-      "composite_score": 68,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0007",
-      "label": "fraud",
-      "pattern": "mule_ring",
-      "composite_score": 68,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0008",
-      "label": "fraud",
-      "pattern": "mule_ring",
-      "composite_score": 68,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0009",
-      "label": "fraud",
-      "pattern": "mule_ring",
-      "composite_score": 68,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0010",
-      "label": "fraud",
-      "pattern": "mule_ring",
-      "composite_score": 68,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0011",
-      "label": "fraud",
-      "pattern": "mule_ring",
-      "composite_score": 68,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0012",
-      "label": "fraud",
-      "pattern": "mule_ring",
-      "composite_score": 68,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0013",
-      "label": "fraud",
-      "pattern": "mule_ring",
-      "composite_score": 56,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0014",
-      "label": "fraud",
-      "pattern": "mule_ring",
-      "composite_score": 48,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0015",
-      "label": "fraud",
-      "pattern": "mule_ring",
-      "composite_score": 48,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0016",
-      "label": "fraud",
-      "pattern": "mule_ring",
-      "composite_score": 48,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0017",
-      "label": "fraud",
-      "pattern": "mule_ring",
-      "composite_score": 48,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0018",
-      "label": "fraud",
-      "pattern": "mule_ring",
-      "composite_score": 56,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0019",
-      "label": "fraud",
-      "pattern": "mule_ring",
-      "composite_score": 48,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0020",
-      "label": "fraud",
-      "pattern": "mule_ring",
-      "composite_score": 48,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0021",
-      "label": "fraud",
-      "pattern": "mule_ring",
-      "composite_score": 48,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0022",
-      "label": "fraud",
-      "pattern": "mule_ring",
-      "composite_score": 48,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0023",
-      "label": "fraud",
-      "pattern": "mule_ring",
-      "composite_score": 56,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0024",
-      "label": "fraud",
-      "pattern": "mule_ring",
-      "composite_score": 63,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0025",
-      "label": "fraud",
-      "pattern": "mule_ring",
-      "composite_score": 48,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0026",
-      "label": "fraud",
-      "pattern": "mule_ring",
-      "composite_score": 48,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0027",
-      "label": "fraud",
-      "pattern": "mule_ring",
-      "composite_score": 48,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0028",
-      "label": "fraud",
-      "pattern": "mule_ring",
-      "composite_score": 68,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0029",
-      "label": "fraud",
-      "pattern": "mule_ring",
-      "composite_score": 68,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0030",
-      "label": "fraud",
-      "pattern": "mule_ring",
-      "composite_score": 68,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0031",
-      "label": "fraud",
-      "pattern": "mule_ring",
-      "composite_score": 68,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0032",
-      "label": "fraud",
-      "pattern": "mule_ring",
-      "composite_score": 40,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0033",
-      "label": "fraud",
-      "pattern": "mule_ring",
-      "composite_score": 68,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0034",
-      "label": "fraud",
-      "pattern": "mule_ring",
-      "composite_score": 68,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0035",
-      "label": "fraud",
-      "pattern": "mule_ring",
-      "composite_score": 68,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0036",
-      "label": "fraud",
-      "pattern": "mule_ring",
-      "composite_score": 68,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0037",
+      "tx_id": "EVAL-0923154419-0042",
       "label": "fraud",
       "pattern": "shared_device",
-      "composite_score": 42,
+      "composite_score": 53,
       "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
+      "rule_score": 10,
+      "graph_score": 15,
+      "rag_score": 28
     },
     {
-      "tx_id": "EVAL-0831054332-0038",
-      "label": "fraud",
-      "pattern": "shared_device",
-      "composite_score": 42,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0039",
-      "label": "fraud",
-      "pattern": "shared_device",
-      "composite_score": 42,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0040",
-      "label": "fraud",
-      "pattern": "shared_device",
-      "composite_score": 27,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0041",
-      "label": "fraud",
-      "pattern": "shared_device",
-      "composite_score": 27,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0042",
-      "label": "fraud",
-      "pattern": "shared_device",
-      "composite_score": 27,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0043",
-      "label": "fraud",
-      "pattern": "shared_device",
-      "composite_score": 27,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0044",
-      "label": "fraud",
-      "pattern": "shared_device",
-      "composite_score": 27,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0045",
-      "label": "fraud",
-      "pattern": "shared_device",
-      "composite_score": 27,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0046",
-      "label": "fraud",
-      "pattern": "shared_device",
-      "composite_score": 27,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0047",
-      "label": "fraud",
-      "pattern": "shared_ip",
-      "composite_score": 66,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0048",
-      "label": "fraud",
-      "pattern": "shared_ip",
-      "composite_score": 46,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0049",
-      "label": "fraud",
-      "pattern": "shared_ip",
-      "composite_score": 66,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0050",
-      "label": "fraud",
-      "pattern": "shared_ip",
-      "composite_score": 46,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0051",
-      "label": "fraud",
-      "pattern": "shared_ip",
-      "composite_score": 46,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0052",
-      "label": "fraud",
-      "pattern": "shared_ip",
-      "composite_score": 46,
-      "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0053",
+      "tx_id": "EVAL-0923154419-0188",
       "label": "legit",
       "pattern": "normal",
-      "composite_score": 4,
+      "composite_score": 30,
       "decision": "APPROVE",
-      "rule_score": 0,
+      "rule_score": 2,
       "graph_score": 0,
-      "rag_score": 0
+      "rag_score": 28
     },
     {
-      "tx_id": "EVAL-0831054332-0054",
+      "tx_id": "EVAL-0923154419-0041",
+      "label": "fraud",
+      "pattern": "shared_device",
+      "composite_score": 53,
+      "decision": "REVIEW",
+      "rule_score": 10,
+      "graph_score": 15,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0167",
       "label": "legit",
       "pattern": "normal",
-      "composite_score": 4,
+      "composite_score": 30,
       "decision": "APPROVE",
-      "rule_score": 0,
+      "rule_score": 2,
       "graph_score": 0,
-      "rag_score": 0
+      "rag_score": 28
     },
     {
-      "tx_id": "EVAL-0831054332-0055",
+      "tx_id": "EVAL-0923154419-0123",
       "label": "legit",
       "pattern": "normal",
-      "composite_score": 4,
+      "composite_score": 22,
       "decision": "APPROVE",
-      "rule_score": 0,
+      "rule_score": 2,
       "graph_score": 0,
-      "rag_score": 0
+      "rag_score": 20
     },
     {
-      "tx_id": "EVAL-0831054332-0056",
+      "tx_id": "EVAL-0923154419-0106",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0187",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0039",
+      "label": "fraud",
+      "pattern": "shared_device",
+      "composite_score": 68,
+      "decision": "REVIEW",
+      "rule_score": 10,
+      "graph_score": 30,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0085",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0135",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 22,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 20
+    },
+    {
+      "tx_id": "EVAL-0923154419-0147",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0164",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0006",
+      "label": "fraud",
+      "pattern": "mule_ring",
+      "composite_score": 80,
+      "decision": "BLOCK",
+      "rule_score": 22,
+      "graph_score": 30,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0101",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0040",
+      "label": "fraud",
+      "pattern": "shared_device",
+      "composite_score": 53,
+      "decision": "REVIEW",
+      "rule_score": 10,
+      "graph_score": 15,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0112",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0122",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0157",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0207",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0092",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0125",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0062",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 22,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 20
+    },
+    {
+      "tx_id": "EVAL-0923154419-0176",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0014",
+      "label": "fraud",
+      "pattern": "mule_ring",
+      "composite_score": 48,
+      "decision": "REVIEW",
+      "rule_score": 10,
+      "graph_score": 10,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0044",
+      "label": "fraud",
+      "pattern": "shared_device",
+      "composite_score": 53,
+      "decision": "REVIEW",
+      "rule_score": 10,
+      "graph_score": 15,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0064",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 22,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 20
+    },
+    {
+      "tx_id": "EVAL-0923154419-0148",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 22,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 20
+    },
+    {
+      "tx_id": "EVAL-0923154419-0111",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 22,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 20
+    },
+    {
+      "tx_id": "EVAL-0923154419-0022",
+      "label": "fraud",
+      "pattern": "mule_ring",
+      "composite_score": 48,
+      "decision": "REVIEW",
+      "rule_score": 10,
+      "graph_score": 10,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0200",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 68,
+      "decision": "REVIEW",
+      "rule_score": 40,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0130",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0160",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0155",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0033",
+      "label": "fraud",
+      "pattern": "mule_ring",
+      "composite_score": 74,
+      "decision": "BLOCK",
+      "rule_score": 16,
+      "graph_score": 30,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0029",
+      "label": "fraud",
+      "pattern": "mule_ring",
+      "composite_score": 74,
+      "decision": "BLOCK",
+      "rule_score": 16,
+      "graph_score": 30,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0195",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0026",
+      "label": "fraud",
+      "pattern": "mule_ring",
+      "composite_score": 48,
+      "decision": "REVIEW",
+      "rule_score": 10,
+      "graph_score": 10,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0154",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0056",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 42,
+      "decision": "REVIEW",
+      "rule_score": 2,
+      "graph_score": 12,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0203",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0197",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0153",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0104",
       "label": "legit",
       "pattern": "normal",
       "composite_score": 16,
       "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
+      "rule_score": 2,
+      "graph_score": 12,
+      "rag_score": 2
     },
     {
-      "tx_id": "EVAL-0831054332-0057",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0058",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0059",
+      "tx_id": "EVAL-0923154419-0183",
       "label": "legit",
       "pattern": "normal",
       "composite_score": 30,
       "decision": "APPROVE",
-      "rule_score": 0,
+      "rule_score": 2,
       "graph_score": 0,
-      "rag_score": 0
+      "rag_score": 28
     },
     {
-      "tx_id": "EVAL-0831054332-0060",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0061",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0062",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0063",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0064",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0065",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0066",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0067",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0068",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0069",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0070",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0071",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0072",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0073",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0074",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0075",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0076",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0077",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0078",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0079",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0080",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0081",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0082",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0083",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 16,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0084",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0085",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0086",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0087",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0088",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0089",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0090",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0091",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0092",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0093",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0094",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0095",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0096",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 2,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0097",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0098",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0099",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0100",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0101",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0102",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0103",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0104",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 16,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 1,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0105",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0106",
+      "tx_id": "EVAL-0923154419-0097",
       "label": "legit",
       "pattern": "normal",
       "composite_score": 30,
       "decision": "APPROVE",
-      "rule_score": 0,
+      "rule_score": 2,
       "graph_score": 0,
-      "rag_score": 0
+      "rag_score": 28
     },
     {
-      "tx_id": "EVAL-0831054332-0107",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0108",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0109",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0110",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0111",
+      "tx_id": "EVAL-0923154419-0110",
       "label": "legit",
       "pattern": "normal",
       "composite_score": 30,
       "decision": "APPROVE",
-      "rule_score": 0,
+      "rule_score": 2,
       "graph_score": 0,
-      "rag_score": 0
+      "rag_score": 28
     },
     {
-      "tx_id": "EVAL-0831054332-0112",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0113",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0114",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0115",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0116",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0117",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0118",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0119",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0120",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0121",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0122",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0123",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0124",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0125",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0126",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0127",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0128",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0129",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0130",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0131",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0132",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0133",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0134",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0135",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0136",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0137",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0138",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0139",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0140",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0141",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0142",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0143",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0144",
+      "tx_id": "EVAL-0923154419-0109",
       "label": "legit",
       "pattern": "normal",
       "composite_score": 30,
       "decision": "APPROVE",
-      "rule_score": 0,
+      "rule_score": 2,
       "graph_score": 0,
-      "rag_score": 0
+      "rag_score": 28
     },
     {
-      "tx_id": "EVAL-0831054332-0145",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
+      "tx_id": "EVAL-0923154419-0038",
+      "label": "fraud",
+      "pattern": "shared_device",
+      "composite_score": 98,
+      "decision": "BLOCK",
+      "rule_score": 40,
+      "graph_score": 30,
+      "rag_score": 28
     },
     {
-      "tx_id": "EVAL-0831054332-0146",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0147",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0148",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0149",
+      "tx_id": "EVAL-0923154419-0198",
       "label": "legit",
       "pattern": "normal",
       "composite_score": 30,
       "decision": "APPROVE",
-      "rule_score": 0,
+      "rule_score": 2,
       "graph_score": 0,
-      "rag_score": 0
+      "rag_score": 28
     },
     {
-      "tx_id": "EVAL-0831054332-0150",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0151",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0152",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0153",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0154",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0155",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0156",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0157",
+      "tx_id": "EVAL-0923154419-0061",
       "label": "legit",
       "pattern": "normal",
       "composite_score": 30,
       "decision": "APPROVE",
-      "rule_score": 0,
+      "rule_score": 2,
       "graph_score": 0,
-      "rag_score": 0
+      "rag_score": 28
     },
     {
-      "tx_id": "EVAL-0831054332-0158",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 2,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0159",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0160",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0161",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0162",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0163",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 30,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0164",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0165",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0166",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 30,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0167",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0168",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0169",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0170",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 30,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0171",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 30,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0172",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 2,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0173",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0174",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0175",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0176",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0177",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0178",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0179",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0180",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 2,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0181",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0182",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 30,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0183",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0184",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 2,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0185",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0186",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0187",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0188",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0189",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0190",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0191",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0192",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0193",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0194",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0195",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0196",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0197",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0198",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0199",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0200",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 42,
+      "tx_id": "EVAL-0923154419-0002",
+      "label": "fraud",
+      "pattern": "mule_ring",
+      "composite_score": 68,
       "decision": "REVIEW",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
+      "rule_score": 10,
+      "graph_score": 30,
+      "rag_score": 28
     },
     {
-      "tx_id": "EVAL-0831054332-0201",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0202",
-      "label": "legit",
-      "pattern": "normal",
-      "composite_score": 4,
-      "decision": "APPROVE",
-      "rule_score": 0,
-      "graph_score": 0,
-      "rag_score": 0
-    },
-    {
-      "tx_id": "EVAL-0831054332-0203",
+      "tx_id": "EVAL-0923154419-0067",
       "label": "legit",
       "pattern": "normal",
       "composite_score": 30,
       "decision": "APPROVE",
-      "rule_score": 0,
+      "rule_score": 2,
       "graph_score": 0,
-      "rag_score": 0
+      "rag_score": 28
     },
     {
-      "tx_id": "EVAL-0831054332-0204",
+      "tx_id": "EVAL-0923154419-0015",
+      "label": "fraud",
+      "pattern": "mule_ring",
+      "composite_score": 54,
+      "decision": "REVIEW",
+      "rule_score": 16,
+      "graph_score": 10,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0093",
       "label": "legit",
       "pattern": "normal",
-      "composite_score": 4,
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0082",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0193",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0075",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 22,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 20
+    },
+    {
+      "tx_id": "EVAL-0923154419-0072",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 22,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 20
+    },
+    {
+      "tx_id": "EVAL-0923154419-0131",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0055",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0023",
+      "label": "fraud",
+      "pattern": "mule_ring",
+      "composite_score": 62,
+      "decision": "REVIEW",
+      "rule_score": 16,
+      "graph_score": 18,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0137",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0001",
+      "label": "fraud",
+      "pattern": "mule_ring",
+      "composite_score": 74,
+      "decision": "BLOCK",
+      "rule_score": 16,
+      "graph_score": 30,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0035",
+      "label": "fraud",
+      "pattern": "mule_ring",
+      "composite_score": 68,
+      "decision": "REVIEW",
+      "rule_score": 10,
+      "graph_score": 30,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0186",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0128",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0081",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0208",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0071",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0021",
+      "label": "fraud",
+      "pattern": "mule_ring",
+      "composite_score": 60,
+      "decision": "REVIEW",
+      "rule_score": 22,
+      "graph_score": 10,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0184",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 20,
       "decision": "APPROVE",
       "rule_score": 0,
       "graph_score": 0,
-      "rag_score": 0
+      "rag_score": 20
     },
     {
-      "tx_id": "EVAL-0831054332-0205",
+      "tx_id": "EVAL-0923154419-0073",
       "label": "legit",
       "pattern": "normal",
-      "composite_score": 4,
+      "composite_score": 30,
       "decision": "APPROVE",
-      "rule_score": 0,
+      "rule_score": 2,
       "graph_score": 0,
-      "rag_score": 0
+      "rag_score": 28
     },
     {
-      "tx_id": "EVAL-0831054332-0206",
+      "tx_id": "EVAL-0923154419-0151",
       "label": "legit",
       "pattern": "normal",
-      "composite_score": 4,
+      "composite_score": 30,
       "decision": "APPROVE",
-      "rule_score": 0,
+      "rule_score": 2,
       "graph_score": 0,
-      "rag_score": 0
+      "rag_score": 28
     },
     {
-      "tx_id": "EVAL-0831054332-0207",
+      "tx_id": "EVAL-0923154419-0168",
       "label": "legit",
       "pattern": "normal",
-      "composite_score": 4,
+      "composite_score": 30,
       "decision": "APPROVE",
-      "rule_score": 0,
+      "rule_score": 2,
       "graph_score": 0,
-      "rag_score": 0
+      "rag_score": 28
     },
     {
-      "tx_id": "EVAL-0831054332-0208",
+      "tx_id": "EVAL-0923154419-0150",
       "label": "legit",
       "pattern": "normal",
-      "composite_score": 4,
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0141",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 22,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 20
+    },
+    {
+      "tx_id": "EVAL-0923154419-0003",
+      "label": "fraud",
+      "pattern": "mule_ring",
+      "composite_score": 94,
+      "decision": "BLOCK",
+      "rule_score": 36,
+      "graph_score": 30,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0077",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0099",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0132",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0142",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0190",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0019",
+      "label": "fraud",
+      "pattern": "mule_ring",
+      "composite_score": 70,
+      "decision": "BLOCK",
+      "rule_score": 32,
+      "graph_score": 10,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0103",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0051",
+      "label": "fraud",
+      "pattern": "shared_ip",
+      "composite_score": 52,
+      "decision": "REVIEW",
+      "rule_score": 16,
+      "graph_score": 8,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0046",
+      "label": "fraud",
+      "pattern": "shared_device",
+      "composite_score": 59,
+      "decision": "REVIEW",
+      "rule_score": 16,
+      "graph_score": 15,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0027",
+      "label": "fraud",
+      "pattern": "mule_ring",
+      "composite_score": 70,
+      "decision": "BLOCK",
+      "rule_score": 32,
+      "graph_score": 10,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0083",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 16,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 12,
+      "rag_score": 2
+    },
+    {
+      "tx_id": "EVAL-0923154419-0008",
+      "label": "fraud",
+      "pattern": "mule_ring",
+      "composite_score": 86,
+      "decision": "BLOCK",
+      "rule_score": 28,
+      "graph_score": 30,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0116",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0100",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0088",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0108",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0126",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 22,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 20
+    },
+    {
+      "tx_id": "EVAL-0923154419-0047",
+      "label": "fraud",
+      "pattern": "shared_ip",
+      "composite_score": 80,
+      "decision": "BLOCK",
+      "rule_score": 24,
+      "graph_score": 28,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0146",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0144",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 22,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 20
+    },
+    {
+      "tx_id": "EVAL-0923154419-0162",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 22,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 20
+    },
+    {
+      "tx_id": "EVAL-0923154419-0173",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 22,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 20
+    },
+    {
+      "tx_id": "EVAL-0923154419-0005",
+      "label": "fraud",
+      "pattern": "mule_ring",
+      "composite_score": 80,
+      "decision": "BLOCK",
+      "rule_score": 22,
+      "graph_score": 30,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0089",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0133",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 22,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 20
+    },
+    {
+      "tx_id": "EVAL-0923154419-0053",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0079",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0063",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0170",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 22,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 20
+    },
+    {
+      "tx_id": "EVAL-0923154419-0140",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0177",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0115",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0204",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0189",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0118",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0016",
+      "label": "fraud",
+      "pattern": "mule_ring",
+      "composite_score": 60,
+      "decision": "REVIEW",
+      "rule_score": 22,
+      "graph_score": 10,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0165",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0054",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 22,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 20
+    },
+    {
+      "tx_id": "EVAL-0923154419-0196",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0145",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0086",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0090",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 22,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 20
+    },
+    {
+      "tx_id": "EVAL-0923154419-0050",
+      "label": "fraud",
+      "pattern": "shared_ip",
+      "composite_score": 50,
+      "decision": "REVIEW",
+      "rule_score": 40,
+      "graph_score": 8,
+      "rag_score": 2
+    },
+    {
+      "tx_id": "EVAL-0923154419-0206",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0114",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0069",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0031",
+      "label": "fraud",
+      "pattern": "mule_ring",
+      "composite_score": 74,
+      "decision": "BLOCK",
+      "rule_score": 16,
+      "graph_score": 30,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0134",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0127",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0171",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0010",
+      "label": "fraud",
+      "pattern": "mule_ring",
+      "composite_score": 90,
+      "decision": "BLOCK",
+      "rule_score": 32,
+      "graph_score": 30,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0048",
+      "label": "fraud",
+      "pattern": "shared_ip",
+      "composite_score": 60,
+      "decision": "REVIEW",
+      "rule_score": 24,
+      "graph_score": 8,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0018",
+      "label": "fraud",
+      "pattern": "mule_ring",
+      "composite_score": 56,
+      "decision": "REVIEW",
+      "rule_score": 10,
+      "graph_score": 18,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0192",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 22,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 20
+    },
+    {
+      "tx_id": "EVAL-0923154419-0012",
+      "label": "fraud",
+      "pattern": "mule_ring",
+      "composite_score": 68,
+      "decision": "REVIEW",
+      "rule_score": 10,
+      "graph_score": 30,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0201",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0105",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0078",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0119",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0202",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0013",
+      "label": "fraud",
+      "pattern": "mule_ring",
+      "composite_score": 56,
+      "decision": "REVIEW",
+      "rule_score": 10,
+      "graph_score": 18,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0178",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0121",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0060",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0007",
+      "label": "fraud",
+      "pattern": "mule_ring",
+      "composite_score": 68,
+      "decision": "REVIEW",
+      "rule_score": 10,
+      "graph_score": 30,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0098",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 22,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 20
+    },
+    {
+      "tx_id": "EVAL-0923154419-0096",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 32,
       "decision": "APPROVE",
       "rule_score": 0,
+      "graph_score": 12,
+      "rag_score": 20
+    },
+    {
+      "tx_id": "EVAL-0923154419-0028",
+      "label": "fraud",
+      "pattern": "mule_ring",
+      "composite_score": 68,
+      "decision": "REVIEW",
+      "rule_score": 10,
+      "graph_score": 30,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0152",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
       "graph_score": 0,
-      "rag_score": 0
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0095",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0117",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0138",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 22,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 20
+    },
+    {
+      "tx_id": "EVAL-0923154419-0068",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0158",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0032",
+      "label": "fraud",
+      "pattern": "mule_ring",
+      "composite_score": 80,
+      "decision": "BLOCK",
+      "rule_score": 22,
+      "graph_score": 30,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0180",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 16,
+      "decision": "APPROVE",
+      "rule_score": 14,
+      "graph_score": 0,
+      "rag_score": 2
+    },
+    {
+      "tx_id": "EVAL-0923154419-0143",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0172",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0058",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0102",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0037",
+      "label": "fraud",
+      "pattern": "shared_device",
+      "composite_score": 98,
+      "decision": "BLOCK",
+      "rule_score": 40,
+      "graph_score": 30,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0004",
+      "label": "fraud",
+      "pattern": "mule_ring",
+      "composite_score": 80,
+      "decision": "BLOCK",
+      "rule_score": 22,
+      "graph_score": 30,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0120",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0087",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0179",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0030",
+      "label": "fraud",
+      "pattern": "mule_ring",
+      "composite_score": 80,
+      "decision": "BLOCK",
+      "rule_score": 22,
+      "graph_score": 30,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0017",
+      "label": "fraud",
+      "pattern": "mule_ring",
+      "composite_score": 60,
+      "decision": "REVIEW",
+      "rule_score": 22,
+      "graph_score": 10,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0124",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0066",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0070",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0136",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0129",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0182",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0139",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0052",
+      "label": "fraud",
+      "pattern": "shared_ip",
+      "composite_score": 52,
+      "decision": "REVIEW",
+      "rule_score": 16,
+      "graph_score": 8,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0181",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0045",
+      "label": "fraud",
+      "pattern": "shared_device",
+      "composite_score": 49,
+      "decision": "REVIEW",
+      "rule_score": 32,
+      "graph_score": 15,
+      "rag_score": 2
+    },
+    {
+      "tx_id": "EVAL-0923154419-0107",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0084",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0076",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0034",
+      "label": "fraud",
+      "pattern": "mule_ring",
+      "composite_score": 90,
+      "decision": "BLOCK",
+      "rule_score": 32,
+      "graph_score": 30,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0094",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0149",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0009",
+      "label": "fraud",
+      "pattern": "mule_ring",
+      "composite_score": 92,
+      "decision": "BLOCK",
+      "rule_score": 32,
+      "graph_score": 30,
+      "rag_score": 30
+    },
+    {
+      "tx_id": "EVAL-0923154419-0113",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0080",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0011",
+      "label": "fraud",
+      "pattern": "mule_ring",
+      "composite_score": 90,
+      "decision": "BLOCK",
+      "rule_score": 32,
+      "graph_score": 30,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0043",
+      "label": "fraud",
+      "pattern": "shared_device",
+      "composite_score": 83,
+      "decision": "BLOCK",
+      "rule_score": 40,
+      "graph_score": 15,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0166",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 22,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 20
+    },
+    {
+      "tx_id": "EVAL-0923154419-0191",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0161",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0020",
+      "label": "fraud",
+      "pattern": "mule_ring",
+      "composite_score": 48,
+      "decision": "REVIEW",
+      "rule_score": 10,
+      "graph_score": 10,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0175",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0169",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0185",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0036",
+      "label": "fraud",
+      "pattern": "mule_ring",
+      "composite_score": 90,
+      "decision": "BLOCK",
+      "rule_score": 32,
+      "graph_score": 30,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0194",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0174",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0065",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0024",
+      "label": "fraud",
+      "pattern": "mule_ring",
+      "composite_score": 70,
+      "decision": "BLOCK",
+      "rule_score": 32,
+      "graph_score": 10,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0159",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0163",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0057",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0049",
+      "label": "fraud",
+      "pattern": "shared_ip",
+      "composite_score": 96,
+      "decision": "BLOCK",
+      "rule_score": 40,
+      "graph_score": 28,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0091",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 22,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 20
+    },
+    {
+      "tx_id": "EVAL-0923154419-0156",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0059",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0205",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0199",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0074",
+      "label": "legit",
+      "pattern": "normal",
+      "composite_score": 30,
+      "decision": "APPROVE",
+      "rule_score": 2,
+      "graph_score": 0,
+      "rag_score": 28
+    },
+    {
+      "tx_id": "EVAL-0923154419-0025",
+      "label": "fraud",
+      "pattern": "mule_ring",
+      "composite_score": 70,
+      "decision": "BLOCK",
+      "rule_score": 32,
+      "graph_score": 10,
+      "rag_score": 28
     }
   ]
 }

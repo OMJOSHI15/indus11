@@ -20,6 +20,7 @@ docs/eval-results.json, which GET /api/v1/stats/accuracy serves to the dashboard
 import argparse
 import asyncio
 import json
+import os
 import random
 import time
 from datetime import datetime, timedelta
@@ -28,6 +29,9 @@ from pathlib import Path
 import httpx
 
 API_URL = "http://localhost:8000/api/v1/transactions/analyze"
+# /analyze writes transactions, Redis history and graph edges, so it is behind
+# the shared key like every other write route. Same default as .env.example.
+HEADERS = {"X-API-Key": os.environ.get("APP_SECRET_KEY", "dev-secret")}
 RESULTS_PATH = Path(__file__).resolve().parent.parent / "docs" / "eval-results.json"
 
 # Same seed as the dataset generator so the evaluation set is reproducible.
@@ -320,7 +324,7 @@ async def score_via_api(rows: list[dict], concurrency: int = 4) -> list[dict]:
     meta: dict[str, dict] = {}
     semaphore = asyncio.Semaphore(concurrency)
 
-    async with httpx.AsyncClient(timeout=120.0) as client:
+    async with httpx.AsyncClient(timeout=120.0, headers=HEADERS) as client:
         async def one(row):
             payload = {k: v for k, v in row.items() if k not in ("label", "pattern")}
             async with semaphore:

@@ -3,6 +3,7 @@ import { DEMO, getTransaction, updateDecision } from "../api.js";
 import { BanIcon, CheckCircleIcon } from "../icons.jsx";
 import { LAYERS, humanize, parseExplanation } from "../signals.js";
 import { fullTime, money } from "../format.js";
+import { DECISION_LABELS } from "../theme.js";
 import ComponentFailure from "./ComponentFailure.jsx";
 import AccountGraph from "./AccountGraph.jsx";
 import Sheet from "./Sheet.jsx";
@@ -16,6 +17,7 @@ import { DecisionBadge } from "./RecentFlags.jsx";
 export default function TxDrawer({ txId, onClose, onUpdated }) {
   const [tx, setTx] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [reason, setReason] = useState("");
   const [err, setErr] = useState(null);
 
   useEffect(() => {
@@ -28,7 +30,7 @@ export default function TxDrawer({ txId, onClose, onUpdated }) {
     setBusy(true);
     setErr(null);
     try {
-      setTx(await updateDecision(txId, decision));
+      setTx(await updateDecision(txId, decision, reason.trim()));
       onUpdated?.();
     } catch (e) {
       setErr(e.message);
@@ -47,12 +49,19 @@ export default function TxDrawer({ txId, onClose, onUpdated }) {
       <p className="sub">Overriding writes to the database, so it is off in this static demo.</p>
     ) : (
       <>
-        <button type="button" className="button button--approve" disabled={busy} onClick={() => decide("APPROVE")}>
-          <CheckCircleIcon size={15} /> Approve
-        </button>
-        <button type="button" className="button button--block" disabled={busy} onClick={() => decide("BLOCK")}>
-          <BanIcon size={15} /> Block
-        </button>
+        <label className="override-reason">
+          <span>Reason</span>
+          <input type="text" value={reason} maxLength={280} placeholder="recorded with the override"
+                 onChange={(e) => setReason(e.target.value)} />
+        </label>
+        <div className="override-actions">
+          <button type="button" className="button button--approve" disabled={busy} onClick={() => decide("APPROVE")}>
+            <CheckCircleIcon size={15} /> Approve
+          </button>
+          <button type="button" className="button button--block" disabled={busy} onClick={() => decide("BLOCK")}>
+            <BanIcon size={15} /> Block
+          </button>
+        </div>
       </>
     )
   );
@@ -118,6 +127,25 @@ export default function TxDrawer({ txId, onClose, onUpdated }) {
                 : text || "No explanation recorded."}
             </p>
           </section>
+
+          {tx.overrides?.length > 0 && (
+            <section className="sheet__section">
+              <h3>Decision history</h3>
+              <ol className="audit">
+                {tx.overrides.map((o, i) => (
+                  <li key={`${o.at}-${i}`}>
+                    <span>
+                      <strong>{DECISION_LABELS[o.from_decision] ?? o.from_decision ?? "—"}</strong>
+                      {" → "}
+                      <strong>{DECISION_LABELS[o.to_decision] ?? o.to_decision}</strong>
+                      {" by "}{o.actor}
+                    </span>
+                    <span className="sub">{fullTime(o.at)}{o.reason ? ` · ${o.reason}` : " · no reason given"}</span>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          )}
 
           <section className="sheet__section">
             <h3>Sender’s network</h3>

@@ -37,6 +37,34 @@ async def run_label_propagation():
     return await propagate_fraud_labels()
 
 
+@router.get("/accounts", summary="Accounts worth exploring in the graph")
+async def graph_accounts(limit: int = Query(default=25, ge=1, le=100)):
+    """
+    Connected accounts for the dashboard's account picker, fraud seeds first and
+    then the busiest, so the graph it draws is never an isolated node.
+    """
+    async with neo4j_session() as session:
+        result = await session.run(
+            """
+            MATCH (a:Account)-[r:SENT|USED_DEVICE|USED_IP]-()
+            WITH a, count(r) AS connections
+            RETURN a.account_id AS account_id,
+                   a.risk_label AS risk_label,
+                   connections
+            ORDER BY CASE a.risk_label
+                       WHEN 'fraud' THEN 0
+                       WHEN 'fraud_adjacent' THEN 1
+                       ELSE 2
+                     END,
+                     connections DESC,
+                     account_id
+            LIMIT $limit
+            """,
+            limit=limit,
+        )
+        return [dict(record) async for record in result]
+
+
 @router.get("/stats", summary="Graph node and relationship counts")
 async def graph_stats():
     async with neo4j_session() as session:

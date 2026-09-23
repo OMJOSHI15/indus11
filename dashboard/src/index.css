@@ -395,6 +395,30 @@ table { width: 100%; border-collapse: collapse; }
 .prose { margin: 0; color: var(--ink-2); line-height: 1.6; max-width: 65ch; }
 
 /* ── Analyze form ─────────────────────────────────────────────────────────── */
+/* The override footer: a reason line above the two decision buttons. */
+.override-reason { display: flex; align-items: center; gap: 8px; width: 100%; font-size: 12.5px; color: var(--muted); }
+.override-reason input {
+  flex: 1; min-height: 34px; padding: 0 10px; border: 1px solid var(--line-2); border-radius: var(--radius-sm);
+  background: var(--card); color: var(--ink); font: 13px var(--font);
+  transition: border-color var(--fast), box-shadow var(--fast);
+}
+.override-reason input:focus { outline: none; border-color: var(--focus); box-shadow: 0 0 0 3px var(--focus-ring); }
+.override-actions { display: flex; gap: 8px; width: 100%; }
+
+/* Append-only decision log. Numbered: the order is the point. */
+.audit { margin: 0; padding: 0 0 0 18px; display: grid; gap: 8px; }
+.audit li { padding-left: 2px; }
+.audit li span { display: block; }
+.audit strong { font-weight: 650; }
+
+.picker { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 500; color: var(--muted); }
+.picker select {
+  min-height: 34px; max-width: 320px; padding: 0 8px; border: 1px solid var(--line-2); border-radius: var(--radius-sm);
+  background: var(--card); color: var(--ink); font: 500 13px var(--font);
+  transition: border-color var(--fast), box-shadow var(--fast);
+}
+.picker select:focus { outline: none; border-color: var(--focus); box-shadow: 0 0 0 3px var(--focus-ring); }
+
 form.analyze { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 form.analyze label { display: flex; flex-direction: column; gap: 5px; font-size: 12.5px; font-weight: 500; color: var(--ink-2); }
 form.analyze input, form.analyze select, form.analyze textarea {

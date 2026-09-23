@@ -1,11 +1,16 @@
 """
 API-key guard for mutating/administrative routes.
 
-Not full authentication — no users, no sessions, just a shared secret that
-gates the routes whose misuse actually corrupts a decision or the graph
-(overriding a BLOCK, un-blacklisting an account, running label propagation).
-Everything read-only (GET routes, /analyze) stays open, matching the
-mentor's guidance to prioritise a working dashboard over auth infrastructure.
+Not full authentication — no users, no sessions, no tenants, just a shared
+secret that gates every route which writes.
+
+That now includes /analyze. It is not read-only: each call writes a
+transaction, extends the sender's Redis history and adds nodes and edges to
+the graph, so an open endpoint lets any caller poison the state that every
+later decision is scored against. GET routes stay open; they only read.
+
+A shared secret identifies no one, so it stops strangers, not insiders. Per-user
+authentication is out of scope for this project and is recorded as such.
 """
 import secrets
 

@@ -15,7 +15,7 @@ from app.core.rate_limit import limiter
 from app.core.redis_client import cache_get, cache_set
 from app.core.security import require_api_key
 from app.models.account import Account
-from app.models.transaction import Transaction
+from app.models.transaction import DecisionChange, Transaction
 from app.schemas.risk import AccountProfile
 from app.schemas.transaction import AnalysisResponse, LayerScore, TransactionRequest
 from app.services.decision_engine import make_decision
@@ -117,6 +117,7 @@ async def _finish_rag_layer(
     await Transaction.find_one(Transaction.tx_id == tx.tx_id).update(
         {"$set": {
             "composite_score": final.composite_score,
+            "rag_score": rag_score.score,
             "decision": final.decision.value,
             "explanation": final.explanation[:2000],
             "layer_failures": final.layer_failures,
@@ -125,7 +126,8 @@ async def _finish_rag_layer(
     )
 
 
-@router.post("/analyze", response_model=AnalysisResponse, summary="Analyze a transaction for fraud risk")
+@router.post("/analyze", response_model=AnalysisResponse, summary="Analyze a transaction for fraud risk",
+             dependencies=[Depends(require_api_key)])
 @limiter.limit("30/minute")
 async def analyze_transaction(request: Request, tx: TransactionRequest, background_tasks: BackgroundTasks):
     """
@@ -180,6 +182,8 @@ async def analyze_transaction(request: Request, tx: TransactionRequest, backgrou
         device_id=tx.device_id,
         ip_address=tx.ip_address,
         composite_score=response.composite_score,
+        rule_score=rule_result.score,
+        graph_score=graph_result.score,
         decision=response.decision.value,
         explanation=response.explanation[:2000],
         note=tx.note,
@@ -210,6 +214,11 @@ async def analyze_transaction(request: Request, tx: TransactionRequest, backgrou
 
 class DecisionUpdate(BaseModel):
     decision: str
+    # Who is overriding and why. The shared API key identifies no one, so both
+    # are self-declared; recording what the caller claims still beats recording
+    # nothing, and the absence of a reason is itself visible in the log.
+    actor: str = "unknown"
+    reason: str | None = None
 
 
 @router.patch(
@@ -224,8 +233,16 @@ async def override_decision(tx_id: str, body: DecisionUpdate):
     tx = await Transaction.find_one(Transaction.tx_id == tx_id)
     if not tx:
         raise HTTPException(status_code=404, detail=f"Transaction {tx_id} not found")
+    # Append before overwriting: the previous decision is only recoverable here.
+    tx.overrides.append(DecisionChange(
+        from_decision=tx.decision,
+        to_decision=dec,
+        actor=body.actor.strip()[:80] or "unknown",
+        reason=(body.reason or "").strip()[:280] or None,
+    ))
     tx.decision = dec
     await tx.save()
+    logger.info(f"{tx_id} decision overridden {tx.overrides[-1].from_decision} -> {dec} by {tx.overrides[-1].actor}")
     return tx
 
 

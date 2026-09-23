@@ -102,18 +102,31 @@ cd dashboard && npm install && npm run dev   # dashboard on :5173
 
 ## API
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/api/v1/transactions/analyze` | Score a transaction |
-| `GET`  | `/api/v1/transactions/{tx_id}` | Retrieve a past analysis |
-| `PATCH`| `/api/v1/transactions/{tx_id}/decision` | Override a review (approve/block) |
-| `GET`  | `/api/v1/graph/account/{id}/neighbors` | Explore an account's graph |
-| `GET`  | `/api/v1/stats/risk-distribution` | Dashboard metrics |
-| `GET`  | `/api/v1/stats/recent-flags` | Recent REVIEW/BLOCK transactions |
-| `GET`  | `/api/v1/stats/accuracy` | Latest evaluation: precision, recall, confusion matrix |
+| Method | Endpoint | Description | Key |
+|--------|----------|-------------|-----|
+| `POST` | `/api/v1/transactions/analyze` | Score a transaction | yes |
+| `GET`  | `/api/v1/transactions/{tx_id}` | Retrieve a past analysis | — |
+| `PATCH`| `/api/v1/transactions/{tx_id}/decision` | Override a review (approve/block) | yes |
+| `GET`  | `/api/v1/graph/account/{id}/neighbors` | Explore an account's graph | — |
+| `GET`  | `/api/v1/graph/accounts` | Connected accounts, fraud seeds first | — |
+| `GET`  | `/api/v1/stats/risk-distribution` | Dashboard metrics | — |
+| `GET`  | `/api/v1/stats/recent-flags` | Recent REVIEW/BLOCK transactions | — |
+| `GET`  | `/api/v1/stats/accuracy` | Latest evaluation: precision, recall, confusion matrix | — |
+
+Routes marked "yes" need `X-API-Key` (`APP_SECRET_KEY`, `dev-secret` by default).
+Every one of them writes: `/analyze` stores a transaction, extends the sender's
+Redis history and adds graph edges, so leaving it open lets any caller poison the
+state later decisions are scored against. A shared key stops strangers, not
+insiders — there are no users or tenants, which is recorded as a limitation
+rather than solved.
+
+An override is appended to the transaction's `overrides` log with the decision it
+replaced, the actor the caller declares and an optional reason. The decision field
+is overwritten; the log is the only place the previous value survives.
 
 ```bash
-curl -X POST http://localhost:8000/api/v1/transactions/analyze -H "Content-Type: application/json" -d '{
+curl -X POST http://localhost:8000/api/v1/transactions/analyze \
+  -H "Content-Type: application/json" -H "X-API-Key: dev-secret" -d '{
   "tx_id": "TX-001", "sender_account_id": "ACC-013", "receiver_account_id": "ACC-451",
   "amount": 704000, "currency": "INR", "merchant_category": "wire_transfer",
   "device_id": "DEV-FRAUD-A", "ip_address": "203.0.113.66"
@@ -124,6 +137,17 @@ curl -X POST http://localhost:8000/api/v1/transactions/analyze -H "Content-Type:
 
 ```bash
 pytest -q
+```
+
+## Maintenance
+
+The LLM layer runs as a background task inside the API process, so a restart, an
+unreachable model or a timeout leaves a record with `rag_pending: true` and
+nothing retries it. This finishes them:
+
+```bash
+python -m scripts.drain_pending --dry-run     # list what is outstanding
+python -m scripts.drain_pending --limit 100   # score and re-band them
 ```
 
 ## Accuracy

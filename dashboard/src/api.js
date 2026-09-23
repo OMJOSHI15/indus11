@@ -64,8 +64,12 @@ export const getTransaction = async (id) => {
   return found;
 };
 
-// The static demo has no graph database behind it, so it returns null and the
-// drawer leaves the network section out rather than showing an error.
+// The static demo has no graph database behind it, so these return null and the
+// callers leave the network out rather than showing an error.
+export const getGraphAccounts = async (limit = 25) =>
+  DEMO ? null : request(`/graph/accounts?limit=${limit}`);
+
+// The drawer leaves the network section out when this is null.
 export const getNeighbors = async (accountId) =>
   DEMO ? null : request(`/graph/account/${encodeURIComponent(accountId)}/neighbors`);
 
@@ -79,10 +83,13 @@ export const restartComponent = async (name) => {
   return request(`/components/${name}/restart`, { method: "POST" });
 };
 
-export const updateDecision = async (id, decision) => {
+// actor and reason are recorded in the transaction's override log. The shared
+// key identifies nobody, so "dashboard" is a claim, not an identity — but an
+// override with no trace at all is worse.
+export const updateDecision = async (id, decision, reason = null) => {
   if (DEMO) throw new Error(DEMO_WRITE_MESSAGE);
   return request(`/transactions/${id}/decision`, {
     method: "PATCH",
-    body: JSON.stringify({ decision }),
+    body: JSON.stringify({ decision, actor: "dashboard", reason: reason || null }),
   });
 };

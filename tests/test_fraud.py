@@ -572,3 +572,56 @@ async def test_extended_anomaly_rule(code, history, tx_kw, sender_kw, receiver_k
     result = await _rules_with(history, sender_kw, receiver_kw, **tx_kw)
     assert not result.failed, result.error
     assert (code in _codes(result)) is fires, result.flags
+
+
+# ── Audit trail and the pending-record drain ─────────────────────────────────
+
+def test_override_records_the_previous_decision():
+    """
+    The decision field is overwritten in place, so the record it replaced only
+    survives in the override log. Without it nobody can say a BLOCK was ever
+    released, or by whom.
+    """
+    from app.models.transaction import DecisionChange, Transaction
+
+    # Beanie documents need an initialised collection, so the document itself is
+    # checked through its schema and the log entry through the plain model.
+    overrides = Transaction.model_fields["overrides"]
+    assert overrides.default_factory is list, "every transaction starts with an empty log"
+
+    entry = DecisionChange(from_decision="BLOCK", to_decision="APPROVE",
+                           actor="reviewer-1", reason="customer confirmed by phone")
+    assert (entry.from_decision, entry.to_decision) == ("BLOCK", "APPROVE")
+    assert entry.actor == "reviewer-1"
+    assert entry.at is not None
+
+    # An override with nothing declared is still recorded, and says so.
+    bare = DecisionChange(to_decision="APPROVE")
+    assert bare.actor == "unknown" and bare.reason is None
+
+
+def test_transaction_stores_each_layer_score():
+    """The response always carried the split; the record has to keep it too."""
+    from app.models.transaction import Transaction
+
+    fields = Transaction.model_fields
+    for name in ("rule_score", "graph_score", "rag_score"):
+        # None, not zero: a layer that has not run must not read as a clean layer.
+        assert fields[name].default is None, f"{name} must default to None"
+
+
+@pytest.mark.parametrize("explanation,expected", [
+    ("Triggered signals: VELOCITY_EXCEEDED; SHARED_DEVICE. The sender moved fast.",
+     ["VELOCITY_EXCEEDED", "SHARED_DEVICE"]),
+    # The detail holds full stops of its own, so a naive split on ". " loses flags.
+    ("Triggered signals: NEW_IP_HIGH_VALUE (first use of 203.0.113.66); STRUCTURING. Prose here.",
+     ["NEW_IP_HIGH_VALUE (first use of 203.0.113.66)", "STRUCTURING"]),
+    ("Triggered signals: AMOUNT_ANOMALY (sent ₹60000 vs ₹2000 average).",
+     ["AMOUNT_ANOMALY (sent ₹60000 vs ₹2000 average)"]),
+    ("No signals fired.", []),
+    (None, []),
+])
+def test_stored_flags_survive_full_stops_inside_details(explanation, expected):
+    from scripts.drain_pending import stored_flags
+
+    assert stored_flags(explanation) == expected

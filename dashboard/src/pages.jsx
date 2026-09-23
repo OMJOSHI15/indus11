@@ -1,10 +1,13 @@
 // One component per route. Every page reads from the same poll in App.jsx, so
 // switching pages costs no request: the shell owns the data, pages only lay it out.
+import { useEffect, useState } from "react";
+import AccountGraph from "./components/AccountGraph.jsx";
 import AccuracyPanel from "./components/AccuracyPanel.jsx";
 import RecentFlags from "./components/RecentFlags.jsx";
 import {
   AmountBands, Card, CategoryRisk, ChartSkeleton, DecisionDonut, DecisionsByDay, ScoreHistogram, TopSignals,
 } from "./components/Charts.jsx";
+import { getGraphAccounts } from "./api.js";
 import { moneyShort } from "./format.js";
 import { DECISION_COLORS } from "./theme.js";
 
@@ -149,10 +152,56 @@ export function Accuracy() {
   );
 }
 
+/** Picks an account and draws the hop around it. Fraud seeds come first from the
+ *  backend, so the graph opens on a node that actually has a neighbourhood. */
+function AccountExplorer() {
+  const [accounts, setAccounts] = useState(undefined);
+  const [selected, setSelected] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    getGraphAccounts(25)
+      .then((rows) => {
+        if (cancelled) return;
+        setAccounts(rows);
+        if (rows?.length) setSelected(rows[0].account_id);
+      })
+      .catch(() => !cancelled && setAccounts(null));
+    return () => { cancelled = true; };
+  }, []);
+
+  if (accounts === undefined) return <ChartSkeleton height={320} />;
+  if (accounts === null) return <p className="empty" style={{ minHeight: 320 }}>Needs the live backend.</p>;
+  if (!accounts.length) return <p className="empty" style={{ minHeight: 320 }}>No connected accounts in the graph yet.</p>;
+
+  return (
+    <>
+      <div className="card__toolbar">
+        <label className="picker">
+          <span>Account</span>
+          <select value={selected ?? ""} onChange={(e) => setSelected(e.target.value)}>
+            {accounts.map(({ account_id, risk_label, connections }) => (
+              <option key={account_id} value={account_id}>
+                {account_id}{risk_label === "fraud" ? " · known fraud" : risk_label === "fraud_adjacent" ? " · fraud-adjacent" : ""} · {connections} connections
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      {selected && <AccountGraph key={selected} sender={selected} />}
+    </>
+  );
+}
+
 export function Network({ graphStats }) {
   return (
     <div className="grid">
-      <Card className="span-6" title="Transaction graph" subtitle="Neo4j entities behind the graph layer">
+      <Card className="span-8" title="Account neighbourhood"
+            subtitle="One hop around the account: who it paid, and the devices and addresses it shares">
+        <AccountExplorer />
+      </Card>
+
+      <Card className="span-4" title="Transaction graph" subtitle="Neo4j entities behind the graph layer">
         <Live data={graphStats} height={220}>
           {graphStats === undefined ? <ChartSkeleton height={220} /> : (
             <dl className="stat-list">
@@ -170,7 +219,7 @@ export function Network({ graphStats }) {
         </Live>
       </Card>
 
-      <Card className="span-6" title="What the graph layer looks for" subtitle="Cypher patterns scored at up to 30 points">
+      <Card className="span-12" title="What the graph layer looks for" subtitle="Cypher patterns scored at up to 30 points">
         <dl className="stat-list stat-list--wide">
           <div><dt>Shared device</dt><dd>two accounts signing in from one device</dd></div>
           <div><dt>Shared IP address</dt><dd>unrelated accounts on one address</dd></div>
@@ -178,9 +227,6 @@ export function Network({ graphStats }) {
           <div><dt>Money mule pattern</dt><dd>funds in and straight back out, minus a cut</dd></div>
           <div><dt>Fraud cluster proximity</dt><dd>within two hops of a known fraud account</dd></div>
         </dl>
-        <p className="card__note">
-          Per-account neighbours are drawn on the transaction drawer, reachable from the review queue.
-        </p>
       </Card>
     </div>
   );

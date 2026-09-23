@@ -12,6 +12,7 @@ report 429s for the remainder. That is the limiter working, not a failure —
 set RATE_LIMIT_ENABLED=false in .env and restart the API for a longer run.
 """
 import asyncio
+import os
 import statistics
 import sys
 import time
@@ -20,6 +21,7 @@ from collections import Counter
 import httpx
 
 API = "http://localhost:8000/api/v1/transactions/analyze"
+HEADERS = {"X-API-Key": os.environ.get("APP_SECRET_KEY", "dev-secret")}   # /analyze is a write route
 BUDGET_MS = 500  # the target agreed at Review 1
 
 
@@ -37,7 +39,7 @@ def _tx(i: int) -> dict:
 
 
 async def main(n: int = 40) -> None:
-    async with httpx.AsyncClient(timeout=60) as client:
+    async with httpx.AsyncClient(timeout=60, headers=HEADERS) as client:
         # One warm-up request: the first call pays for Mongo/Redis/Neo4j
         # connection setup, which no real caller pays on every request.
         await client.post(API, json=_tx(9999))
