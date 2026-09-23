@@ -126,6 +126,12 @@ export default function TxDrawer({ txId, onClose, onUpdated }) {
                 ? "The language model is still writing its assessment. The decision above already stands on the rule and graph layers."
                 : text || "No explanation recorded."}
             </p>
+            {tx.rag_drained_at && (
+              <p className="card__note">
+                Written on {fullTime(tx.rag_drained_at)}, after the decision it explains: the original
+                background task never completed and this record was finished later.
+              </p>
+            )}
           </section>
 
           {tx.overrides?.length > 0 && (

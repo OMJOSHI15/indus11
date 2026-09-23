@@ -608,6 +608,9 @@ def test_transaction_stores_each_layer_score():
     for name in ("rule_score", "graph_score", "rag_score"):
         # None, not zero: a layer that has not run must not read as a clean layer.
         assert fields[name].default is None, f"{name} must default to None"
+    # Set only when a record was finished late, so its absence means the
+    # explanation is contemporaneous with the decision.
+    assert fields["rag_drained_at"].default is None
 
 
 @pytest.mark.parametrize("explanation,expected", [

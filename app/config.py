@@ -1,3 +1,4 @@
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -5,7 +6,31 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     app_env: str = "development"
-    app_secret_key: str = "dev-secret"
+    # No usable default. A shared secret that ships with the source is not a
+    # secret, and "dev-secret" was previously both the code default and the
+    # dashboard's fallback, so the guard could be passed by reading the repo.
+    # Development keeps a known key for convenience; anything else must set one.
+    app_secret_key: str = ""
+
+    @model_validator(mode="after")
+    def _secret_key_must_be_set(self) -> "Settings":
+        if self.app_env == "development":
+            self.app_secret_key = self.app_secret_key or "dev-secret"
+            return self
+        # Outside development the published key is refused as firmly as no key:
+        # copying .env.example and changing only APP_ENV must not pass.
+        if self.app_secret_key == "dev-secret":
+            raise ValueError(
+                f"APP_SECRET_KEY is still the published development key while APP_ENV={self.app_env!r}. "
+                "It is printed in the README and bundled into the dashboard. Set a real one."
+            )
+        if self.app_secret_key:
+            return self
+        raise ValueError(
+            "APP_SECRET_KEY is not set. It guards every write route "
+            "(/analyze, decision overrides, blacklist, label propagation). "
+            "Set it in .env, or run with APP_ENV=development to accept the known dev key."
+        )
 
     # MongoDB
     mongo_uri: str = "mongodb://localhost:27017"

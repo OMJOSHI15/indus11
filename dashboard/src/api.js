@@ -8,8 +8,14 @@
 export const DEMO = import.meta.env.VITE_DEMO === "1";
 
 // Matches the backend's APP_SECRET_KEY (see .env.example) — required for the
-// decision-override, blacklist-toggle, and label-propagation routes. Sent on
-// every request rather than conditionally; the read-only routes ignore it.
+// write routes: /analyze, decision override, blacklist toggle, label
+// propagation. Sent on every request rather than conditionally; the read-only
+// routes ignore it.
+//
+// This lands in the built bundle, so it is not a secret from anyone who can
+// open the dashboard. It keeps the write routes closed to the open internet.
+// The fallback is the development key the backend also accepts only when
+// APP_ENV=development; a real deployment sets VITE_API_KEY to match its own.
 const API_KEY = import.meta.env.VITE_API_KEY || "dev-secret";
 
 let demoCache = null;

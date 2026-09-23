@@ -9,8 +9,11 @@ transaction, extends the sender's Redis history and adds nodes and edges to
 the graph, so an open endpoint lets any caller poison the state that every
 later decision is scored against. GET routes stay open; they only read.
 
-A shared secret identifies no one, so it stops strangers, not insiders. Per-user
-authentication is out of scope for this project and is recorded as such.
+A shared secret identifies no one, so it stops strangers, not insiders. The
+dashboard is a browser app and has to carry the key in its bundle, so anyone
+who can open the dashboard can read it: this keeps the write routes closed to
+the open internet, not to a determined user. Per-user authentication is out of
+scope for this project and is recorded as such rather than implied.
 """
 import secrets
 

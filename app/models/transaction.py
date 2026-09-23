@@ -40,6 +40,10 @@ class Transaction(Document):
     explanation: Optional[str] = None
     note: Optional[str] = None  # optional reason submitted with the transaction
     rag_pending: bool = False  # True until the background RAG/LLM layer updates this record
+    # Set only by scripts/drain_pending.py. An explanation written long after
+    # the decision it explains must not read as contemporaneous, so the record
+    # carries when it was finished and the drawer says so.
+    rag_drained_at: Optional[datetime] = None
     layer_failures: dict[str, str] = Field(default_factory=dict)  # layer name -> error; empty when every layer ran
     overrides: list[DecisionChange] = Field(default_factory=list)  # append-only; the pipeline never writes here
     created_at: datetime = Field(default_factory=datetime.utcnow)

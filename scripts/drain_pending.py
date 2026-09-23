@@ -43,6 +43,9 @@ from app.services.rag_pipeline import run_rag_pipeline
 
 PREFIX = "Triggered signals: "
 RAG_TIMEOUT_S = 180
+# Matches the API's own limit on concurrent language-model calls, so a drain
+# does not queue behind itself or overload a laptop running the model locally.
+CONCURRENCY = 4
 
 
 def stored_flags(explanation: str | None) -> list[str]:
@@ -120,6 +123,7 @@ async def drain_one(record: Transaction) -> tuple[str, str]:
             "explanation": final.explanation[:2000],
             "layer_failures": final.layer_failures,
             "rag_pending": False,
+            "rag_drained_at": datetime.utcnow(),
         }}
     )
     changed = "" if was == final.decision.value else f" {was} -> {final.decision.value}"
@@ -145,10 +149,18 @@ async def main(limit: int, prefix: str | None, dry_run: bool) -> None:
 
     counts = {"drained": 0, "failed": 0}
     started = time.time()
-    for i, record in enumerate(pending, 1):
-        outcome, detail = await drain_one(record)
+    done = 0
+    limiter = asyncio.Semaphore(CONCURRENCY)
+
+    async def run(record):
+        nonlocal done
+        async with limiter:
+            outcome, detail = await drain_one(record)
         counts[outcome] += 1
-        print(f"  [{i}/{len(pending)}] {record.tx_id}  {outcome}: {detail}", flush=True)
+        done += 1
+        print(f"  [{done}/{len(pending)}] {record.tx_id}  {outcome}: {detail}", flush=True)
+
+    await asyncio.gather(*(run(record) for record in pending))
 
     left = await Transaction.find(Transaction.rag_pending == True).count()   # noqa: E712
     print(f"\n{counts['drained']} drained, {counts['failed']} failed "
