@@ -53,6 +53,10 @@ export default function AccuracyPanel() {
 
   const { counts, metrics, graph } = report;
   const { flagged, confusion, realistic } = metrics;
+  // Accuracy is not in the stored report: every decision that matched the label,
+  // which for a three-band pipeline means approved-legitimate plus flagged-fraud.
+  const accuracy =
+    (confusion.APPROVE.legit + confusion.REVIEW.fraud + confusion.BLOCK.fraud) / counts.total;
   const cells = [
     ["Approved", confusion.APPROVE],
     ["Review", confusion.REVIEW],
@@ -66,7 +70,8 @@ export default function AccuracyPanel() {
       <div className="gauges">
         <Gauge label="Precision" value={flagged.precision} note="flagged that were fraud" />
         <Gauge label="Recall" value={flagged.recall} note="fraud that was caught" />
-        <Gauge label="F1 score" value={flagged.f1} note="balance of both" />
+        <Gauge label="Accuracy" value={accuracy} note="decisions that matched the label" />
+        <Gauge label="F1 score" value={flagged.f1} note="balance of precision and recall" />
       </div>
 
       <table className="confusion">

@@ -170,6 +170,8 @@ code { font-family: var(--mono); font-size: 0.92em; }
 }
 .sidebar nav a:hover { background: var(--fill); color: var(--ink); }
 .sidebar nav a svg { color: var(--muted); }
+.sidebar nav a.is-active { background: var(--fill-2); color: var(--ink); font-weight: 600; }
+.sidebar nav a.is-active svg { color: var(--ink); }
 
 .status { margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: var(--radius-sm); background: var(--fill); }
 .status__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--approve); box-shadow: 0 0 0 4px var(--approve-tint); flex-shrink: 0; }
@@ -210,6 +212,7 @@ code { font-family: var(--mono); font-size: 0.92em; }
 
 /* ── KPI row ──────────────────────────────────────────────────────────────── */
 .kpis { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; margin-bottom: 12px; }
+.kpis--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 
 .kpi {
   display: grid; gap: 4px; padding: 16px 18px; min-width: 0;
@@ -227,6 +230,7 @@ code { font-family: var(--mono); font-size: 0.92em; }
 .span-3 { grid-column: span 3; }
 .span-4 { grid-column: span 4; }
 .span-6 { grid-column: span 6; }
+.span-8 { grid-column: span 8; }
 .span-12 { grid-column: span 12; }
 
 .card {
@@ -259,13 +263,14 @@ code { font-family: var(--mono); font-size: 0.92em; }
 .stat-list > div:last-child { border-bottom: 0; }
 .stat-list dt { display: flex; align-items: center; gap: 7px; color: var(--ink-2); }
 .stat-list dd { margin: 0; font-weight: 650; font-variant-numeric: tabular-nums; font-size: 15px; }
+.stat-list--wide dd { font-weight: 500; font-size: 13px; color: var(--muted); text-align: right; }
 
 /* recharts */
 .recharts-tooltip-label { font-weight: 600; margin-bottom: 2px; }
 .recharts-surface:focus { outline: none; }
 
 /* ── Accuracy ─────────────────────────────────────────────────────────────── */
-.gauges { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-bottom: 12px; }
+.gauges { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-bottom: 12px; }
 .gauge { margin: 0; display: grid; justify-items: center; text-align: center; }
 .gauge svg { width: 100%; max-width: 120px; height: auto; }
 .gauge strong { margin-top: -26px; font-size: 17px; letter-spacing: -0.02em; }
@@ -470,23 +475,34 @@ form.analyze button:disabled { opacity: 0.55; cursor: progress; }
 
 /* ── Responsive ───────────────────────────────────────────────────────────── */
 @media (max-width: 1360px) {
-  .kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .kpis, .kpis--4 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .span-3 { grid-column: span 6; }
-  .grid > .span-6:first-child { grid-column: span 12; }
+  .span-8 { grid-column: span 12; }
   .span-4 { grid-column: span 6; }
   .span-md-12 { grid-column: span 12; }
 }
 
 @media (max-width: 1024px) {
-  .app { grid-template-columns: 1fr; }
-  .sidebar { position: static; height: auto; flex-direction: row; align-items: center; padding: 12px 16px; border-right: 0; border-bottom: 1px solid var(--line); }
-  .sidebar nav { display: none; }
-  .status { margin: 0 0 0 auto; padding: 8px 12px; }
+  /* minmax(0, …): a plain 1fr refuses to shrink below the nav's content width,
+     which pushes the whole page sideways once the nav scrolls instead of wrapping. */
+  .app { grid-template-columns: minmax(0, 1fr); }
+  .sidebar { position: static; height: auto; flex-direction: row; align-items: center; gap: 14px; padding: 12px 16px; border-right: 0; border-bottom: 1px solid var(--line); }
+  .brand div span { display: none; }   /* the tagline wraps in a one-line bar */
+  .sidebar nav { display: flex; gap: 2px; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+  .sidebar nav::-webkit-scrollbar { display: none; }
+  .sidebar nav a { padding: 0 12px; white-space: nowrap; }
+  .status { margin: 0 0 0 auto; padding: 8px 12px; flex-shrink: 0; }
   .main { padding: 20px 16px 40px; }
 }
 
+/* Half-width cards stop being readable before the sidebar folds away. */
+@media (max-width: 960px) {
+  .span-3, .span-4, .span-6 { grid-column: span 12; }
+}
+
 @media (max-width: 760px) {
-  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kpis, .kpis--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .gauges { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
   .span-3, .span-4, .span-6 { grid-column: span 12; }
   .page-head__actions { width: 100%; }
   .page-head__actions .button { flex: 1; }
