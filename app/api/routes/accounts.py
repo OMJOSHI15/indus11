@@ -9,8 +9,12 @@ from app.schemas.risk import AccountProfile
 router = APIRouter(prefix="/accounts", tags=["accounts"])
 
 
-@router.post("/", response_model=AccountProfile, summary="Create an account")
+@router.post("/", response_model=AccountProfile, summary="Create an account",
+             dependencies=[Depends(require_api_key)])
 async def create_account(profile: AccountProfile):
+    # Guarded like every other write: the profile carries risk_tier,
+    # avg_monthly_transaction and is_blacklisted, all of which the rule engine
+    # scores against, so an open create is an open door to the scoring inputs.
     if await Account.find_one(Account.account_id == profile.account_id):
         raise HTTPException(status_code=409, detail="Account already exists")
     await Account(**profile.model_dump()).insert()

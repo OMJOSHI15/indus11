@@ -628,3 +628,50 @@ def test_stored_flags_survive_full_stops_inside_details(explanation, expected):
     from scripts.drain_pending import stored_flags
 
     assert stored_flags(explanation) == expected
+
+
+# ── Every write route is behind the key ──────────────────────────────────────
+#
+# These two go through the app itself rather than the guard function, because
+# the regression they exist for is a route that forgets to ask for the guard,
+# not a guard that stops working. Neither needs a database: the dependency runs
+# before the handler, so a rejected request never reaches MongoDB.
+
+MUTATING_METHODS = {"POST", "PUT", "PATCH", "DELETE"}
+
+
+def _mutating_routes():
+    from fastapi.routing import APIRoute
+    from app.main import app
+
+    return [r for r in app.routes if isinstance(r, APIRoute) and r.methods & MUTATING_METHODS]
+
+
+def test_every_write_route_requires_the_api_key():
+    """
+    Catches the case the guard itself cannot: a new write route added without
+    asking for it. Every mutating route writes state that later decisions are
+    scored against — a transaction, an account profile, a graph label.
+    """
+    unguarded = [
+        f"{sorted(r.methods & MUTATING_METHODS)[0]} {r.path}"
+        for r in _mutating_routes()
+        if not any(getattr(d, "dependency", None) is require_api_key for d in r.dependencies)
+    ]
+    assert unguarded == [], f"write routes with no API-key guard: {unguarded}"
+
+
+@pytest.mark.parametrize("headers", [{}, {"X-API-Key": "wrong"}], ids=["no-key", "wrong-key"])
+@pytest.mark.parametrize("method,path,body", [
+    ("post", "/api/v1/transactions/analyze",
+     {"tx_id": "TX-AUTH", "sender_account_id": "ACC-001", "receiver_account_id": "ACC-002", "amount": 1.0}),
+    ("patch", "/api/v1/transactions/TX-AUTH/decision", {"decision": "APPROVE"}),
+])
+def test_write_routes_reject_a_bad_key(method, path, body, headers):
+    from fastapi.testclient import TestClient
+    from app.main import app
+
+    # Not entered as a context manager, so the startup hooks never run and the
+    # test needs no MongoDB, Neo4j, Redis or language model.
+    response = getattr(TestClient(app), method)(path, json=body, headers=headers)
+    assert response.status_code == 401, response.text
