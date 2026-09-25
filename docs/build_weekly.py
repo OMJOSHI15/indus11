@@ -28,159 +28,170 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 DOWNLOADS = os.path.expanduser("~/Downloads")
 SOFFICE = "/Applications/LibreOffice.app/Contents/MacOS/soffice"
 
-WEEK = 11
-FROM_DATE, TO_DATE = "13-09-2026", "18-09-2026"   # Sunday to Friday
-NEXT_FROM, NEXT_TO = "20-09-2026", "25-09-2026"   # Sunday to Friday
+WEEK = 12
+FROM_DATE, TO_DATE = "20-09-2026", "25-09-2026"   # Sunday to Friday
+NEXT_FROM, NEXT_TO = "27-09-2026", "02-10-2026"   # Sunday to Friday
 
 REPORTS = {
     "24DCE052": {
         "work": [
-"Took up the suggestion to work from the anomalies banks themselves watch for. Catalogued fifty "
-            "anomaly types from the red-flag indicators the financial intelligence unit and "
-            "the central bank publish, and from the international money-laundering "
-            "typologies, then implemented twenty-five of them in the rule engine. They "
-            "include amounts kept just under the ten-lakh reporting limit, several smaller "
-            "payments that together cross it, a dormant account becoming active, money "
-            "received and passed straight on, payments to many different beneficiaries in a "
-            "day, a first payment to a new beneficiary, a payment from a new device or "
-            "location, two payments too far apart to be the same person, and a payment note "
-            "written in the language of a scam.",
-            "Kept the fifteen anomalies we cannot detect in the report rather than quietly "
-            "dropping them, each with the data it would need: account balances, know-your-"
-            "customer records, the channel a payment came through, login attempts. Thirty-"
-            "five of the fifty are now detected, five of them by the graph layer.",
-            "Found a fault in one of the earlier anomaly rules by replaying scenarios "
-            "through the running system rather than trusting the unit tests: the "
-            "pass-through rule fired on any large payment that happened to follow a small "
-            "credit, so it reported forwarding seven lakh of the twenty-five thousand "
-            "received. It now requires the payment to be between eighty and a hundred and "
-            "ten per cent of what arrived.",
-            "Began the second suggestion, to measure the system on real data rather than "
-            "our own. Chose the "
-            "PaySim mobile-money dataset because it is the only public one with both a "
-            "sender and a receiver on every row, which is what the relationship rules need; "
-            "card datasets have no receiver. Wrote the replay that scores it and reports "
-            "each rule's hit rate, and stated in it what does not carry over, so the results "
-            "cannot be read as more than they are.",
-            "Named the member responsible for each chapter on the chapter's own page, the "
-            "third suggestion, and rebuilt both documents with the new rules, their "
-            "thresholds and the stores they read described.",
+            "Closed the scoring endpoint, which had been open to anyone who could reach the "
+            "server. It is not a read: every call stores a transaction, extends the sender's "
+            "payment history and adds entries to the network, so an open endpoint let a "
+            "stranger corrupt the very history every later decision is judged against. It "
+            "now requires the shared key, as the other writing endpoints already did.",
+            "Wrote a test that walks the application's own list of endpoints and requires "
+            "every one that writes to ask for the key, rather than testing the guard by "
+            "itself, because the failure that actually happens is an endpoint that forgets "
+            "to ask. Writing it found a second open one: account creation, which accepts the "
+            "risk tier and the average spend that the rule engine scores against. Both are "
+            "closed now, and the test fails if a new writing endpoint is added without the "
+            "guard.",
+            "Made the key fail closed. It had a working default written in the source and "
+            "the same value again in the dashboard, so the guard could be passed by reading "
+            "the project. There is no default now: development keeps a known key for "
+            "convenience, and every other setting must supply its own, with the published "
+            "value refused as firmly as no value at all. What this cannot fix is written "
+            "down rather than implied, since the dashboard is a browser page and carries "
+            "its copy of the key in the download: the guard keeps the writing endpoints "
+            "closed to the open internet, not to a determined user.",
+            "Stored what each layer contributed to a decision. The reply had always carried "
+            "the three scores separately, but only their total was kept, so no past decision "
+            "could be traced back to the layer that caused it. Each is saved beside the "
+            "total now, and left empty rather than zero for a layer that did not run, so a "
+            "layer that failed cannot be mistaken for a layer that found nothing.",
+            "Gave a human override a record. Approving or blocking a transaction by hand "
+            "used to overwrite the decision and leave nothing behind, so nobody could say "
+            "afterwards that a block had been released, or by whom. Each override now "
+            "appends the decision it replaced, the time, the person the caller declares and "
+            "a reason if one is given; an override with nothing stated is still recorded and "
+            "shows that nothing was stated.",
+            "Finished the eight hundred and ninety-six transactions whose written "
+            "explanation had never arrived. The language-model step runs after the answer is "
+            "returned, inside the server, so a restart or a timeout left the record "
+            "incomplete and nothing retried it. A script now completes them through the same "
+            "decision path the live system uses and stamps each with the time it was "
+            "finished, so an explanation written weeks later is not read as belonging to the "
+            "moment of the decision. All eight hundred and ninety-six completed, none "
+            "failed.",
         ],
         "plans": [
-            "Run the replay once the dataset is downloaded and report each rule's true and "
-            "false alarms on it.",
-            "Retire or retune the rules the dataset shows are noise rather than signal.",
-            "Fill the payment history from the stored transactions, so an existing account "
-            "is not treated as new the first time it pays after a restart.",
-            "Re-measure accuracy on our own labelled set, which now predates twenty-five "
-            "rules.",
+            "Fill the payment history from the stored transactions, so an account is not "
+            "treated as new the first time it pays after a restart. Carried from last week "
+            "and still open.",
+            "Run the public-dataset replay once the file is downloaded and report each "
+            "rule's true and false alarms on it. Carried from last week; the replay is "
+            "written but the dataset has not been fetched.",
+            "Submit the report and the requirement specification with the member "
+            "responsible named on each chapter, and rehearse the demonstration from a "
+            "cleanly started system.",
         ],
         "references": [
-            "Financial Intelligence Unit – India, “Red flag indicators for "
-            "suspicious transaction reports,” FIU-IND, 2023. [Online]. Available: "
-            "fiuindia.gov.in",
-            "Financial Action Task Force, “Money laundering through the physical "
-            "transportation of cash and the use of money mules,” FATF Typologies "
-            "Report, 2020.",
-            "E. A. Lopez-Rojas, A. Elmir and S. Axelsson, “PaySim: a financial mobile "
-            "money simulator for fraud detection,” Proc. 28th European Modeling and "
-            "Simulation Symposium, 2016.",
-            "Reserve Bank of India, “Master direction – know your customer "
-            "(KYC) direction, 2016 (as amended),” RBI, 2026. [Online]. Available: "
-            "rbi.org.in",
+            "J. H. Saltzer and M. D. Schroeder, “The protection of information in computer "
+            "systems,” Proceedings of the IEEE, vol. 63, no. 9, 1975.",
+            "Open Worldwide Application Security Project, “OWASP API security top 10 — "
+            "API2:2023 broken authentication,” OWASP, 2023. [Online]. Available: owasp.org",
+            "K. Kent and M. Souppaya, “Guide to computer security log management,” NIST "
+            "Special Publication 800-92, National Institute of Standards and Technology, "
+            "2006.",
+            "Reserve Bank of India, “Master direction on digital payment security "
+            "controls,” RBI, 2021. [Online]. Available: rbi.org.in",
         ],
     },
     "24DCE040": {
         "work": [
-            "Worked through the graph layer's answer to the guide's suggestions. The first "
-            "of them, that the detection should follow the anomalies banks actually watch "
-            "for, already matches what this layer looks for: a device or an address shared "
-            "by several accounts, money returning to its sender within four hops and "
-            "seventy-two hours, a chain in which each hop keeps most of what it received, "
-            "and a receiver sitting within two links of an account already known to be "
-            "fraudulent.",
-            "Designed the correction to the cycle check, which is the layer's known "
-            "weakness. The query walks outward from the sender and requires the times along "
-            "the path to rise, and the transfer that closes a ring is always the newest, so "
-            "it can never match; a ring is therefore only caught when its first account "
-            "pays again. The fix is to search backwards from the receiver as well, and to "
-            "treat the closing transfer as the newest edge of the path rather than the next "
-            "one after it.",
-            "Set out what that correction will cost to verify: the whole labelled set has "
-            "to be scored again, because today's figure of thirty-six rings flagged belongs "
-            "to the layer as a whole and only twenty-one of them came from the cycle check "
-            "itself. The rest were caught by the receiver's closeness to a known fraud "
-            "account, and that distinction has to survive into the next measurement.",
-            "Planned how the public dataset will reach this layer. Its rows carry a sender "
-            "and a receiver but no device or address, so shared-identity checks cannot be "
-            "measured on it; the accounts and transfers can still be loaded so that the "
-            "cycle and proximity checks are tested on payments we did not generate.",
+            "The network page had been showing counts and no network: how many accounts, "
+            "devices and addresses exist, with nothing drawn. Added an endpoint that returns "
+            "the accounts worth looking at, the known-fraudulent ones first and then the "
+            "most connected, so the page never opens on an account with nothing around it.",
+            "The page now draws one hop around the chosen account — the accounts it paid, "
+            "and the devices and addresses it shares — with a fraudulent neighbour and the "
+            "link to it marked. Choosing another account redraws it. On one of the seeded "
+            "ring accounts it shows two fraudulent neighbours, a shared device and a shared "
+            "address together, so the ring is visible in a picture rather than described in "
+            "a sentence.",
+            "Ring detection was measured again in this week's fresh evaluation and flagged "
+            "thirty-six of the thirty-six ring transactions. Recording again that this is "
+            "the whole layer's figure and not the cycle check's own: twenty-one came from "
+            "the cycle check and the rest from the receiver's closeness to an account "
+            "already known to be fraudulent.",
+            "The correction to the cycle query, designed last week, has not been written. "
+            "It is left for the coming week deliberately rather than rushed into the week "
+            "the measurements were taken, because changing the query and re-measuring in "
+            "the same week would leave no way to tell which figure belongs to which "
+            "version.",
         ],
         "plans": [
-            "Rewrite the cycle query so it also matches the transfer that closes a ring, "
-            "rather than only the one that opens the next lap.",
-            "Re-measure ring detection after that change and report the cycle check's own "
-            "share, not the layer's total.",
-            "Add fan-in and fan-out mule shapes to the generated network and see whether "
-            "they are caught.",
-            "Load the accounts from the public dataset into the network so the relationship "
-            "checks can be measured on data we did not generate.",
+            "Write the correction so the query also matches the transfer that closes a "
+            "ring, and measure the cycle check on its own afterwards rather than reporting "
+            "the layer's total.",
+            "Load the public dataset's accounts and transfers into the network, so the "
+            "cycle and proximity checks are tested on payments we did not generate.",
+            "Prepare the graph layer's part of the final demonstration, including the "
+            "account whose neighbourhood shows a ring most clearly.",
         ],
         "references": [
-            "R. Tarjan, \u201cDepth-first search and linear graph algorithms,\u201d SIAM "
-            "Journal on Computing, vol. 1, no. 2, 1972.",
-            "X. Li, S. Liu, Z. Li et al., \u201cFlowScope: spotting money laundering "
-            "based on graphs,\u201d Proc. AAAI Conference on Artificial Intelligence, "
-            "vol. 34, 2020.",
-            "L. Akoglu, H. Tong and D. Koutra, \u201cGraph based anomaly detection and "
-            "description: a survey,\u201d Data Mining and Knowledge Discovery, vol. 29, "
-            "no. 3, 2015.",
-            "Financial Action Task Force, \u201cProfessional money laundering,\u201d FATF "
-            "Report, 2018.",
+            "B. Shneiderman, “The eyes have it: a task by data type taxonomy for "
+            "information visualizations,” Proc. IEEE Symposium on Visual Languages, 1996.",
+            "F. van Ham and A. Perer, “Search, show context, expand on demand: supporting "
+            "large graph exploration with degree-of-interest,” IEEE Transactions on "
+            "Visualization and Computer Graphics, vol. 15, no. 6, 2009.",
+            "I. Herman, G. Melançon and M. S. Marshall, “Graph visualization and navigation "
+            "in information visualization: a survey,” IEEE Transactions on Visualization "
+            "and Computer Graphics, vol. 6, no. 1, 2000.",
+            "I. Robinson, J. Webber and E. Eifrem, “Graph Databases: New Opportunities for "
+            "Connected Data,” 2nd ed., O'Reilly Media, 2015.",
         ],
     },
     "24DCE029": {
         "work": [
-            "Rebuilt the analyst screen as a working console, since it had been showing "
-            "very little of what the system records. It now opens on the number of "
-            "transactions waiting for review and shows decisions per day, the decision mix, "
-            "the entities in the transaction graph, risk by merchant category, how often "
-            "each signal fires, the score distribution, the share flagged at each amount "
-            "band, and the accuracy of the last evaluation.",
-            "Added one aggregation endpoint behind it so those figures are computed across "
-            "every stored transaction rather than the twenty most recent, which is what the "
-            "previous screen had been showing.",
-            "Put the review queue first, since it is the one list an analyst works from, and "
-            "replaced its clipped explanation column with the signals that fired, each "
-            "labelled, and a marker when a scoring layer failed. Selecting a row opens a "
-            "panel with the signals grouped by the layer that raised them, the written "
-            "explanation, and a drawing of the accounts, devices and addresses one hop "
-            "around the sender.",
-            "Chose the chart colours by measurement rather than by eye. The usual green and "
-            "red fail for the most common form of colour blindness, so approved is shown in "
-            "teal; every palette was checked against the light and the dark background "
-            "before use, and a light or dark setting is remembered between visits.",
-            "Corrected a fault that had made every timestamp five and a half hours early: "
-            "the database returns times without a zone, and the browser had been reading "
-            "them as local.",
+            "Split the console into five pages behind the sidebar — overview, review queue, "
+            "signals, model accuracy and the network — because it had grown to eleven "
+            "panels on one scrolling page and the sidebar scrolled to them rather than "
+            "navigating. Each page has its own address, so the back button, a reload and a "
+            "bookmark all return to the page that was open. The figures are still fetched "
+            "once for the whole console, so moving between pages costs no further requests.",
+            "The accuracy page now reports four measures instead of three: precision, "
+            "recall, accuracy and the F1 score. Accuracy is computed from the decisions "
+            "that matched their label, and written beside it is the reason it must be read "
+            "next to the others rather than instead of them — it counts approvals too, so "
+            "on a set that is mostly legitimate it stays high whatever the detector does.",
+            "Ran the evaluation again against all thirty rules, since the figures on display "
+            "had been measured when there were five. Recall rose from 86.5 to 100 per cent: "
+            "the seven frauds that used to be approved are all caught now. Precision moved "
+            "from 97.8 to 96.3 per cent, F1 to 98.1 and accuracy to 99.0.",
+            "Reported what that set cannot answer, rather than presenting the improvement "
+            "alone. The precision figure fell because of one extra false alarm among a "
+            "hundred and fifty-six legitimate payments, which is within measurement error "
+            "and not evidence of anything. With only two false alarms in the set, the false "
+            "alarm rate is too uncertain to carry to a real population: at a realistic fraud "
+            "rate of one in a thousand the same detector's precision lies somewhere between "
+            "about two and twenty-two per cent, and the single number it appears to be "
+            "should not be quoted on its own.",
+            "Added the decision history to the transaction panel, so an override and the "
+            "decision it replaced are visible together, and marked any explanation that was "
+            "written later than the decision it explains with the date it was written.",
         ],
         "plans": [
-            "Show the pending state in the queue as well as on the analysis panel.",
-            "Test the explanation check against real model output rather than fixture text.",
-            "Add the new banking anomalies to the signal breakdown so the chart groups them "
-            "by the rule family they belong to.",
-            "Continue the accessibility pass over the rebuilt screen, keyboard order first.",
+            "Measure on the public dataset, where a hundred and fifty-six legitimate "
+            "payments become tens of thousands and the false alarm rate can be resolved "
+            "well enough to quote.",
+            "Continue the accessibility pass over the five pages, keyboard order first.",
+            "Prepare the console for the final demonstration and check every page against a "
+            "freshly started system rather than one that has been running all day.",
         ],
         "references": [
-            "T. Munzner, “Visualization Analysis and Design,” CRC Press, 2014.",
-            "M. Okabe and K. Ito, “Color universal design: how to make figures and "
-            "presentations that are friendly to colorblind people,” J*FLY, 2008. "
-            "[Online]. Available: jfly.uni-koeln.de",
-            "A. Cairo, “The Truthful Art: Data, Charts, and Maps for "
-            "Communication,” New Riders, 2016.",
-            "ECMA International, “Date-time string format and time zone offsets,” "
-            "ECMAScript Language Specification, 2025. [Online]. Available: ecma-"
-            "international.org",
+            "T. Saito and M. Rehmsmeier, “The precision-recall plot is more informative "
+            "than the ROC plot when evaluating binary classifiers on imbalanced datasets,” "
+            "PLOS ONE, vol. 10, no. 3, 2015.",
+            "E. B. Wilson, “Probable inference, the law of succession, and statistical "
+            "inference,” Journal of the American Statistical Association, vol. 22, no. 158, "
+            "1927.",
+            "L. D. Brown, T. T. Cai and A. DasGupta, “Interval estimation for a binomial "
+            "proportion,” Statistical Science, vol. 16, no. 2, 2001.",
+            "D. M. W. Powers, “Evaluation: from precision, recall and F-measure to ROC, "
+            "informedness, markedness and correlation,” Journal of Machine Learning "
+            "Technologies, vol. 2, no. 1, 2011.",
         ],
     },
 }
