@@ -151,9 +151,9 @@ para("We are grateful to our internal guide, Dr. Deven Gol, Assistant Professor,
      "semester and for review comments that asked for measured results rather than "
      "claims.", after=10)
 para("We thank Mr. Het Shah for the questions he raised at the first project review. "
-     "Several of them — the latency of the language model inside the decision path, the "
+     "Several of them (the latency of the language model inside the decision path, the "
      "behaviour of the dashboard when a data store is unavailable, and which graph pattern "
-     "produces the most false positives — led directly to changes described in this "
+     "produces the most false positives) led directly to changes described in this "
      "report.", after=10)
 para("We thank the Head of the Department of Computer Engineering and the Principal of "
      "DEPSTAR for the laboratory facilities and academic environment, and the faculty of "
@@ -267,8 +267,8 @@ para("Design and build a decision service that accepts one financial transaction
      "risk from 0 to 100 and returns APPROVE, REVIEW or BLOCK, such that:")
 bullets([
     "the decision is returned within a 500 millisecond budget;",
-    "coordinated fraud that no single-transaction rule can see — circular flows, shared "
-    "devices and addresses, proximity to known fraud — contributes to the score;",
+    "coordinated fraud that no single-transaction rule can see (circular flows, shared "
+    "devices and addresses, proximity to known fraud) contributes to the score;",
     "every decision carries a written explanation that is consistent with the signals that "
     "actually fired; and",
     "the detection is measured on labelled data, with its limits stated, rather than "
@@ -584,9 +584,9 @@ para("The 40/30/30 split follows the certainty of each layer's evidence. The rul
      "boundary.")
 section("3.8 Security/Privacy Considerations")
 bullets([
-    "The three routes that change stored state — the decision override, the blacklist toggle "
-    "and fraud-label propagation — and the component status and restart routes require a "
-    "shared key in the X-API-Key header, compared in constant time.",
+    "The three routes that change stored state (the decision override, the blacklist toggle "
+    "and fraud-label propagation), together with the component status and restart routes, "
+    "require a shared key in the X-API-Key header, compared in constant time.",
     "Browser access is restricted to configured origins, and every client is rate-limited.",
     "Every request is validated against a schema; the merchant category must be one of 11 "
     "fixed values and the free-text fields are length-capped, so submitted text cannot be "
