@@ -156,17 +156,15 @@ REPORTS = {
             "written later than the decision it explains with the date it was written.",
         ],
         "references": [
-            "T. Saito and M. Rehmsmeier, “The precision-recall plot is more informative "
-            "than the ROC plot when evaluating binary classifiers on imbalanced datasets,” "
-            "PLOS ONE, vol. 10, no. 3, 2015.",
+            "J. Davis and M. Goadrich, “The relationship between precision-recall and ROC "
+            "curves,” Proc. 23rd International Conference on Machine Learning (ICML), 2006.",
             "E. B. Wilson, “Probable inference, the law of succession, and statistical "
             "inference,” Journal of the American Statistical Association, vol. 22, no. 158, "
             "1927.",
             "L. D. Brown, T. T. Cai and A. DasGupta, “Interval estimation for a binomial "
             "proportion,” Statistical Science, vol. 16, no. 2, 2001.",
-            "D. M. W. Powers, “Evaluation: from precision, recall and F-measure to ROC, "
-            "informedness, markedness and correlation,” Journal of Machine Learning "
-            "Technologies, vol. 2, no. 1, 2011.",
+            "F. Provost and T. Fawcett, “Robust classification for imprecise "
+            "environments,” Machine Learning, vol. 42, no. 3, 2001.",
         ],
     },
 }
