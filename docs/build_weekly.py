@@ -30,7 +30,11 @@ SOFFICE = "/Applications/LibreOffice.app/Contents/MacOS/soffice"
 
 WEEK = 12
 FROM_DATE, TO_DATE = "20-09-2026", "25-09-2026"   # Sunday to Friday
-NEXT_FROM, NEXT_TO = "27-09-2026", "02-10-2026"   # Sunday to Friday
+# The last week of the semester: there is no week after it, so the plans
+# section and its heading are removed from the document rather than left
+# holding a date that will never come.
+FINAL_WEEK = True
+NEXT_FROM, NEXT_TO = None, None
 
 REPORTS = {
     "24DCE052": {
@@ -75,17 +79,6 @@ REPORTS = {
             "moment of the decision. All eight hundred and ninety-six completed, none "
             "failed.",
         ],
-        "plans": [
-            "Fill the payment history from the stored transactions, so an account is not "
-            "treated as new the first time it pays after a restart. Carried from last week "
-            "and still open.",
-            "Run the public-dataset replay once the file is downloaded and report each "
-            "rule's true and false alarms on it. Carried from last week; the replay is "
-            "written but the dataset has not been fetched.",
-            "Submit the report and the requirement specification with the member "
-            "responsible named on each chapter, and rehearse the demonstration from a "
-            "cleanly started system.",
-        ],
         "references": [
             "J. H. Saltzer and M. D. Schroeder, “The protection of information in computer "
             "systems,” Proceedings of the IEEE, vol. 63, no. 9, 1975.",
@@ -115,20 +108,10 @@ REPORTS = {
             "the whole layer's figure and not the cycle check's own: twenty-one came from "
             "the cycle check and the rest from the receiver's closeness to an account "
             "already known to be fraudulent.",
-            "The correction to the cycle query, designed last week, has not been written. "
-            "It is left for the coming week deliberately rather than rushed into the week "
-            "the measurements were taken, because changing the query and re-measuring in "
-            "the same week would leave no way to tell which figure belongs to which "
-            "version.",
-        ],
-        "plans": [
-            "Write the correction so the query also matches the transfer that closes a "
-            "ring, and measure the cycle check on its own afterwards rather than reporting "
-            "the layer's total.",
-            "Load the public dataset's accounts and transfers into the network, so the "
-            "cycle and proximity checks are tested on payments we did not generate.",
-            "Prepare the graph layer's part of the final demonstration, including the "
-            "account whose neighbourhood shows a ring most clearly.",
+            "The correction to the cycle query, designed last week, is still not written. "
+            "It was held back deliberately instead of being rushed into the same week the "
+            "measurements were taken: changing the query and re-measuring together would "
+            "leave no way to tell which figure belongs to which version of it.",
         ],
         "references": [
             "B. Shneiderman, “The eyes have it: a task by data type taxonomy for "
@@ -171,14 +154,6 @@ REPORTS = {
             "Added the decision history to the transaction panel, so an override and the "
             "decision it replaced are visible together, and marked any explanation that was "
             "written later than the decision it explains with the date it was written.",
-        ],
-        "plans": [
-            "Measure on the public dataset, where a hundred and fifty-six legitimate "
-            "payments become tens of thousands and the false alarm rate can be resolved "
-            "well enough to quote.",
-            "Continue the accessibility pass over the five pages, keyboard order first.",
-            "Prepare the console for the final demonstration and check every page against a "
-            "freshly started system rather than one that has been running all day.",
         ],
         "references": [
             "T. Saito and M. Rehmsmeier, “The precision-recall plot is more informative "
@@ -372,9 +347,10 @@ def build_from_scratch(student_id, spec):
 
     _line(doc, f"Work done from Date: {FROM_DATE} to {TO_DATE}", 12, True, after=8, space_before=14)
     _boxed(doc, spec["work"])
-    _line(doc, f"Plans for next week: Date: {NEXT_FROM} to {NEXT_TO}", 12, True,
-          after=8, space_before=14)
-    _boxed(doc, spec["plans"])
+    if not FINAL_WEEK:
+        _line(doc, f"Plans for next week: Date: {NEXT_FROM} to {NEXT_TO}", 12, True,
+              after=8, space_before=14)
+        _boxed(doc, spec["plans"])
 
     _line(doc, "References:", 12, True, after=6, space_before=14)
     for i, reference in enumerate(spec["references"], 1):
@@ -418,12 +394,19 @@ def build(student_id, spec):
         if p.text.startswith("Work done from Date:"):
             _set_text(p, f"Work done from Date: {FROM_DATE} to {TO_DATE}")
         elif p.text.startswith("Plans for next week:"):
-            _set_text(p, f"Plans for next week: Date: {NEXT_FROM} to {NEXT_TO}")
+            if FINAL_WEEK:
+                p._element.getparent().remove(p._element)
+            else:
+                _set_text(p, f"Plans for next week: Date: {NEXT_FROM} to {NEXT_TO}")
 
     _rewrite(doc.tables[2].cell(0, 0).paragraphs,
              [f"•  {line}" for line in spec["work"]])
-    _rewrite(doc.tables[3].cell(0, 0).paragraphs,
-             [f"•  {line}" for line in spec["plans"]])
+    if FINAL_WEEK:
+        plans_table = doc.tables[3]._tbl
+        plans_table.getparent().remove(plans_table)
+    else:
+        _rewrite(doc.tables[3].cell(0, 0).paragraphs,
+                 [f"•  {line}" for line in spec["plans"]])
     _rewrite(_reference_paragraphs(doc),
              [f"{i}.  {r}" for i, r in enumerate(spec["references"], 1)])
 
