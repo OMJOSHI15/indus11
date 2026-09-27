@@ -252,12 +252,12 @@ para("Card and account-to-account payments are authorised in the time it takes a
      "decide inside that window whether to let the payment through, hold it for a person "
      "to look at, or refuse it. Getting that decision wrong in one direction loses money; "
      "getting it wrong in the other blocks a legitimate customer.")
-para("Much of the fraud that matters is also not visible in a single payment. A money-mule "
-     "ring moves funds around a loop of accounts, keeping a small fee at each hop, so that "
-     "each individual transfer looks ordinary. Synthetic identities show up as several "
-     "unrelated-looking accounts operated from one device or one network address. Detecting "
-     "these requires looking at relationships between accounts, not only at the payment in "
-     "front of the system.")
+para("Much of the fraud that matters is invisible in a single payment. A money-mule ring "
+     "moves funds around a loop of accounts and keeps a small fee at each hop, which leaves "
+     "every individual transfer looking ordinary. Synthetic identities surface as a handful "
+     "of accounts that appear unrelated until you notice they share a device or a network "
+     "address. Catching either one means looking at how accounts relate to each other, and "
+     "not only at the payment currently in front of the system.")
 para("In India the Reserve Bank's 2024 Master Directions on fraud risk management require "
      "regulated entities to maintain frameworks for the prevention, early detection and "
      "timely reporting of fraud [1]. Detection that a bank cannot explain is hard to act on "
@@ -275,15 +275,19 @@ bullets([
     "asserted.",
 ])
 section("1.3 Motivation")
-para("Each common approach to transaction fraud is strong at one of these requirements and "
-     "weak at another. Hand-written rules are fast and auditable but examine one transaction "
-     "at a time. Supervised models learn subtle patterns but need large labelled datasets and "
-     "report their reasoning as feature weights or fixed reason codes. Large language models "
-     "write fluent explanations, but in this project a local model took 13 to 14 seconds per "
-     "transaction and, at its default settings, gave the same transaction five different "
-     "scores in five runs. The motivation for Indus11 is to give each technique the part of "
-     "the problem it is suited to: rules and graph queries decide, and the language model "
-     "explains, after the decision, using the evidence the other two layers produced.")
+para("Every common approach to transaction fraud satisfies some of these requirements at "
+     "the cost of others. Hand-written rules are fast and auditable, and they look at one "
+     "transaction at a time, which is exactly the blind spot a mule ring exploits. A "
+     "supervised model learns patterns no rule author would think to write down, but it "
+     "wants a large labelled dataset that a student project does not have, and what it "
+     "offers by way of reasoning is a list of feature weights or a fixed reason code. "
+     "Language models write the fluent explanation the other two cannot. The cost showed up "
+     "as soon as we measured it: a local model took 13 to 14 seconds on a single "
+     "transaction, and at its default settings it scored the same transaction five "
+     "different ways in five runs.")
+para("Indus11 therefore gives each technique only the part of the problem it is suited to. "
+     "Rules and graph queries decide. The language model explains afterwards, working from "
+     "the evidence the other two layers have already produced.")
 section("1.4 Objectives")
 bullets([
     "Score each transaction from 0 to 100 as the sum of a rule layer (0–40), a graph layer "
@@ -301,12 +305,13 @@ bullets([
     "a realistic fraud rate.",
 ])
 section("1.5 Scope")
-para("Indus11 accepts one transaction over a REST interface, analyses it with three detection "
-     "layers and returns a composite score, a decision and an explanation. A web dashboard "
-     "lets an analyst view statistics, inspect a flagged transaction and override a review "
-     "decision. The system does not move money or settle payments, is not a core banking "
-     "system, performs no regulatory reporting and processes synthetic data only. Training a "
-     "supervised model is outside the scope of this semester and is listed as future work.")
+para("Indus11 takes one transaction over a REST interface, analyses it with three detection "
+     "layers, and returns a composite score, a decision and an explanation. An analyst works "
+     "from a web dashboard, where the statistics, the flagged transactions and the override "
+     "control all live. What the system does not do matters as much for a reader judging it: "
+     "it moves no money and settles no payments, it is not a core banking system, and it "
+     "files nothing with a regulator. All the data it has processed is synthetic. Training a "
+     "supervised model was out of reach in one semester and is listed as future work.")
 section("1.6 Research/Design Questions")
 table("Design questions and where they are answered",
       ["ID", "Question", "Answered in"],
@@ -350,34 +355,34 @@ para("Chapter 2 reviews existing approaches, technologies and commercial systems
 chapter("Literature Review")
 section("2.1 Existing Approaches")
 sub("Rule-based systems")
-para("The oldest and still most widespread form of transaction screening is a set of "
-     "explicit rules: a blacklist, velocity limits, amount thresholds and merchant-category "
-     "restrictions. Rules are fast, deterministic and easy to audit, but each rule looks at "
-     "one transaction and its account's history, so coordinated activity across accounts "
-     "passes unnoticed.")
+para("The oldest form of transaction screening is still the most widespread: a set of "
+     "explicit rules covering a blacklist, velocity limits, amount thresholds and "
+     "merchant-category restrictions. A rule runs fast, returns the same answer every time "
+     "and can be read by an auditor. What it cannot do is look past the transaction in "
+     "front of it and that account's own history, so activity coordinated across several "
+     "accounts passes unnoticed.")
 sub("Supervised machine learning")
-para("Supervised models learn fraud patterns from labelled historical transactions. "
-     "Vijayanand and Smrithy trained a voting ensemble on the synthetic PaySim mobile-money "
-     "dataset of 6,362,620 records and used SHAP values to explain individual predictions "
-     "[4]. Such models depend on large labelled datasets and, when fraud is rare, on careful "
-     "treatment of class imbalance; their explanations take the form of feature "
-     "attributions.")
+para("Supervised models learn fraud patterns from labelled historical transactions. One "
+     "such study, by Vijayanand and Smrithy, trained a voting ensemble on the synthetic "
+     "PaySim mobile-money dataset of 6,362,620 records and used SHAP values to explain "
+     "individual predictions [4]. Work of this kind depends on a large labelled dataset, "
+     "and where fraud is rare it depends further on careful treatment of class imbalance. "
+     "The explanation it produces is a feature attribution.")
 sub("Network and graph-based detection")
-para("Van Vlasselaer and colleagues showed with APATE that combining features derived from the "
-     "network of cardholders and merchants with features of the transaction itself gave "
-     "their best models, with AUC above 0.98 on more than three million card transactions "
-     "[2]. Lebichot and "
-     "colleagues extended that system with semi-supervised propagation of fraud labels "
-     "across the transaction graph, multiplying precision among the top 100 alerts by three "
-     "on a real e-commerce dataset [3]. These results are the basis for this project's graph "
-     "layer and its fraud-label propagation.")
+para("APATE, the system built by Van Vlasselaer and colleagues, drew features from the "
+     "network of cardholders and merchants as well as from the transaction itself; those "
+     "combined models were their strongest, reaching an AUC above 0.98 on more than three "
+     "million card transactions [2]. A later extension by Lebichot and colleagues propagated "
+     "fraud labels across the transaction graph semi-supervised, which multiplied precision "
+     "among the top 100 alerts by three on a real e-commerce dataset [3]. Both results are "
+     "the basis for this project's graph layer and its fraud-label propagation.")
 sub("Graph neural networks")
-para("More recent work learns directly on the graph. Two reviews survey graph neural "
-     "networks for financial fraud detection and report that they capture relational "
-     "patterns that tabular models miss [5], [6]. Dou and colleagues showed that fraudsters "
-     "camouflage themselves by connecting to legitimate nodes and proposed CARE-GNN to "
-     "resist it [7]; Weber and colleagues applied graph convolutional networks to "
-     "anti-money-laundering on Bitcoin transactions [8].")
+para("More recent work learns directly on the graph. Two reviews of graph neural networks "
+     "for financial fraud detection report that they capture relational patterns tabular "
+     "models miss [5], [6]. There is a catch, documented by Dou and colleagues: fraudsters "
+     "camouflage themselves by connecting to legitimate nodes, and CARE-GNN was proposed to "
+     "resist exactly that [7]. On Bitcoin transactions, Weber and colleagues put graph "
+     "convolutional networks to work on anti-money-laundering [8].")
 sub("Language models and retrieval")
 para("Retrieval-augmented generation supplies a language model with documents retrieved "
      "from a knowledge base as context for its answer [9]. A 2024 survey of large language "
@@ -444,10 +449,11 @@ bullets([
     "A language model measured at 13–14 seconds cannot sit inside an authorisation decision.",
 ])
 section("2.6 Positioning of Proposed Work")
-para("Indus11 does not attempt to compete with consortium-trained models on accuracy. Its "
-     "position is narrower: deterministic rules and graph queries that need no training data "
-     "make the decision within the latency budget, and a local language model writes the "
-     "explanation afterwards from the flags those layers produced, with a guard that "
+para("Indus11 makes no attempt to compete with consortium-trained models on accuracy. It "
+     "occupies a narrower position. Deterministic rules and graph queries, neither of which "
+     "needs training data, make the decision inside the latency budget; a local language "
+     "model then writes the explanation from the flags those layers produced, behind a "
+     "guard that "
      "withholds prose that ignores them. The evaluation is reported with its synthetic-data "
      "caveat and a prevalence-adjusted precision rather than the headline figure alone.")
 
@@ -455,21 +461,23 @@ para("Indus11 does not attempt to compete with consortium-trained models on accu
 chapter("Proposed Methodology")
 section("3.1 System Overview")
 para("A payment system submits a transaction to POST /api/v1/transactions/analyze. The "
-     "service loads the sender's and receiver's profiles, scores the transaction with the "
-     "rule engine and the graph analyzer concurrently, combines their scores into a "
-     "provisional decision, stores it and returns it. A background task then asks the "
-     "retrieval-augmented language model for a score and an explanation, recomputes the "
-     "composite score and updates the stored record. Analysts use a dashboard to watch the "
-     "decision mix, inspect flagged transactions and override a decision under review. Figure "
-     "3.1 shows the actors and the services each uses.")
+     "service loads the sender's and receiver's profiles, then runs the rule engine and the "
+     "graph analyzer against the transaction at the same time. Their two scores become a "
+     "provisional decision, which is stored and returned to the caller. Only then does a "
+     "background task go to the retrieval-augmented language model for a score and an "
+     "explanation, recompute the composite and update the stored record. The analyst's view "
+     "of all this is a dashboard: the decision mix, the flagged transactions, and the "
+     "control that overrides a decision under review. Figure 3.1 shows the actors and the "
+     "services each of them uses.")
 figure("final-usecase.png", "Use case diagram")
 section("3.2 System Architecture")
-para("The system is organised as five layers (Figure 3.2). Layer 1, the FastAPI gateway, "
-     "validates the request and loads profiles from Redis, falling back to MongoDB. Layers 2 "
-     "and 3 score the transaction in parallel. Layer 5, the decision engine, adds the scores "
-     "and maps the total to a decision. Layer 4, the retrieval-augmented pipeline, runs after "
-     "the response has been sent. It was inside the request path until the first project "
-     "review, where its latency was identified as incompatible with a payment decision.")
+para("Five layers make up the system (Figure 3.2). The FastAPI gateway is Layer 1, which "
+     "validates the request and loads profiles from Redis, falling back to MongoDB when the "
+     "cache misses. Scoring happens in parallel across Layers 2 and 3. Their totals go to "
+     "Layer 5, the decision engine, which adds them up and maps the result to a decision. "
+     "That leaves Layer 4, the retrieval-augmented pipeline, which runs once the response "
+     "has already been sent. It sat inside the request path until the first project review, "
+     "where its latency was judged incompatible with a payment decision.")
 figure("01-architecture.png", "System architecture — five-layer pipeline")
 section("3.3 System Components")
 table("System components",
@@ -637,17 +645,18 @@ table("Software used and versions",
       size=10)
 section("4.3 Development Environment")
 para("Development took place on macOS 26.5 on an Apple M4 machine with no graphics "
-     "processor. The backend runs from a Python 3.12 virtual environment, and MongoDB, Neo4j "
-     "and Redis run as Homebrew services. The script scripts/run_local.sh starts the databases, "
-     "the API and the dashboard with one command, and clears a stale Neo4j process file that "
-     "had twice stopped the database from starting. The same stack is also defined for Docker "
-     "Compose. Source code is kept in Git on GitHub, where a continuous-integration workflow "
-     "runs the test suite on every push. Diagrams are drawn with PlantUML and Graphviz, and "
-     "this report is generated from Python with python-docx and converted with LibreOffice.")
+     "processor. The backend runs from a Python 3.12 virtual environment, with MongoDB, "
+     "Neo4j and Redis installed as Homebrew services. One command, scripts/run_local.sh, "
+     "brings up the databases, the API and the dashboard together; it also clears a stale "
+     "Neo4j process file that had twice stopped the database from starting. Docker Compose "
+     "defines the same stack for anyone who prefers it. The source lives in Git on GitHub, "
+     "where a continuous-integration workflow runs the test suite on every push. PlantUML "
+     "and Graphviz draw the diagrams. This report is itself generated from Python with "
+     "python-docx and converted with LibreOffice.")
 section("4.4 Dataset/Input Data")
-para("No real customer or payment data is used. Three synthetic sources supply the system and "
-     "its evaluation, all generated deterministically so that every team member works with the "
-     "same data (Table 4.3).")
+para("No real customer or payment data is used anywhere in this project. Everything the "
+     "system and its evaluation consume comes from three synthetic sources, each generated "
+     "deterministically so that every team member is working with the same data (Table 4.3).")
 table("Synthetic data sources",
       ["Source", "Contents", "Generator"],
       [["Transaction graph", "500 accounts; 3 mule rings of 4, 5 and 3 accounts, each cycling "
@@ -816,18 +825,20 @@ code_block("""def _explanation_matches_flags(explanation, all_flags):
         if len(word) >= 4 and word not in GENERIC_FLAG_WORDS
     )""")
 section("4.8 Prototype/User Interface")
-para("The analyst dashboard is a single React page served by Vite (Figure 4.2), laid out as an "
-     "analytics console with a light and a dark theme. A row of six figures gives the "
-     "transactions scored, the number flagged and blocked, the rupee value flagged, the average "
-     "risk score and the count of layer failures. The charts below it are computed over every "
-     "stored transaction by one aggregation route, GET /api/v1/stats/overview: decisions per "
-     "active day, the decision mix, the Neo4j entity counts, decisions within each merchant "
-     "category, how often each flag fired on flagged transactions, the score distribution, the "
-     "flag rate by amount band, and precision, recall and F1 from the latest evaluation. Chart "
-     "colours were checked for colour-blind separation; green and red failed, so an approval "
-     "is shown in teal. The Analyze transaction button opens a side panel that shows the "
-     "rule-and-graph decision immediately, marks the language-model layer as scoring, and "
-     "replaces it with the final score and explanation when the background task finishes.")
+para("The analyst dashboard is a React page served by Vite (Figure 4.2), laid out as an "
+     "analytics console with a light and a dark theme. Six figures run across the top: "
+     "transactions scored, the number flagged, the number blocked, the rupee value flagged, "
+     "the average risk score and the count of layer failures.")
+para("Below them sit the charts, all of them computed over every stored transaction by a "
+     "single aggregation route, GET /api/v1/stats/overview. They cover decisions per active "
+     "day and the decision mix, the Neo4j entity counts, decisions within each merchant "
+     "category, how often each flag fired on a flagged transaction, the distribution of "
+     "scores, the flag rate by amount band, and the precision, recall and F1 of the latest "
+     "evaluation. Their colours were checked for colour-blind separation rather than chosen "
+     "by eye: green and red failed that check, so an approval is drawn in teal instead.")
+para("The Analyze transaction button opens a side panel. It shows the rule-and-graph "
+     "decision straight away, marks the language-model layer as still scoring, and swaps in "
+     "the final score and explanation once the background task finishes.")
 figure(SHOT, "Dashboard — key figures, decisions by day, decision mix, category and signal breakdowns")
 para("The review queue (Figure 4.3) lists recent REVIEW and BLOCK decisions with filters, "
      "search and sorting, and shows the signals that fired as labels, with a failed layer "
@@ -1132,20 +1143,22 @@ section("7.1 Security")
 para("The controls in place are those in Section 3.8: a shared key on the component routes and the three routes that "
      "change state, compared in constant time; origin restriction; per-client rate limits; "
      "schema validation with a fixed merchant vocabulary and length caps that limit prompt "
-     "injection; and parameterised database queries. Four gaps remain. There is no per-user "
-     "authentication, so every holder of the key has full override rights and actions are "
-     "not attributed to a person. Traffic is not encrypted in the local configuration. The "
-     "example configuration ships default database passwords. And the language model's "
-     "output is validated only for referring to a flag, not for accuracy.")
+     "injection; and parameterised database queries. Four gaps remain. The first is that "
+     "there is no per-user authentication, so everyone holding the key has full override "
+     "rights and no action can be attributed to a person. Traffic in the local "
+     "configuration is unencrypted, and the example configuration still ships default "
+     "database passwords. Finally, the language model's output is validated only for "
+     "referring to a flag; whether what it says about that flag is accurate goes unchecked.")
 section("7.2 Privacy")
-para("The project processes no real personal data. A deployment on real transactions would "
-     "process digital personal data within the meaning of India's Digital Personal Data "
-     "Protection Act, 2023 [19], and would need to establish its lawful basis, limit the data "
-     "it holds to what the decision needs, and secure it. Two design choices help: the "
-     "language model runs locally by default, so transaction details are not sent to a "
-     "third-party service, and no payment instrument data is stored. Two would need "
-     "attention: records are kept indefinitely, and the optional external model provider "
-     "would send transaction details off the premises.")
+para("The project processes no real personal data. Running it on real transactions would "
+     "mean processing digital personal data within the meaning of India's Digital Personal "
+     "Data Protection Act, 2023 [19], which brings obligations: establish a lawful basis, "
+     "hold only what the decision needs, and secure what is held. Two of the design choices "
+     "already point that way. The language model runs locally by default, so transaction "
+     "details never reach a third-party service, and no payment instrument data is stored "
+     "at all. Two others would have to be revisited, since records are currently kept "
+     "indefinitely and the optional external model provider would send transaction details "
+     "off the premises.")
 section("7.3 Ethics")
 para("A fraud decision affects a customer who usually cannot see why their payment was "
      "stopped. The design keeps a person in the loop: no single layer can block, nothing was "
