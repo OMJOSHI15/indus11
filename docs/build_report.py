@@ -41,6 +41,7 @@ with open(os.path.join(HERE, "eval-layer-scores.json")) as f:
 with open(os.path.join(ASSETS, "ablation.json")) as f:
     ABLATION = json.load(f)
 CONF = EVAL["metrics"]["confusion"]
+RULE_ONLY_TP = next(a["tp"] for a in ABLATION if a["layers"] == "Rule")
 SUGGESTED = EVAL["suggested_thresholds"]
 
 
@@ -203,12 +204,14 @@ for text, stale in [
     (". ", False),
     (f"Graph analysis successfully identified all {GRAPH['graph_flagged']} transactions "
      f"belonging to the 3 planted mule rings", False),
-    (f", demonstrating the effectiveness of relationship-based fraud detection. During "
-     f"evaluation, {CONF['BLOCK']['fraud']} transactions reached the predefined BLOCK "
-     f"threshold and no legitimate transaction did. Overall, the results "
-     f"demonstrate that integrating rule-based analysis, graph analytics, and "
-     f"RAG-based reasoning improves fraud detection while maintaining explainability "
-     f"and supporting financial investigators in making informed decisions.", False)]:
+    (f", none of which the rule engine flagged on its own. During evaluation, "
+     f"{CONF['BLOCK']['fraud']} transactions reached the predefined BLOCK threshold and no "
+     f"legitimate transaction did. The three layers are complementary rather than "
+     f"redundant: the rule engine alone flags {RULE_ONLY_TP} of the {COUNTS['fraud']} "
+     f"fraudulent transactions, and all three together flag every one. The test set is "
+     f"25% fraud against roughly one in a thousand in a live payment feed, so at that rate "
+     f"the same detector's precision would fall to about "
+     f"{REALISTIC['precision']*100:.0f}%.", False)]:
     r = _abs.add_run(text)
     r.font.size, r.font.name = Pt(BODY), FONT
     if stale:
