@@ -987,8 +987,9 @@ para("The first column is the pipeline as it stood at Review 1, with the languag
      "describes the system as submitted.")
 para("Published results are not directly comparable, because they are measured on different "
      "data. APATE was evaluated on real card transactions [2], and the ensemble of "
-     "Vijayanand and Smrithy reported 99.904 per cent accuracy on PaySim [4], where fraud is "
-     "about 0.13 per cent of records and accuracy is dominated by the legitimate class. "
+     "Vijayanand and Smrithy on PaySim [4], where fraud is about 0.13 per cent of records, "
+     "so an accuracy figure on that data is dominated by the legitimate class and says "
+     "little about how much fraud a detector catches. "
      "Comparing Indus11 with them would require running it on the same dataset, which is "
      "listed as future work.")
 section("5.5 Component/Ablation Analysis")
