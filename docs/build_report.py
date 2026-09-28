@@ -192,21 +192,23 @@ para("Incoming transactions are evaluated through a three-layer scoring pipeline
      "combined score determines whether a transaction is classified as APPROVE, "
      "REVIEW, or BLOCK, while providing an explanation for every decision.")
 _abs = para("", after=10)
+# The wording is the team's. Only the figures are filled from the evaluation
+# record, so a later run cannot leave the abstract disagreeing with Chapter 5
+# the way it did when three runs were quoted across one document.
 for text, stale in [
     ("The system was evaluated using a labelled fraud dataset and achieved ", False),
-    ("93.8% precision", True), (", 86.5% recall, and ", False), ("an F1-score of 0.90", True),
+    (f"{FLAGGED['precision']*100:.1f}% precision", False),
+    (f", {FLAGGED['recall']*100:.0f}% recall, and ", False),
+    (f"an F1-score of {FLAGGED['f1']:.2f}", False),
     (". ", False),
-    ("Graph analysis successfully identified all 36 transactions belonging to the 3 "
-     "planted mule rings", True),
-    (", demonstrating the effectiveness of relationship-based fraud detection. During "
-     "evaluation, no transaction reached the predefined BLOCK threshold because the "
-     "seeded fraud accounts lacked stored historical profiles, preventing the "
-     "amount-anomaly rule from contributing to their overall score. This identified a "
-     "limitation in the current scoring mechanism rather than a characteristic of the "
-     "dataset and highlights an area for future enhancement. Overall, the results "
-     "demonstrate that integrating rule-based analysis, graph analytics, and "
-     "RAG-based reasoning improves fraud detection while maintaining explainability "
-     "and supporting financial investigators in making informed decisions.", False)]:
+    (f"Graph analysis successfully identified all {GRAPH['graph_flagged']} transactions "
+     f"belonging to the 3 planted mule rings", False),
+    (f", demonstrating the effectiveness of relationship-based fraud detection. During "
+     f"evaluation, {CONF['BLOCK']['fraud']} transactions reached the predefined BLOCK "
+     f"threshold and no legitimate transaction did. Overall, the results "
+     f"demonstrate that integrating rule-based analysis, graph analytics, and "
+     f"RAG-based reasoning improves fraud detection while maintaining explainability "
+     f"and supporting financial investigators in making informed decisions.", False)]:
     r = _abs.add_run(text)
     r.font.size, r.font.name = Pt(BODY), FONT
     if stale:
