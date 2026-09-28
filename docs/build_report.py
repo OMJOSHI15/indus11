@@ -1295,8 +1295,9 @@ for i, r in enumerate([
     "card fraud detection system,” in Complex Networks & Their Applications V, Springer, 2017, "
     "pp. 721–733. [Online]. Available: https://link.springer.com/chapter/10.1007/978-3-319-50901-3_57",
     "D. Vijayanand and G. S. Smrithy, “Explainable AI-enhanced ensemble learning for financial "
-    "fraud detection in mobile money transactions,” Intelligent Decision Technologies, 2025. "
-    "[Online]. Available: https://doi.org/10.1177/18724981241289751",
+    "fraud detection in mobile money transactions,” Intelligent Decision Technologies, "
+    "vol. 19, no. 1, pp. 52–67, 2025. [Online]. Available: "
+    "https://doi.org/10.1177/18724981241289751",
     "S. Motie and B. Raahemi, “Financial fraud detection using graph neural networks: A "
     "systematic review,” Expert Systems with Applications, vol. 240, art. 122156, 2024. "
     "[Online]. Available: https://doi.org/10.1016/j.eswa.2023.122156",
