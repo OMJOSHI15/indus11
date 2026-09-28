@@ -375,7 +375,8 @@ para("APATE, the system built by Van Vlasselaer and colleagues, drew features fr
      "million card transactions [2]. A later extension by Lebichot and colleagues propagated "
      "fraud labels across the transaction graph semi-supervised, which multiplied precision "
      "among the top 100 alerts by three on a real e-commerce dataset [3]. Both results are "
-     "the basis for this project's graph layer and its fraud-label propagation.")
+     "the basis for this project's graph layer and its fraud-label propagation, and the "
+     "patterns themselves follow the shapes Neo4j documents for fraud analytics [16].")
 sub("Graph neural networks")
 para("More recent work learns directly on the graph. Two reviews of graph neural networks "
      "for financial fraud detection report that they capture relational patterns tabular "
@@ -643,6 +644,12 @@ table("Software used and versions",
        ["Node.js", "26.5.0", "Dashboard build"],
        ["pytest / httpx", "8.2.1 / 0.27.0", "Tests and evaluation client"]],
       size=10)
+para("Each of these is used as its own documentation describes. The API follows the FastAPI "
+     "conventions for dependency injection and background tasks [20]; the graph queries are "
+     "written against the Cypher manual [21]; the vector store follows the ChromaDB "
+     "collection and query interface [22]; and the local model is served by Ollama [23] "
+     "running Meta's Llama 3 [24]. No component is used in a way its documentation does not "
+     "describe, which matters for a project that has to be reproducible on another machine.")
 section("4.3 Development Environment")
 para("Development took place on macOS 26.5 on an Apple M4 machine with no graphics "
      "processor. The backend runs from a Python 3.12 virtual environment, with MongoDB, "
@@ -881,17 +888,19 @@ table("Experimental setup",
        ["Procedure", "Replayed through the live API, 4 at a time, then waited for every "
                      "language-model result"],
        ["Thresholds", "REVIEW 40, BLOCK 70"],
-       ["Run date", "31 August 2026"]],
+       ["Run date", EVAL["generated_at"][:10]]],
       widths=[1.4, 4.6])
-para("The evaluation harness posts every labelled transaction to the analyse endpoint and "
-     "waits for the background layer to finish before recording the result; an earlier "
-     "version recorded the immediate response and under-reported recall as 0.462 instead of "
-     "0.865. The 31 August run was recovered from the stored records after the harness hit "
-     "its own time limit while the server was still scoring. The stored records hold the "
-     "composite score, the decision and the triggered flags, so the headline metrics are "
-     "measured directly. The per-layer split used in Section 5.5 is reconstructed from the "
-     "recorded flags with the fixed layer weights; for every one of the 208 transactions the "
-     "language-model score derived this way falls within its 0–30 range.")
+para("The harness posts every labelled transaction to the analyse endpoint and waits for "
+     "the background layer to finish before recording a result. An earlier version recorded "
+     "the immediate response instead, which omitted the language model from every "
+     "transaction and under-reported recall badly; that fault is described in Section 6.6.")
+para("The figures throughout this chapter come from a single run, made after all thirty "
+     "rules were in place. An earlier run measured the pipeline when it had five, and its "
+     "numbers are quoted only where a before-and-after comparison says so. The stored "
+     "records hold the composite score, the decision, the triggered flags and the score each "
+     "layer contributed, so both the headline metrics and the per-layer analysis in Section "
+     "5.5 are read from what the pipeline awarded rather than reconstructed from flag "
+     "weights.")
 section("5.2 Evaluation Metrics")
 table("Metrics",
       ["Metric", "Definition"],
@@ -919,11 +928,12 @@ table("Headline results",
        ["Precision at 0.1% prevalence", f"{REALISTIC['precision']:.3f}"],
        ["Ring transactions flagged by the graph layer",
         f"{GRAPH['graph_flagged']} of {GRAPH['ring_transactions']}"],
-       ["BLOCK decisions", "0 (highest score 68)"]],
+       ["BLOCK decisions", f"{CONF['BLOCK']['fraud'] + CONF['BLOCK']['legit']}"]],
       widths=[3.2, 1.8])
-para("The composite scores of the two classes barely overlap (Figure 5.1). Every legitimate "
-     "transaction but one scored below 40, most below 10; the fraudulent transactions "
-     "cluster between 40 and 69, with seven below the review threshold.")
+para(f"The composite scores of the two classes barely overlap (Figure 5.1). All but "
+     f"{CONF['REVIEW']['legit'] + CONF['BLOCK']['legit']} legitimate transactions scored "
+     f"below 40, most of them below 10, while every fraudulent transaction reached 40 or "
+     f"above and {CONF['BLOCK']['fraud']} of them reached the block threshold of 70.")
 figure(os.path.join(ASSETS, "score-distribution.png"), "Composite score by true label")
 _by = lambda p: [r for r in LAYERS if r["pattern"] == p]
 table("Results by planted pattern",
@@ -954,15 +964,22 @@ table("Rule-only baseline against the full pipeline",
        ["Full pipeline", f"{FLAGGED['precision']:.3f}", f"{FLAGGED['recall']:.3f}",
         f"{FLAGGED['f1']:.3f}"]],
       widths=[2.0, 1.2, 1.2, 1.2])
-table("Pipeline before and after the Review 1 changes",
-      ["Measure", "Before", "After"],
-      [["Precision", "0.938", f"{FLAGGED['precision']:.3f}"],
-       ["Recall", "0.865", f"{FLAGGED['recall']:.3f}"],
-       ["F1", "0.900", f"{FLAGGED['f1']:.3f}"],
-       ["Legitimate transactions flagged", "3", "1"],
-       ["Ring transactions flagged", "35 of 36", "36 of 36"],
-       ["Mean response time", "14,046 ms", "124 ms"]],
-      widths=[2.6, 1.3, 1.3])
+table("The pipeline at three points in its development",
+      ["Measure", "Before Review 1", "Five rules", "Thirty rules"],
+      [["Precision", "0.938", "0.978", f"{FLAGGED['precision']:.3f}"],
+       ["Recall", "0.865", "0.865", f"{FLAGGED['recall']:.3f}"],
+       ["F1", "0.900", "0.918", f"{FLAGGED['f1']:.3f}"],
+       ["Legitimate transactions flagged", "3", "1",
+        f"{CONF['REVIEW']['legit'] + CONF['BLOCK']['legit']}"],
+       ["Ring transactions flagged", "35 of 36", "36 of 36",
+        f"{GRAPH['graph_flagged']} of {GRAPH['ring_transactions']}"],
+       ["Mean response time", "14,046 ms", "124 ms", "124 ms"]],
+      widths=[2.2, 1.2, 1.0, 1.1])
+para("The first column is the pipeline as it stood at Review 1, with the language model "
+     "inside the decision path. The second is the same five-rule pipeline after the "
+     "circular-flow query was given its time window. The third is the pipeline measured in "
+     "this chapter, with the twenty-five banking anomaly rules added. Only the third column "
+     "describes the system as submitted.")
 para("Published results are not directly comparable, because they are measured on different "
      "data. APATE was evaluated on real card transactions [2], and the ensemble of "
      "Vijayanand and Smrithy reported 99.904 per cent accuracy on PaySim [4], where fraud is "
@@ -970,11 +987,14 @@ para("Published results are not directly comparable, because they are measured o
      "Comparing Indus11 with them would require running it on the same dataset, which is "
      "listed as future work.")
 section("5.5 Component/Ablation Analysis")
-para("Removing layers from the composite score, with the thresholds unchanged, shows what each "
-     "contributes (Table 5.9 and Figure 5.2). No layer on its own flags a fraudulent "
-     "transaction: their budgets of 40, 30 and 30 are at or below the review threshold by "
-     "design. Rules with graph analysis, or graph analysis with the language model, catch "
-     "roughly half of the fraud. All three together are needed for 86.5 per cent recall.")
+para(f"Removing layers from the composite score, with the thresholds unchanged, shows what "
+     f"each contributes (Table 5.9 and Figure 5.2). The rule engine alone reaches the review "
+     f"threshold on the blacklisted cases and nothing else, because its budget of 40 is the "
+     f"threshold itself and only the blacklist rule awards all of it at once. Neither the "
+     f"graph layer nor the language model flags anything alone, their budgets of 30 sitting "
+     f"below the threshold by design. Any two layers together catch roughly two thirds of "
+     f"the fraud. All three are needed for the "
+     f"{FLAGGED['recall']*100:.0f} per cent recall reported above.")
 table("Ablation by layer combination (REVIEW at 40)",
       ["Layers", "Precision", "Recall", "F1", "TP", "FP"],
       [[a["layers"], f"{a['precision']:.3f}", f"{a['recall']:.3f}", f"{a['f1']:.3f}",
@@ -1039,11 +1059,14 @@ para(f"The synthetic evaluation set is 25 per cent fraud because a test set need
      f"{REALISTIC['precision']:.3f} at that prevalence: about eight false alarms for every "
      f"fraud caught. That figure, not the synthetic one, is what a deployment would staff "
      f"against.")
-para(f"No transaction reached the block threshold; the highest score was 68. The threshold "
-     f"sweep finds the best F1 with a review threshold of {SUGGESTED['review_threshold']} and "
-     f"a block threshold of {SUGGESTED['block_threshold']}, but blocking at 40 would also "
-     f"refuse the one flagged legitimate transaction outright. The configured bands were left "
-     f"in place, and every detection reaches an analyst.")
+para(f"{CONF['BLOCK']['fraud']} fraudulent transactions reached the block threshold and no "
+     f"legitimate one did, so at the configured bands the system would refuse only "
+     f"transactions it was right about. The highest score in the set was 98. The threshold "
+     f"sweep finds a marginally better F1 at a review threshold of "
+     f"{SUGGESTED['review_threshold']} and a block threshold of "
+     f"{SUGGESTED['block_threshold']}, but those bands were derived from this same 208-row "
+     f"set, and tuning against the data the result is then reported on is how a number stops "
+     f"meaning anything. The configured 40 and 70 were left in place.")
 
 # ───────────────────────── CHAPTER 6 ─────────────────────────
 chapter("Results and Discussion")
@@ -1052,21 +1075,24 @@ bullets([
     f"The full pipeline flags {FLAGGED['recall']*100:.1f} per cent of the fraud with "
     f"{FLAGGED['precision']*100:.1f} per cent precision on the synthetic set; at a realistic "
     f"fraud rate the precision would be about {REALISTIC['precision']*100:.0f} per cent.",
-    "No layer detects fraud on its own; the combination of relationship evidence and the "
-    "language model's assessment is what separates the classes.",
+    "Only the blacklist rule flags anything on its own. Every other detection needs two or "
+    "three layers agreeing, which is what the layer budgets were sized to force.",
     "The decision is returned in 124 ms on average, all 29 measured requests within 500 ms.",
     "An identical transaction now scores identically.",
     "The graph layer flagged all 36 mule-ring transactions, but its circular-flow check fired "
     f"on {CYCLE_HITS} of them; the rest were caught through proximity to known fraud accounts.",
-    "Nothing is blocked automatically at the configured thresholds.",
+    f"{CONF['BLOCK']['fraud']} transactions reached the block threshold, all of them "
+    f"fraudulent; no legitimate transaction did.",
 ])
 section("6.2 Comparative Results")
-para("Against its own earlier state (Table 5.8) the pipeline gained precision and F1, lost two "
-     "false positives and became about 113 times faster in its response, with recall "
-     "unchanged. Against the rule-only baseline (Table 5.7) the difference is between detecting "
-     "none of the planted fraud and detecting 45 of 52. Against the commercial platforms "
-     "(Table 2.2) the comparison remains one of design, since they have not been measured on "
-     "this data.")
+para(f"Against its own earlier state (Table 5.8) the pipeline is about 113 times faster in "
+     f"its response and now misses no fraud at all, where it had missed seven. Precision "
+     f"moved from 0.978 to {FLAGGED['precision']:.3f} over the same period, which is one "
+     f"additional false alarm among 156 legitimate transactions and is within the margin "
+     f"such a small set can resolve. Against the rule engine on its own (Table 5.9) the "
+     f"difference is between catching 5 of the 52 planted frauds and catching all of them. "
+     f"Against the commercial platforms (Table 2.2) the comparison remains one of design, "
+     f"since they have not been measured on this data.")
 section("6.3 Advantages")
 bullets([
     "Every point of a score can be traced to a named check, and every layer's contribution is "
@@ -1082,7 +1108,8 @@ section("6.4 Limitations")
 bullets([
     "Accuracy is measured on synthetic data in which fraud is far denser than in reality.",
     "The circular-flow check does not match the transfer that closes a ring (Section 6.6).",
-    "Seven of the ten shared-device frauds were missed.",
+    "Shared-device fraud is caught only once the banking anomaly rules add their points; "
+    "the graph evidence alone leaves it below the threshold.",
     "Explanations for transactions flagged only by a risk tier are always withheld "
     "(Section 6.6).",
     "Only a shared key protects the routes that change state; there is no per-user "
@@ -1098,15 +1125,25 @@ para("In its current form Indus11 fits as an analyst triage aid rather than an a
      "in the next section.")
 section("6.6 Error/Failure Analysis")
 sub("Missed fraud")
-para("All seven missed frauds are shared-device transactions to crypto exchanges, each scored "
-     "27: 10 rule points for the merchant and the elevated sender tier, 15 graph points for "
-     "the shared device and 2 from the language model. The model did not treat a shared device "
-     "as strong evidence even though the flag was given to it as a confirmed signal.")
-sub("False positive")
-para("The one legitimate transaction flagged scored 42: 40 rule points because its receiver, "
-     "ACC-015, is blacklisted in the account store, plus 2 from the language model. The "
-     "evaluation generator draws receivers for ordinary traffic at random and did not exclude "
-     "blacklisted accounts, so this row is arguably mislabelled rather than a detector error.")
+para("No fraudulent transaction was missed in this run; the lowest score any of them received "
+     "was 48, comfortably above the review threshold. That was not true of the five-rule "
+     "pipeline, which missed seven. All seven were shared-device transactions to crypto "
+     "exchanges scoring 27 apiece: 10 rule points for the merchant and the elevated sender "
+     "tier, 15 graph points for the shared device, and 2 from the language model, which did "
+     "not treat a shared device as strong evidence even though the flag was handed to it as "
+     "a confirmed signal. The banking anomaly rules added since then award points to those "
+     "same transactions for a first payment to a high-risk merchant category and for a new "
+     "device on an established account, which is what lifts them over the threshold.")
+sub("False positives")
+para("Two legitimate transactions were flagged, both for review rather than block. The first "
+     "scored 68: 40 rule points because its receiver, ACC-015, is blacklisted in the account "
+     "store, plus 28 from the language model. The evaluation generator draws receivers for "
+     "ordinary traffic at random and does not exclude blacklisted accounts, so this row is "
+     "arguably mislabelled rather than a detector error.")
+para("The second scored 42, from 2 rule points for an elevated sender tier, 12 graph points "
+     "for a circular flow, and 28 from the language model. This one is a genuine false "
+     "alarm. Three other legitimate transactions also triggered the circular-flow check and "
+     "stayed below the threshold, which is the pattern discussed next.")
 sub("Graph signals on legitimate traffic")
 para("Three legitimate transactions triggered CIRCULAR_FLOW (12 points each) but stayed at 16 "
      "overall and were approved. The circular-flow check itself has a structural limitation: "
@@ -1216,15 +1253,18 @@ para("Indus11 returns an approve, review or block decision for a financial trans
      f"{FLAGGED['recall']*100:.1f} per cent of the fraud at {FLAGGED['precision']*100:.1f} per "
      "cent precision, and the ablation shows that no single layer, including the rule engine "
      "that conventional systems rely on, detects the planted fraud alone.")
-para("The work also produced negative results that are recorded rather than hidden: precision "
-     f"would fall to about {REALISTIC['precision']*100:.0f} per cent at a realistic fraud rate, "
-     "nothing reached the block threshold, the cycle check misses the transfer that closes a "
-     "ring, and the explanation guard withholds every explanation for transactions flagged "
-     "only by risk tier.")
+para(f"The work also produced negative results that are recorded rather than hidden. "
+     f"Precision would fall to about {REALISTIC['precision']*100:.0f} per cent at a realistic "
+     f"fraud rate, which is the figure a deployment would have to staff against. The cycle "
+     f"check still misses the transfer that closes a ring, so the graph layer's ring "
+     f"detection rests partly on proximity to known fraud rather than on the cycle itself. "
+     f"The explanation guard withholds every explanation for transactions flagged only by "
+     f"risk tier. And the 156 legitimate transactions in the set are too few to resolve a "
+     f"false-alarm rate that matters at one fraud in a thousand.")
 section("8.2 Limitations")
 bullets([
     "Evaluation on synthetic data only, with far denser fraud than a real feed.",
-    "Shared-device fraud largely missed; ring closure not detected on the closing transfer.",
+    "Ring closure is not detected on the closing transfer, so the cycle check under-reports.",
     "Explanation guard defect for tier-only flags; explanation accuracy not verified.",
     "Shared-key protection only; latency measured without concurrent load.",
 ])

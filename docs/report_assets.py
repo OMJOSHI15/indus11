@@ -19,31 +19,42 @@ OUT = os.path.join(HERE, "report-assets")
 SCORES = os.path.join(HERE, "eval-layer-scores.json")
 FONT_DIR = "/System/Library/Fonts/Supplemental"
 
-RULE_POINTS = {"BLACKLISTED_ACCOUNT": 40, "VELOCITY_EXCEEDED": 15, "AMOUNT_ANOMALY": 12,
-               "HIGH_RISK_MERCHANT": 8, "HIGH_RISK_SENDER_TIER": 5, "ELEVATED_RISK_SENDER_TIER": 2}
-GRAPH_POINTS = {"SHARED_DEVICE": 15, "CIRCULAR_FLOW": 12, "MONEY_MULE_PATTERN": 8,
-                "SHARED_IP": 8, "FRAUD_CLUSTER_PROXIMITY": 10}
-
-
 def rebuild_from_api():
-    """Recompute rule and graph points from each stored record's flag codes."""
+    """
+    Refresh the per-layer table from the records the evaluation left behind.
+
+    Each layer's score is stored on the transaction now, so this reads what the
+    pipeline actually awarded. It used to reconstruct the rule and graph points
+    by adding up a table of flag weights kept here, which was already a copy of
+    the rule engine and became wrong the moment the twenty-five banking anomaly
+    rules were added, since none of them appeared in that table.
+    """
     import httpx
     scored = json.load(open(os.path.join(HERE, "eval-results.json")))["scored"]
     rows = []
     with httpx.Client(base_url="http://localhost:8000/api/v1", timeout=30) as c:
         for x in scored:
-            exp = c.get(f"/transactions/{x['tx_id']}").json()["explanation"] or ""
-            sig = exp.split("Triggered signals: ", 1)[1].split(". ", 1)[0] if exp.startswith("Triggered signals: ") else ""
-            codes = [s.strip().split(" (")[0] for s in sig.split(";") if s.strip()]
-            rule = 40 if "BLACKLISTED_ACCOUNT" in codes else min(sum(RULE_POINTS.get(k, 0) for k in codes), 40)
-            graph = min(sum(GRAPH_POINTS.get(k, 0) for k in codes), 30)
-            rag = x["composite_score"] - rule - graph
-            assert 0 <= rag <= 30, (x["tx_id"], rag)
+            record = c.get(f"/transactions/{x['tx_id']}").json()
+            explanation = record.get("explanation") or ""
+            if explanation.startswith("Triggered signals: "):
+                listed = explanation.split("Triggered signals: ", 1)[1].split(". ", 1)[0]
+                codes = [part.strip().split(" (")[0] for part in listed.split(";") if part.strip()]
+            else:
+                codes = []
+            layers = {name: record.get(f"{name}_score") for name in ("rule", "graph", "rag")}
+            if any(value is None for value in layers.values()):
+                raise SystemExit(
+                    f"{x['tx_id']} has no stored per-layer score. Re-run the evaluation "
+                    "against a build that persists them."
+                )
             rows.append({"tx_id": x["tx_id"], "label": x["label"], "pattern": x["pattern"],
-                         "composite_score": x["composite_score"], "rule_score": rule,
-                         "graph_score": graph, "rag_score": rag, "codes": codes})
+                         "composite_score": record["composite_score"],
+                         "rule_score": layers["rule"], "graph_score": layers["graph"],
+                         "rag_score": layers["rag"], "codes": codes})
     data = json.load(open(SCORES))
     data["rows"] = rows
+    data["_provenance"] = ("Per-layer scores read from the stored transaction records of the "
+                           "run in eval-results.json, not reconstructed from flag weights.")
     json.dump(data, open(SCORES, "w"), indent=1)
 
 
