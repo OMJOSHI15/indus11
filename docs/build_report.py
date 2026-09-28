@@ -40,7 +40,6 @@ with open(os.path.join(HERE, "eval-layer-scores.json")) as f:
     LAYERS = json.load(f)["rows"]
 with open(os.path.join(ASSETS, "ablation.json")) as f:
     ABLATION = json.load(f)
-CONF = EVAL["metrics"]["confusion"]
 RULE_ONLY_TP = next(a["tp"] for a in ABLATION if a["layers"] == "Rule")
 SUGGESTED = EVAL["suggested_thresholds"]
 

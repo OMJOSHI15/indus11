@@ -132,18 +132,20 @@ para("Incoming transactions are evaluated through a three-layer scoring pipeline
      "reasoning module contributes 0–30 points by validating contextual evidence. The "
      "combined score determines whether a transaction is classified as APPROVE, "
      "REVIEW, or BLOCK, while providing an explanation for every decision.")
-para("The system was evaluated using a labelled fraud dataset and achieved 93.8% "
-     "precision, 86.5% recall, and an F1-score of 0.90. Graph analysis successfully "
-     "identified all 36 transactions belonging to the 3 planted mule rings, "
-     "demonstrating the effectiveness of relationship-based fraud detection. During "
-     "evaluation, no transaction reached the predefined BLOCK threshold because the "
-     "seeded fraud accounts lacked stored historical profiles, preventing the "
-     "amount-anomaly rule from contributing to their overall score. This identified a "
-     "limitation in the current scoring mechanism rather than a characteristic of the "
-     "dataset and highlights an area for future enhancement. Overall, the results "
-     "demonstrate that integrating rule-based analysis, graph analytics, and "
-     "RAG-based reasoning improves fraud detection while maintaining explainability "
-     "and supporting financial investigators in making informed decisions.", after=10)
+# The wording is the team's; the figures are read from the evaluation record so
+# this cannot drift from the report or from the results chapter of either document.
+para(f"The system was evaluated using a labelled fraud dataset and achieved "
+     f"{FLAGGED['precision']*100:.1f}% precision, {FLAGGED['recall']*100:.0f}% recall, and "
+     f"an F1-score of {FLAGGED['f1']:.2f}. Graph analysis successfully identified all "
+     f"{GRAPH['graph_flagged']} transactions belonging to the 3 planted mule rings, none of "
+     f"which the rule engine flagged on its own. During evaluation, "
+     f"{CONF['BLOCK']['fraud']} transactions reached the predefined BLOCK threshold and no "
+     f"legitimate transaction did. The three layers are complementary rather than "
+     f"redundant: the rule engine alone flags 5 of the {COUNTS['fraud']} fraudulent "
+     f"transactions, and all three together flag every one. The test set is 25% fraud "
+     f"against roughly one in a thousand in a live payment feed, so at that rate the same "
+     f"detector's precision would fall to about {REALISTIC['precision']*100:.0f}%.",
+     after=10)
 para("Keywords: fraud detection, explainable AI, graph analytics, retrieval-augmented "
      "generation, risk scoring", italic=True)
 
@@ -379,7 +381,7 @@ table("Software quality attributes", ["Attribute", "How it is achieved"],
                        "submission returns a defined conflict response."],
        ["Maintainability", "Each layer is a single function with one input and one "
                            "output type, so a layer can be replaced independently."],
-       ["Testability", "One hundred and one automated tests run with no database or network."],
+       ["Testability", "One hundred and thirteen automated tests run with no database or network."],
        ["Portability", "The entire stack is defined in one container composition file."],
        ["Usability", "Every decision is accompanied by a written explanation."],
        ["Accuracy", f"Precision {FLAGGED['precision']:.3f}, recall {FLAGGED['recall']:.3f}, "
@@ -666,19 +668,23 @@ para("That check has a limitation found while rehearsing the review demonstratio
      "so the closing transfer never matches. A ring is recognised only when its "
      "originator sends again. Following the path back from the receiver to the sender "
      "instead would catch the ring on the transfer that completes it.")
-para("The evaluation also produced a negative result worth recording. No transaction "
-     "reached the configured block threshold, so nothing is blocked automatically and "
-     "every detection reaches an analyst. Lowering the threshold would automate "
-     "blocking at the cost of also blocking the false positives, which is a policy "
-     "decision requiring evidence rather than a change of configuration.")
+para(f"The evaluation also produced results worth recording against the system rather "
+     f"than for it. {CONF['BLOCK']['fraud']} transactions reached the configured block "
+     f"threshold and all of them were fraudulent, so at these bands the system would "
+     f"refuse only transactions it was right about. That is measured on a set which is a "
+     f"quarter fraud; at a realistic rate of one in a thousand the same detector's "
+     f"precision falls to about {REALISTIC['precision']*100:.0f} per cent, and the 156 "
+     f"legitimate transactions here are too few to resolve the false-alarm rate that "
+     f"figure depends on.")
 para("Planned enhancements, in order of priority:")
-for e in ["Resolve the block-threshold trade-off using the recorded transaction scores.",
+for e in ["Measure the false-alarm rate on a set large enough to resolve it, which the "
+          "present 156 legitimate transactions are not.",
           "Detect a money-mule ring on the transfer that closes it, and re-run the "
           "evaluation to measure the change.",
           "Extend the present shared-key check on the decision-altering routes to "
           "per-user authentication, and add structured request logging.",
           "Build an interactive fraud-ring visualisation on the existing graph endpoint.",
-          "Investigate the seven undetected frauds and add fan-in and fan-out graph patterns.",
+          "Add fan-in and fan-out graph patterns and measure their effect on ring recall.",
           "Train a supervised classifier as a fourth scoring signal.",
           "Bound the growth of the transaction graph with a retention or archival "
           "policy, so that query cost does not grow with the whole retained history.",

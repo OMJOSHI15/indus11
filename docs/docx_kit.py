@@ -39,6 +39,7 @@ SHOT = os.path.join(HERE, "screenshot-dashboard.png")
 with open(os.path.join(HERE, "eval-results.json")) as f:
     EVAL = json.load(f)
 FLAGGED, GRAPH, COUNTS = EVAL["metrics"]["flagged"], EVAL["graph"], EVAL["counts"]
+CONF = EVAL["metrics"]["confusion"]
 REALISTIC = EVAL["metrics"]["realistic"]
 # Ring transactions on which CIRCULAR_FLOW itself fired in the 31 Aug evaluation.
 # eval-results.json records only the graph score, so this was counted from the
