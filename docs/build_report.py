@@ -16,22 +16,6 @@ from docx_kit import *          # noqa: F401,F403 — the document-building voca
 OUT = os.path.expanduser("~/Downloads/Indus11_Project_Report.docx")
 kit.use("report-toc-pages.json")
 
-# The member responsible for each chapter, printed under its heading. The guide
-# asked for chapter-level ownership after the 15 September review.
-CHAPTER_OWNERS = {
-    "Introduction": "Joshi Om (24DCE052)",
-    "Literature Review": "Joshi Om (24DCE052)",
-    "Proposed Methodology": "Krish Gajera (24DCE040)",
-    "Implementation": "Joshi Om (gateway, persistence, rule engine), Krish Gajera (graph analyzer), "
-                      "Drashti Dedaniya (RAG pipeline, decision engine, dashboard)",
-    "Experimental Setup and Evaluation": "Krish Gajera (24DCE040)",
-    "Results and Discussion": "Drashti Dedaniya (24DCE029)",
-    "Security, Ethical and Practical Considerations": "Joshi Om (24DCE052)",
-    "Conclusion and Future Work": "Drashti Dedaniya (24DCE029)",
-}
-kit.CHAPTER_NOTE = lambda title: (
-    f"Responsible: {CHAPTER_OWNERS[title]}" if title in CHAPTER_OWNERS else None)
-
 # ═════════════════════════════ PROJECT REPORT BODY ═════════════════════════════
 from docx.enum.text import WD_COLOR_INDEX
 
