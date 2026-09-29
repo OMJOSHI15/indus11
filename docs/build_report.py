@@ -86,8 +86,8 @@ def term_table(items, widths=(1.6, 4.4)):
             for i, v in enumerate((a, b)):
                 cells[i].text = ""
                 p = cells[i].paragraphs[0]
-                p.paragraph_format.line_spacing = LINE
-                p.paragraph_format.space_after = Pt(2)
+                p.paragraph_format.line_spacing = CELL_LINE
+                p.paragraph_format.space_after = Pt(1)
                 r = p.add_run(v)
                 r.font.size, r.font.name = Pt(10.5), FONT
             cells[0].width, cells[1].width = Inches(widths[0]), Inches(widths[1])
@@ -1324,7 +1324,7 @@ for i, r in enumerate([
 
 # ────────────────── APPENDICES ──────────────────
 chapter("Appendices", numbered=False)
-section("Appendix C — Reproducing the Results")
+section("Appendix A — Reproducing the Results")
 code_block("""# 1. Start the stack natively with a fresh seed (or: docker compose up --build)
 ./scripts/run_local.sh --seed
 

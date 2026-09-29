@@ -48,7 +48,8 @@ CYCLE_HITS = 21
 
 FONT = "Times New Roman"
 BODY, SUB, CHAP = 12, 14, 16
-LINE = 1.5                # every paragraph in the document, no exceptions
+LINE = 1.5                # every body paragraph, no exceptions
+CELL_LINE = 1.0           # inside tables: single, the usual convention even at 1.5
 INK = RGBColor(0, 0, 0)
 MARGIN = 1.0               # inches; 2.54 cm on all four sides
 USABLE_W = 8.5 - 2 * MARGIN
@@ -69,6 +70,22 @@ _chapter = 0
 _fig_n = _tbl_n = 0
 
 doc = Document()
+_pending_break = False
+_plain_paragraph = doc.add_paragraph
+
+
+def _paragraph(*args, **kwargs):
+    """Every paragraph in the document is added through here, so a pending page
+    break from new_page() attaches to whichever paragraph comes next."""
+    global _pending_break
+    p = _plain_paragraph(*args, **kwargs)
+    if _pending_break:
+        p.paragraph_format.page_break_before = True
+        _pending_break = False
+    return p
+
+
+doc.add_paragraph = _paragraph
 _normal = doc.styles["Normal"]
 _normal.font.name = FONT
 _normal.font.size = Pt(BODY)
@@ -175,7 +192,15 @@ def para(text="", size=BODY, bold=False, align=WD_ALIGN_PARAGRAPH.JUSTIFY,
 
 
 def new_page():
-    doc.add_paragraph().add_run().add_break(WD_BREAK.PAGE)
+    """Start the next block on a fresh page.
+
+    Recorded as a property of the paragraph that follows, not as a paragraph of
+    its own holding a break: a break paragraph lands on the new page when the
+    previous one is already full, and spends a whole page showing nothing but
+    its number. Two such pages were in the report before this.
+    """
+    global _pending_break
+    _pending_break = True
 
 
 def chapter(title, numbered=True, new_page_first=True):
@@ -273,9 +298,9 @@ def table(title, headers, rows, widths=None, size=10.5):
         c.text = ""
         p = c.paragraphs[0]
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p.paragraph_format.line_spacing = LINE
-        p.paragraph_format.space_after = Pt(2)
-        p.paragraph_format.space_before = Pt(2)
+        p.paragraph_format.line_spacing = CELL_LINE
+        p.paragraph_format.space_after = Pt(1)
+        p.paragraph_format.space_before = Pt(1)
         r = p.add_run(h)
         r.bold, r.font.size, r.font.name = True, Pt(size), FONT
     for row in rows:
@@ -283,9 +308,9 @@ def table(title, headers, rows, widths=None, size=10.5):
         for i, v in enumerate(row):
             cells[i].text = ""
             p = cells[i].paragraphs[0]
-            p.paragraph_format.line_spacing = LINE
-            p.paragraph_format.space_after = Pt(2)
-            p.paragraph_format.space_before = Pt(2)
+            p.paragraph_format.line_spacing = CELL_LINE
+            p.paragraph_format.space_after = Pt(1)
+            p.paragraph_format.space_before = Pt(1)
             r = p.add_run(str(v))
             r.font.size, r.font.name = Pt(size), FONT
     _apply_widths(t, _column_widths(headers, rows, size))

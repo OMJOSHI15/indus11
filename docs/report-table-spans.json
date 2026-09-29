@@ -43,55 +43,39 @@
     "19",
     "35"
   ],
-  "Table 4.7": [
-    "36",
-    "50"
-  ],
   "Table 5.1": [
     "Machine",
     "Run"
   ],
   "Table 5.2": [
-    "Precision",
-    "Determinism"
-  ],
-  "Table 5.3": [
     "APPROVE",
     "BLOCK"
   ],
-  "Table 5.4": [
+  "Table 5.3": [
     "Precision",
     "BLOCK"
   ],
-  "Table 5.5": [
-    "Mule",
-    "Legitimate"
-  ],
-  "Table 5.6": [
+  "Table 5.4": [
     "Retail",
     "Fourth"
   ],
-  "Table 5.7": [
+  "Table 5.5": [
     "Rules",
     "Full"
   ],
-  "Table 5.8": [
+  "Table 5.6": [
     "Precision",
     "Mean"
   ],
-  "Table 5.9": [
+  "Table 5.7": [
     "Rule",
     "All"
   ],
-  "Table 5.10": [
-    "Fraud",
-    "Legitimate"
-  ],
-  "Table 5.11": [
+  "Table 5.8": [
     "Mean",
     "Language-model"
   ],
-  "Table 5.12": [
+  "Table 5.9": [
     "No",
     "72"
   ],
