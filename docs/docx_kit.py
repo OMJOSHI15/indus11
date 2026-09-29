@@ -327,6 +327,12 @@ def table(title, headers, rows, widths=None, size=10.5, note=None):
     _apply_widths(t, _column_widths(headers, rows, size))
     keep_on_one_page(t)
     if note:
+        # The note belongs to the table, so the last row is bound to it too;
+        # keep_on_one_page leaves that row free so a table does not drag the
+        # prose after it onto a new page.
+        for cell in t.rows[-1].cells:
+            for cp in cell.paragraphs:
+                cp.paragraph_format.keep_with_next = True
         _note(note)          # its own space_after separates the table from the text
     else:
         para("", after=10, spacing=LINE)

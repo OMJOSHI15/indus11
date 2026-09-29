@@ -432,25 +432,22 @@ table("Commercial fraud platforms compared with Indus11",
        ["Deployment", "Licensed", "Licensed", "Licensed (Visa since 2024)",
         "Open-source stack, runs locally"]],
       size=9.5,
-      note="Three commercial fraud platforms set against Indus11 on method, graph analysis and explainability. Their entries come from vendor material and were not measured here.")
+      note="Three commercial platforms set against Indus11 on method, graph analysis and explainability, from vendor material rather than measurement.")
 section("2.5 Research/Technical Gap")
 bullets([
     "Commercial explanations are reason codes from a fixed vocabulary; the analyst still has "
     "to assemble the story.",
-    "Generated explanations are fluent but nothing in a typical retrieval-augmented pipeline "
-    "checks them against the evidence that produced the decision.",
+    "Generated explanations are fluent, but nothing in a typical retrieval-augmented "
+    "pipeline checks them against the evidence that produced the decision.",
     "Graph neural networks need labelled graph data and training infrastructure that a small "
-    "team or a new deployment does not have.",
-    "A language model measured at 13–14 seconds cannot sit inside an authorisation decision.",
+    "team or a new deployment does not have, and a language model measured at 13–14 seconds "
+    "cannot sit inside an authorisation decision.",
 ])
 section("2.6 Positioning of Proposed Work")
-para("Indus11 makes no attempt to compete with consortium-trained models on accuracy. It "
-     "occupies a narrower position. Deterministic rules and graph queries, neither of which "
-     "needs training data, make the decision inside the latency budget; a local language "
-     "model then writes the explanation from the flags those layers produced, behind a "
-     "guard that "
-     "withholds prose that ignores them. The evaluation is reported with its synthetic-data "
-     "caveat and a prevalence-adjusted precision rather than the headline figure alone.")
+para("Indus11 does not compete with consortium-trained models on accuracy; it occupies a "
+     "narrower position. Rules and graph queries, needing no training data, decide inside the "
+     "latency budget, and a local language model then explains that decision from the flags "
+     "they produced.")
 
 # ───────────────────────── CHAPTER 3 ─────────────────────────
 chapter("Proposed Methodology")
@@ -839,25 +836,20 @@ para("The review queue (Figure 4.2) lists recent REVIEW and BLOCK decisions with
 figure(os.path.join(ASSETS, "dashboard-flags.png"), "Dashboard — review queue with triggered signals",
        note="The queue a person works from. Every row carries the transaction, its composite score, the decision and the signals that fired, so the reason for the hold is readable without opening the record.")
 section("4.9 System Integration")
-para("The layers are integrated in the analyse route. The rule engine and graph analyzer run "
-     "under asyncio.gather, so the response waits for the slower of the two rather than their "
-     "sum. The language-model layer is scheduled with FastAPI background tasks after the "
-     "record is inserted; a semaphore allows four such tasks at once and each has a 180-second "
-     "timeout, after which the language-model layer is recorded as failed and the decision is "
-     "banded again. The unique index on the "
-     "transaction identifier turns a retried submission into a 409 response rather than a "
-     "duplicate record. The dashboard polls the stored record every three seconds until the "
-     "pending flag clears. The API documents itself through an OpenAPI page listing all "
-     "eighteen routes.")
-para("Two component routes support recovery. One reports whether Redis, Neo4j, ChromaDB and "
-     "Ollama are answering; the other restarts a single scoring component by dropping its client "
-     "and checking its dependency again. Both require the API key. They do not start or stop "
-     "the database processes, which would mean running shell commands from a web request. A "
-     "failed layer appears on the dashboard as a highlighted panel with its error and a button "
-     "that calls the restart route; the transaction stays in review, and later transactions use "
-     "the restarted component.")
-para("For deployment the stack is defined in Docker Compose as five containers, with the "
-     "language model on the host; the deployment diagram is in the specification.")
+para("The layers are integrated in the analyse route. "
+     "The language-model layer is scheduled with FastAPI background tasks after the "
+     "record is inserted; a semaphore allows four at once, each with a 180-second timeout, "
+     "after which that layer is recorded as failed and the decision is banded again. The "
+     "unique index on the transaction identifier turns a retried submission into a 409 "
+     "response rather than a duplicate record. The dashboard polls the record every three "
+     "seconds until the pending flag clears, and the API documents its eighteen routes on an "
+     "OpenAPI page.")
+para("Two component routes support recovery: one reports whether Redis, Neo4j, ChromaDB "
+     "and Ollama are answering, the other restarts a scoring component by dropping its client "
+     "and rechecking its dependency. Both require the API key, and neither starts or stops a "
+     "database process. A failed layer appears on the dashboard as a highlighted panel with "
+     "its error and a button calling the restart route; the transaction stays in review, and "
+     "later transactions use the restarted component.")
 
 # ───────────────────────── CHAPTER 5 ─────────────────────────
 chapter("Experimental Setup and Evaluation")
@@ -887,10 +879,10 @@ para("The figures throughout this chapter come from a single run, made after all
      "weights.")
 section("5.2 Evaluation Metrics")
 para("Precision is the share of flagged transactions that are fraudulent and recall the "
-     "share of fraud that is flagged, both by Equation 3.7, with F1 their harmonic mean. A "
-     "detection counts as flagged when the decision is REVIEW or BLOCK; the stricter blocked "
-     "view counts only BLOCK. Latency is reported as mean, median, p95 and maximum, and "
-     "determinism as the spread of scores when one transaction is submitted repeatedly.")
+     "share of fraud that is flagged, both by Equation 3.7, with F1 their harmonic mean. "
+     "Flagged means REVIEW or BLOCK; the stricter blocked view counts only BLOCK. Latency is "
+     "reported as mean, median, p95 and maximum, and determinism as the spread of scores when "
+     "one transaction is submitted repeatedly.")
 section("5.3 Experimental Results")
 table("Confusion matrix at REVIEW 40, BLOCK 70",
       ["Decision", "Actually fraud", "Actually legitimate"],
@@ -1012,25 +1004,25 @@ para("Determinism was measured by submitting one wire transfer five times. At Ol
      "temperature the language-model scores were 26, 20, 20, 21 and 22. With the temperature "
      "set to zero all five were 20.")
 section("5.7 Scalability Analysis")
-para("The main scaling risk found was growth of the transaction graph. Without a time window, "
+para("The main scaling risk is growth of the transaction graph. Without a time window, "
      "1,486 stored transactions produced 51,146 closed paths of two to four hops, because any "
-     "account that both sends and receives money eventually forms one; the cost and the false "
-     "positives both grew with history. Restricting cycles to 72 hours and to time order bounds "
-     "the paths a query can examine, and stopping at the first match keeps the check near "
-     "20 ms on the seeded graph.")
+     "account that both sends and receives money eventually forms one; cost and false "
+     "positives both grew with history. Restricting cycles to 72 hours and to time order "
+     "bounds the paths a query examines, and stopping at the first match keeps the check near "
+     "20 ms.")
 bullets([
-    "The service keeps no state between requests, so more API instances could be added "
-    "behind a load balancer; this has not been tested.",
+    "The service keeps no state between requests, so API instances could be added behind a "
+    "load balancer; this has not been tested.",
     "Background language-model work is capped at four concurrent tasks. Replaying 208 "
     "transactions without the cap started 208 model calls at once and stopped the API process.",
-    "The measured latency comes from 29 sequential requests on one machine. Sustained load and "
+    "Latency comes from 29 sequential requests on one machine; sustained load and "
     "concurrent-user tests have not been run.",
     "Transactions are retained indefinitely; the query is bounded, but the graph itself is not.",
 ])
 section("5.8 Discussion")
-para(f"The synthetic evaluation set is 25 per cent fraud because a test set needs enough fraud "
-     f"to measure. A payment feed is nearer one fraudulent transaction in a thousand. Holding "
-     f"this run's recall of {FLAGGED['recall']:.3f} and false-positive rate of "
+para(f"The synthetic set is 25 per cent fraud because a test set needs enough fraud to "
+     f"measure; a payment feed is nearer one in a thousand. Holding this run's recall of "
+     f"{FLAGGED['recall']:.3f} and false-positive rate of "
      f"{REALISTIC['false_positive_rate']:.4f} constant, Equation 3.8 gives a precision of "
      f"{REALISTIC['precision']:.3f} at that prevalence: about eight false alarms for every "
      f"fraud caught. That figure, not the synthetic one, is what a deployment would staff "
@@ -1040,9 +1032,9 @@ para(f"{CONF['BLOCK']['fraud']} fraudulent transactions reached the block thresh
      f"transactions it was right about. The highest score in the set was 98. The threshold "
      f"sweep finds a marginally better F1 at a review threshold of "
      f"{SUGGESTED['review_threshold']} and a block threshold of "
-     f"{SUGGESTED['block_threshold']}, but those bands were derived from this same 208-row "
-     f"set, and tuning against the data the result is then reported on is how a number stops "
-     f"meaning anything. The configured 40 and 70 were left in place.")
+     f"{SUGGESTED['block_threshold']}, but those bands came from this same 208-row set, and "
+     f"tuning against the data a result is reported on is how a number stops meaning "
+     f"anything. The configured 40 and 70 were left in place.")
 
 # ───────────────────────── CHAPTER 6 ─────────────────────────
 chapter("Results and Discussion")
@@ -1223,38 +1215,36 @@ table("Deployment risks",
 # ───────────────────────── CHAPTER 8 ─────────────────────────
 chapter("Conclusion", numbered=False)
 section("Conclusion")
-para("Indus11 returns an approve, review or block decision for a financial transaction in "
-     "124 ms on average by letting deterministic rules and graph queries decide, and attaches "
-     "a language-model explanation afterwards that is given the evidence those layers found. "
-     f"On a labelled synthetic dataset of {COUNTS['total']} transactions it flagged "
-     f"{FLAGGED['recall']*100:.1f} per cent of the fraud at {FLAGGED['precision']*100:.1f} per "
-     "cent precision, and the ablation shows that no single layer, including the rule engine "
-     "that conventional systems rely on, detects the planted fraud alone.")
-para(f"The work also produced negative results that are recorded rather than hidden. "
-     f"Precision would fall to about {REALISTIC['precision']*100:.0f} per cent at a realistic "
-     f"fraud rate, which is the figure a deployment would have to staff against. The cycle "
-     f"check still misses the transfer that closes a ring, so the graph layer's ring "
-     f"detection rests partly on proximity to known fraud rather than on the cycle itself. "
-     f"The explanation guard withholds every explanation for transactions flagged only by "
-     f"risk tier. And the 156 legitimate transactions in the set are too few to resolve a "
-     f"false-alarm rate that matters at one fraud in a thousand.")
+para("Indus11 returns an approve, review or block decision in 124 ms on average by letting "
+     "deterministic rules and graph queries decide, then attaches a language-model "
+     "explanation built from the evidence those layers found. On a labelled synthetic dataset "
+     f"of {COUNTS['total']} transactions it flagged {FLAGGED['recall']*100:.1f} per cent of "
+     f"the fraud at {FLAGGED['precision']*100:.1f} per cent precision, and the ablation shows "
+     "that no single layer, the rule engine included, detects the planted fraud alone.")
+para(f"The work also produced negative results, recorded rather than hidden. Precision "
+     f"would fall to about {REALISTIC['precision']*100:.0f} per cent at a realistic fraud "
+     f"rate, the figure a deployment would staff against. The cycle check still misses the "
+     f"transfer that closes a ring, so ring detection rests partly on proximity to known "
+     f"fraud. The guard withholds every explanation for transactions flagged only by risk "
+     f"tier. And 156 legitimate transactions are too few to resolve a false-alarm rate that "
+     f"matters at one fraud in a thousand.")
 section("Limitations")
 bullets([
-    "Evaluation on synthetic data only, with far denser fraud than a real feed.",
-    "Ring closure is not detected on the closing transfer, so the cycle check under-reports.",
-    "Explanation guard defect for tier-only flags; explanation accuracy not verified.",
+    "Synthetic data only, with far denser fraud than a real feed.",
+    "Ring closure is not detected on the closing transfer, so the check under-reports.",
+    "Guard defect for tier-only flags; explanation accuracy not verified.",
     "Shared-key protection only; latency measured without concurrent load.",
 ])
 section("Future Work")
 bullets([
-    "Evaluate on PaySim or the IEEE-CIS dataset to obtain a realistic precision figure.",
-    "Detect a ring on the transfer that closes it, and re-run the evaluation.",
-    "Skip flags with no distinctive word in the explanation guard, and check explanation "
-    "statements against the transaction's actual values.",
+    "Evaluate on PaySim or IEEE-CIS for a realistic precision figure.",
+    "Detect a ring on the transfer that closes it, and re-evaluate.",
+    "Skip flags with no distinctive word in the guard, and check explanations against the "
+    "transaction's values.",
     "Resolve the block-threshold trade-off from recorded scores.",
-    "Add per-user authentication, structured audit logging and a sustained load test.",
-    "Bound the transaction graph with a retention or archival policy.",
-    "Add a supervised classifier as a fourth scoring signal.",
+    "Add per-user authentication, audit logging and a sustained load test.",
+    "Bound the transaction graph with a retention policy, and add a supervised classifier "
+    "as a fourth scoring signal.",
 ])
 
 # ────────────────── REFERENCES ──────────────────
