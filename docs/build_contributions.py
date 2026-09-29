@@ -223,14 +223,13 @@ OM = {
 KRISH = {
     "id": "24DCE040",
     "name": "Krish Gajera",
-    "role": "Graph database, relationship detection and the project's diagrams",
+    "role": "Graph database and relationship detection",
     "summary":
         "Krish owns the part of the system that looks at how accounts relate to one another "
         "rather than at any single payment. This catches the fraud the rule engine cannot "
         "see by design: a ring of accounts passing money around a loop, several "
         "unrelated-looking accounts operated from one device, or a receiver sitting close to "
-        "an account already known to be fraudulent. He also produced the data-flow and UML "
-        "diagrams that the specification and the report are built around.",
+        "an account already known to be fraudulent.",
     "components": [
         ("The transaction graph in Neo4j", "scripts/seed_neo4j.py",
          "A graph database stores things and the connections between them as first-class "
@@ -273,24 +272,13 @@ KRISH = {
          "into an actual picture. Choosing a seeded ring account now draws two fraudulent "
          "neighbours, a shared device and a shared address together, so a reviewer sees the "
          "ring instead of reading a sentence about it."),
-        ("The diagrams", "docs/diagrams/",
-         "The guide asked for correct notation, so Krish redrew the data-flow diagrams in "
-         "standard Gane–Sarson form: a context diagram, a level 1 diagram with seven "
-         "processes and five data stores, and a level 2 diagram expanding rule evaluation. "
-         "He then produced the full UML set, covering use case, activity, sequence, class, "
-         "state, component and deployment, along with the entity relationship diagram.",
-         "He also measured what happened to each diagram once it was scaled to fit the page "
-         "and found the class diagram's text had fallen to about five points. The class and "
-         "activity diagrams were each split in two and two others reshaped, so nothing in "
-         "print now falls below about eight points. The sources are committed alongside the "
-         "images, so any diagram can be regenerated rather than redrawn by hand."),
     ],
     "timeline": [
         ("1", "06–12 Jul", "Researched graph-database approaches to fraud-ring detection, installed Neo4j and got the asynchronous driver connecting, and studied the APATE paper and the Cypher patterns for shared-device and circular-flow detection."),
         ("2", "13–19 Jul", "Designed the graph schema of account, device and address nodes with transaction relationships, planned the structure of the synthetic dataset, and drafted the Cypher queries for shared-device and ring detection."),
         ("3", "21–27 Jul", "Implemented the schema with indexes created automatically at startup, wrote the dataset generator, and built the Cypher patterns for shared device and address, circular flows and fee-skimming cycles. Added the graph endpoints and the fraud-label propagation routine, and integrated the graph score into the composite decision."),
         ("4", "28 Jul – 3 Aug", "Validated ring detection against the planted rings and measured how many were recovered. Tuned the thresholds to reduce false alarms on ordinary repeat payments, and contributed ring-recall and cluster-precision figures to the shared evaluation."),
-        ("5", "4–10 Aug", "Redrew the data-flow diagrams in Gane–Sarson notation and produced the complete UML set. Measured how small each diagram's text became on the page and split or reshaped four of them. Wrote the graph-layer section of the specification and committed the diagram sources."),
+        ("5", "4–10 Aug", "Wrote the graph-layer section of the specification, describing the shared-device, circular-flow, fee-skimming and cluster-proximity checks and the Cypher patterns behind them."),
         ("6", "9–14 Aug", "Presented the graph layer at Review 1. Answered the question of which pattern produces the most false positives: shared-device detection, because several legitimate people can use one device. Began looking at what happens to the cycle query once the graph reaches a million records with no deletion path."),
         ("7", "16–21 Aug", "Added failure handling to the graph analyzer so a Neo4j outage degrades the layer instead of crashing the whole request, with a regression test that simulates the outage. This closed the gap the expert had raised about what the dashboard shows when the graph database goes down."),
         ("8", "23–28 Aug", "Ran the false-positive analysis across all four patterns on the seeded data. Benchmarked the cycle query as the graph grew and found its time rising from about 40 ms to 380 ms, traced it to an unindexed relationship property, added the index, and brought it back to about 60 ms."),
@@ -309,13 +297,15 @@ KRISH = {
 DRASHTI = {
     "id": "24DCE029",
     "name": "Drashti Dedaniya",
-    "role": "Retrieval and language model, decision engine, and the analyst dashboard",
+    "role": "Retrieval and language model, decision engine, the analyst dashboard, and the "
+            "project's diagrams",
     "summary":
         "Drashti owns the two ends of the system a person actually sees: the written "
         "explanation that says why a transaction was held, and the screen the analyst works "
         "from. Between them sits the decision engine, which takes the three layers' scores, "
         "turns them into an approve, review or block decision, and refuses to publish an "
-        "explanation that does not match the evidence.",
+        "explanation that does not match the evidence. She also produced the data-flow and "
+        "UML diagrams that the specification and the report are built around.",
     "components": [
         ("The knowledge base and retrieval", "app/services/fraud_kb.py",
          "Retrieval-augmented generation means giving a language model relevant reference "
@@ -385,6 +375,17 @@ DRASHTI = {
          "quarter fraud; a real feed is nearer one in a thousand, and at that rate the same "
          "detector's precision falls to about seven per cent. That number sits on the screen "
          "next to the flattering one."),
+        ("The diagrams", "docs/diagrams/",
+         "The guide asked for correct notation, so the data-flow diagrams were redrawn in "
+         "standard Gane\u2013Sarson form: a context diagram, a level 1 diagram with seven "
+         "processes and five data stores, and a level 2 diagram expanding rule evaluation. "
+         "The full UML set followed, covering use case, activity, sequence, class, state, "
+         "component and deployment, along with the entity relationship diagram.",
+         "She also measured what happened to each diagram once it was scaled to fit the page "
+         "and found the class diagram's text had fallen to about five points. The class and "
+         "activity diagrams were each split in two and two others reshaped, so nothing in "
+         "print now falls below about eight points. The sources are committed alongside the "
+         "images, so any diagram can be regenerated rather than redrawn by hand."),
     ],
     "timeline": [
         ("1", "13–19 Jul", "Designed the retrieval pipeline architecture, defined the decision engine's scoring bands, drew the dashboard wireframes, and structured the fraud-pattern knowledge base. (Submitted for the same dates as Week 2; see the note at the end.)"),
