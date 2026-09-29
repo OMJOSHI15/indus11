@@ -472,11 +472,10 @@ para("A payment system submits a transaction to POST /api/v1/transactions/analyz
      "background task go to the retrieval-augmented language model for a score and an "
      "explanation, recompute the composite and update the stored record. The analyst's view "
      "of all this is a dashboard: the decision mix, the flagged transactions, and the "
-     "control that overrides a decision under review. Figure 3.1 shows the actors and the "
-     "services each of them uses.")
-figure("final-usecase.png", "Use case diagram")
+     "control that overrides a decision under review. The actors and the services each of "
+     "them uses are drawn in the use case diagram of the specification.")
 section("3.2 System Architecture")
-para("Five layers make up the system (Figure 3.2). The FastAPI gateway is Layer 1, which "
+para("Five layers make up the system (Figure 3.1). The FastAPI gateway is Layer 1, which "
      "validates the request and loads profiles from Redis, falling back to MongoDB when the "
      "cache misses. Scoring happens in parallel across Layers 2 and 3. Their totals go to "
      "Layer 5, the decision engine, which adds them up and maps the result to a decision. "
@@ -495,15 +494,12 @@ table("System components",
        ["Document store", "MongoDB, Beanie", "Accounts and the audit trail of decisions"],
        ["Dashboard", "React, Vite, Recharts", "Statistics, flagged transactions, override"]],
       size=10)
-figure("07-component.png", "Component diagram")
 section("3.4 Workflow/Data Flow")
-para("Figure 3.4 decomposes the system into seven processes and five data stores. Figure 3.5 "
-     "follows one transaction across the participants, and Figure 3.6 shows the calls in the "
-     "order they occur, including the point at which the response is returned and the "
-     "background work begins.")
+para("Figure 3.2 decomposes the system into seven processes and five data stores. The "
+     "activity and sequence diagrams in the specification follow one transaction across the "
+     "participants and show the calls in the order they occur, including the point at which "
+     "the response is returned and the background work begins.")
 figure("final-dfd1.png", "Data flow diagram — Level 1")
-figure("03-activity.png", "Activity diagram — transaction analysis workflow")
-figure("04-sequence.png", "Sequence diagram — transaction analysis")
 section("3.5 Proposed Algorithm/Model")
 para("The scoring model is additive and transparent: each check that fires adds a fixed "
      "number of points and a flag that names it, and each layer is capped at its budget. "
@@ -528,8 +524,9 @@ band(S, F): APPROVE if S < 40, REVIEW if S < 70, else BLOCK;
             an APPROVE becomes REVIEW when any layer in F failed""")
 para("The graph layer's cycle check (Algorithm 2) looks for a path of two to four transfers "
      "that leaves the sender and returns to it, restricted to the last 72 hours and to hops in "
-     "time order, and stops at the first match. Figure 3.7 decomposes the rule engine's "
-     "checks, and Figure 3.8 gives the lifecycle of a stored record.")
+     "time order, and stops at the first match. The specification decomposes the rule "
+     "engine's checks in its level 2 data flow diagram and gives the lifecycle of a stored "
+     "record in its state diagram.")
 sub("Algorithm 2: Circular-flow and mule check")
 code_block("""cutoff <- tx.timestamp - 72 h
 if exists path (a {id: tx.sender}) -[SENT*2..4]-> (a)
@@ -537,8 +534,6 @@ if exists path (a {id: tx.sender}) -[SENT*2..4]-> (a)
     G <- G + 12, flag CIRCULAR_FLOW
     if some such path has every amount within 75-100% of the previous hop:
         G <- G + 8, flag MONEY_MULE_PATTERN""")
-figure("12-dfd2.png", "Data flow diagram — Level 2, process 3.0 (rule engine)")
-figure("06-state.png", "State diagram — lifecycle of a transaction")
 section("3.6 Mathematical Formulation")
 para("Let R, G and L be the rule, graph and language-model scores of a transaction. The rule "
      "score is the sum of the weights w of the rules that fire, capped at 40, except that a "
@@ -681,8 +676,8 @@ table("Synthetic data sources",
        ["Knowledge base", "58 fraud-pattern documents typed as synthetic identity, money mule, "
         "account takeover, wire fraud and others", "app/services/fraud_kb.py"]],
       size=10)
-para("Figure 4.1 relates the stored entities across the two stores that hold them.")
-figure("09-er.png", "Entity relationship diagram", max_h=5.2)
+para("The entity relationship diagram in the specification relates the stored entities "
+     "across the two stores that hold them.")
 section("4.5 Data Preprocessing")
 bullets([
     "Schema validation rejects a non-positive amount, a currency code longer than three "
@@ -729,10 +724,9 @@ para("The rule engine is one asynchronous function that receives the transaction
      "Redis cannot be reached, the layer is marked as failed with RULE_ENGINE_ERROR and the "
      "error, rather than failing the whole request.")
 para("Fifty banking anomalies were catalogued. Thirty-five are detected, thirty by the rule "
-     "engine and five by the graph analyzer (Tables 4.5 and 4.6). The other fifteen need data this "
-     "system does not receive, such as balances, KYC records, channels and login events, and "
-     "are listed with that data in Table 4.7. The rule engine's total stays capped at 40, so "
-     "many rules firing together cannot decide a transaction on their own.")
+     "engine and five by the graph analyzer, and are listed in Tables 4.5 and 4.6 with the "
+     "points each awards. The rule engine's total stays capped at 40, so many rules firing together "
+     "cannot decide a transaction on their own.")
 table("Banking anomalies detected (1 to 18)",
       ["#", "Anomaly", "Layer", "Points"],
       [['1', 'Blacklisted sender or receiver', 'Rule', '40'],
@@ -753,7 +747,7 @@ table("Banking anomalies detected (1 to 18)",
        ['16', 'New device on an established account, ₹50,000 or more', 'Rule', '8'],
        ['17', 'New IP address on an established account, ₹50,000 or more', 'Rule', '6'],
        ['18', 'Device hopping: more than 3 devices in 24 h', 'Rule', '8']],
-      widths=[0.35, 4.3, 0.7, 0.65], size=9)
+      widths=[0.35, 3.4, 0.75, 0.6], size=9)
 table("Banking anomalies detected (19 to 35)",
       ["#", "Anomaly", "Layer", "Points"],
       [['19', 'Daily outflow over 10 × the usual payment', 'Rule', '8'],
@@ -773,25 +767,20 @@ table("Banking anomalies detected (19 to 35)",
        ['33', 'Circular flow back to the sender within 4 hops and 72 h', 'Graph', '12'],
        ['34', 'Mule chain keeping 75–100% at each hop', 'Graph', '8'],
        ['35', 'Receiver within two links of a known fraud account', 'Graph', '10']],
-      widths=[0.35, 4.3, 0.7, 0.65], size=9)
-table("Banking anomalies not detected, and the data each would need",
-      ["#", "Anomaly", "Data needed"],
-      [['36', 'Cash deposits spread across many branches', 'Channel and branch of each deposit'],
-       ['37', 'Deposit followed by an ATM withdrawal in another city', 'Channel and ATM location'],
-       ['38', 'Account emptied to near zero', 'Account balance'],
-       ['39', 'Volume out of line with occupation or income', 'KYC profile'],
-       ['40', 'Salary account receiving third-party credits', 'Account type'],
-       ['41', 'Loan disbursal moved out immediately', 'Loan records'],
-       ['42', 'Several accounts sharing a PAN, phone or address', 'KYC identity data'],
-       ['43', 'Mobile number or e-mail changed before a large payment', 'Account change events'],
-       ['44', 'SIM swap shortly before a transaction', 'Telecom operator data'],
-       ['45', 'Failed logins or OTP attempts before a payment', 'Authentication logs'],
-       ['46', 'Beneficiary added and paid within minutes', 'Beneficiary-added timestamp'],
-       ['47', 'History of chargebacks or disputes', 'Dispute records'],
-       ['48', 'Cheque kiting', 'Cheque clearing data (out of scope)'],
-       ['49', 'Trade-based laundering through over- or under-invoicing', 'Trade documents (out of scope)'],
-       ['50', 'Politically exposed person or sanctions match', 'External watch lists (out of scope)']],
-      widths=[0.35, 3.3, 2.35], size=9)
+      widths=[0.35, 3.4, 0.75, 0.6], size=9)
+para("The remaining fifteen need data this system never receives, and are recorded here "
+     "rather than dropped. Five want channel or balance information: cash spread across "
+     "branches, a deposit followed by a withdrawal in another city, an account emptied to "
+     "near zero, volume out of line with a declared income, and a salary account taking "
+     "third-party credits. Four want identity and account-change records: several accounts "
+     "sharing a PAN, phone or address, a contact detail changed just before a large payment, "
+     "a SIM swap, and a beneficiary added and paid within minutes. Three want logs the "
+     "system does not hold: failed logins or one-time-password attempts, a history of "
+     "chargebacks, and loan disbursal records. The last three are outside a transaction "
+     "monitor altogether: cheque kiting, trade-based laundering through mis-invoicing, and "
+     "sanctions or politically-exposed-person matching, each of which needs a source of its "
+     "own.")
+
 sub("Graph analyzer")
 para("The graph analyzer first merges the transaction, its accounts, device and address into "
      "Neo4j, then runs four checks in one session: shared device, circular flow with the mule "
@@ -817,13 +806,6 @@ section("4.7 Algorithm/Model Implementation")
 para("Two excerpts show how the algorithms of Section 3.5 are implemented. The cycle query "
      "prunes hops by an ISO 8601 cutoff during expansion and stops at the first match, because "
      "only existence matters:")
-code_block("""MATCH path = (a:Account {account_id: $sender})-[:SENT*2..4]->(a)
-WHERE all(r IN relationships(path)
-          WHERE r.timestamp IS NOT NULL AND r.timestamp >= $cutoff)
-WITH [r IN relationships(path) | r.timestamp] AS times
-WHERE all(i IN range(0, size(times) - 2) WHERE times[i + 1] >= times[i])
-RETURN 1 AS hit
-LIMIT 1""")
 para("The explanation guard matches the first five letters of each distinctive word in the "
      "flag codes, so that prose saying “blacklist” satisfies BLACKLISTED_ACCOUNT, while "
      "ignoring generic words such as “risk” that ordinary prose contains:")
@@ -836,7 +818,7 @@ code_block("""def _explanation_matches_flags(explanation, all_flags):
         if len(word) >= 4 and word not in GENERIC_FLAG_WORDS
     )""")
 section("4.8 Prototype/User Interface")
-para("The analyst dashboard is a React page served by Vite (Figure 4.2), laid out as an "
+para("The analyst dashboard is a React page served by Vite (Figure 4.1), laid out as an "
      "analytics console with a light and a dark theme. Six figures run across the top: "
      "transactions scored, the number flagged, the number blocked, the rupee value flagged, "
      "the average risk score and the count of layer failures.")
@@ -851,7 +833,7 @@ para("The Analyze transaction button opens a side panel. It shows the rule-and-g
      "decision straight away, marks the language-model layer as still scoring, and swaps in "
      "the final score and explanation once the background task finishes.")
 figure(SHOT, "Dashboard — key figures, decisions by day, decision mix, category and signal breakdowns")
-para("The review queue (Figure 4.3) lists recent REVIEW and BLOCK decisions with filters, "
+para("The review queue (Figure 4.2) lists recent REVIEW and BLOCK decisions with filters, "
      "search and sorting, and shows the signals that fired as labels, with a failed layer "
      "marked in the row. Selecting a row opens a side panel with the transaction's details, its "
      "signals grouped by the layer that raised them, the model's explanation and a one-hop "
@@ -867,7 +849,8 @@ para("The layers are integrated in the analyse route. The rule engine and graph 
      "banded again. The unique index on the "
      "transaction identifier turns a retried submission into a 409 response rather than a "
      "duplicate record. The dashboard polls the stored record every three seconds until the "
-     "pending flag clears. The API documents itself through its OpenAPI page (Figure 4.4).")
+     "pending flag clears. The API documents itself through an OpenAPI page listing all "
+     "eighteen routes.")
 para("Two component routes support recovery. One reports whether Redis, Neo4j, ChromaDB and "
      "Ollama are answering; the other restarts a single scoring component by dropping its client "
      "and checking its dependency again. Both require the API key. They do not start or stop "
@@ -875,10 +858,8 @@ para("Two component routes support recovery. One reports whether Redis, Neo4j, C
      "failed layer appears on the dashboard as a highlighted panel with its error and a button "
      "that calls the restart route; the transaction stays in review, and later transactions use "
      "the restarted component.")
-figure(os.path.join(ASSETS, "api-docs.png"), "Interactive API documentation — 17 routes")
 para("For deployment the stack is defined in Docker Compose as five containers, with the "
-     "language model on the host (Figure 4.5).")
-figure("08-deployment.png", "Deployment diagram — Docker Compose")
+     "language model on the host; the deployment diagram is in the specification.")
 
 # ───────────────────────── CHAPTER 5 ─────────────────────────
 chapter("Experimental Setup and Evaluation")
@@ -906,18 +887,11 @@ para("The figures throughout this chapter come from a single run, made after all
      "5.5 are read from what the pipeline awarded rather than reconstructed from flag "
      "weights.")
 section("5.2 Evaluation Metrics")
-table("Metrics",
-      ["Metric", "Definition"],
-      [["Precision", "Flagged transactions that are fraud (Equation 3.7)"],
-       ["Recall", "Fraud transactions that are flagged"],
-       ["F1", "Harmonic mean of precision and recall"],
-       ["Flagged view", "REVIEW or BLOCK counts as a detection"],
-       ["Blocked view", "Only BLOCK counts as a detection"],
-       ["False-positive rate", "Legitimate transactions that are flagged"],
-       ["Prevalence-adjusted precision", "Precision at 0.1% fraud (Equation 3.8)"],
-       ["Latency", "Mean, median, p95 and maximum response time"],
-       ["Determinism", "Spread of scores for one transaction submitted repeatedly"]],
-      widths=[2.0, 4.0])
+para("Precision is the share of flagged transactions that are fraudulent and recall the "
+     "share of fraud that is flagged, both by Equation 3.7, with F1 their harmonic mean. A "
+     "detection counts as flagged when the decision is REVIEW or BLOCK; the stricter blocked "
+     "view counts only BLOCK. Latency is reported as mean, median, p95 and maximum, and "
+     "determinism as the spread of scores when one transaction is submitted repeatedly.")
 section("5.3 Experimental Results")
 table("Confusion matrix at REVIEW 40, BLOCK 70",
       ["Decision", "Actually fraud", "Actually legitimate"],
@@ -940,13 +914,6 @@ para(f"The composite scores of the two classes barely overlap (Figure 5.1). All 
      f"above and {CONF['BLOCK']['fraud']} of them reached the block threshold of 70.")
 figure(os.path.join(ASSETS, "score-distribution.png"), "Composite score by true label")
 _by = lambda p: [r for r in LAYERS if r["pattern"] == p]
-table("Results by planted pattern",
-      ["Pattern", "Transactions", "Flagged", "Mean score"],
-      [[name, len(_by(p)), sum(r["composite_score"] >= 40 for r in _by(p)),
-        f"{mean(r['composite_score'] for r in _by(p)):.1f}"]
-       for name, p in [("Mule ring", "mule_ring"), ("Shared IP", "shared_ip"),
-                       ("Shared device", "shared_device"), ("Legitimate", "normal")]],
-      widths=[1.6, 1.3, 1.1, 1.3])
 para("Four scenarios were also run against the live system on 11 September 2026, each with "
      "account identifiers not used before (Table 5.6).")
 table("Scenario tests on the running system",
@@ -1014,12 +981,6 @@ para("Figure 5.3 shows where the points come from for each planted pattern. Mule
 figure(os.path.join(ASSETS, "layer-points-by-pattern.png"), "Mean layer points by planted pattern")
 _fraud = [r for r in LAYERS if r["label"] == "fraud"]
 _legit = [r for r in LAYERS if r["label"] == "legit"]
-table("Mean layer points by true label",
-      ["Label", "Rule", "Graph", "LLM", "Composite"],
-      [[name, f"{mean(r['rule_score'] for r in g):.1f}", f"{mean(r['graph_score'] for r in g):.1f}",
-        f"{mean(r['rag_score'] for r in g):.1f}", f"{mean(r['composite_score'] for r in g):.1f}"]
-       for name, g in (("Fraud", _fraud), ("Legitimate", _legit))],
-      widths=[1.4, 0.9, 0.9, 0.9, 1.1])
 section("5.6 Performance Analysis")
 table("Response time after the decision-path split (29 requests)",
       ["Measure", "Value"],
@@ -1363,99 +1324,6 @@ for i, r in enumerate([
 
 # ────────────────── APPENDICES ──────────────────
 chapter("Appendices", numbered=False)
-section("Appendix A — Sample Database Records")
-para("One record from each store, read from the running system on 11 September 2026. The "
-     "transaction's explanation is shortened where marked.")
-for heading, block in [
-    ("MongoDB — accounts collection", """{
-  "account_id": "ACC-014",
-  "owner_name": "Nadia Osei",
-  "avg_monthly_transaction": 88000.0,
-  "is_blacklisted": true,
-  "country_code": "CA",
-  "risk_tier": "high"
-}"""),
-    ("MongoDB — transactions collection", """{
-  "tx_id": "REHEARSE-1789102514-2",
-  "sender_account_id": "ACC-013",
-  "receiver_account_id": "ACC-451",
-  "amount": 704000.0,
-  "currency": "INR",
-  "merchant_category": "wire_transfer",
-  "device_id": "DEV-FRAUD-A",
-  "ip_address": "203.0.113.66",
-  "composite_score": 83,
-  "decision": "BLOCK",
-  "explanation": "Triggered signals: AMOUNT_ANOMALY (₹704000 vs avg
-      ₹52000); HIGH_RISK_MERCHANT (wire_transfer); HIGH_RISK_SENDER_TIER;
-      SHARED_DEVICE (8 accounts on device DEV-FRAUD-A); SHARED_IP (12
-      accounts on IP 203.0.113.66); FRAUD_CLUSTER_PROXIMITY (5 fraud
-      neighbors); wire_fraud. A massive wire transfer [...]",
-  "rag_pending": false,
-  "created_at": "2026-09-11T04:55:16.568000"
-}"""),
-    ("Neo4j — node and relationships", """(:Account {account_id: "ACC-451", risk_label: "fraud"})
-  -[:SENT {tx_id: "STX-00001", amount: 7197.13,
-           timestamp: "2026-06-01T00:00:00"}]->
-(:Account {account_id: "ACC-452"})
-
-(:Account {account_id: "ACC-451"})
-  -[:USED_DEVICE]->
-(:Device {device_id: "DEV-FRAUD-A"})"""),
-    ("Redis — velocity window", """key     velocity:ACC-953          (sorted set, 600 second window)
-member  "1789103111.565832:1e9ec825"
-score   1789103111.565832"""),
-    ("ChromaDB — fraud_patterns collection", """id        p05
-metadata  {"type": "money_mule"}
-document  Mule fee skimming: funds pass through a chain of accounts with
-          each hop forwarding 85-95% of the amount received, the remainder
-          kept as the mule's cut. Amounts that shrink hop-by-hop are the
-          signature."""),
-]:
-    para(heading, bold=True, align=WD_ALIGN_PARAGRAPH.LEFT, after=4).paragraph_format.keep_with_next = True
-    code_block(block)
-
-section("Appendix B — Automated Test Suite")
-para("The 101 tests run without a database or network connection (pytest tests/ -q) and are "
-     "grouped below by what they protect.")
-for heading, items in [
-    ("tests/test_fraud.py — scoring layers, decision engine, failures and security (79 tests)", [
-        "Rule engine: blacklist returns the maximum score; amount-anomaly and velocity flags; a "
-        "clean transaction scores zero.",
-        "Banking anomalies: structuring only just under the threshold; dormancy after 180 days; "
-        "a new beneficiary only for an account with history and a large amount; pass-through, "
-        "fan-out and odd-hour boundaries in India time; all anomalies share the 40-point cap. "
-        "Each of the other nineteen anomaly rules has one case that fires and one just outside "
-        "its condition.",
-        "Layer failures: Redis down marks the rule engine as failed and Neo4j down the graph "
-        "analyzer; a failed layer raises an approval to review but keeps an earned block; a "
-        "failed model contributes no text; error-flag words are not evidence; two failures are "
-        "named in one sentence; a background timeout is recorded; multi-line errors are "
-        "flattened; an exception with no message is still named.",
-        "Component restart: an unknown component is rejected; restart resets the client and "
-        "reports the dependency's status.",
-        "API key: a wrong or missing key is rejected; the configured key is accepted.",
-        "Dashboard statistics: flag codes are read from an explanation whose details contain "
-        "full stops; per-decision counts are pivoted with their totals.",
-        "RAG pipeline: the prompt carries the rule and graph flags, renders “(none)” when "
-        "there are none, and returns a score and explanation on success and on failure.",
-        "Decision engine: the approve, review and block bands; the composite cap at 100; the "
-        "explanation guard's fallback, acceptance, generic-word handling, flag-detail matching "
-        "and skipping while pending."]),
-    ("tests/test_eval.py — evaluation harness (22 tests)", [
-        "Classification bands match the decision engine.",
-        "Precision, recall and F1, including empty inputs without division by zero.",
-        "Confusion-matrix counting and the flagged versus blocked views.",
-        "The threshold sweep, including reporting no block threshold when none is reachable.",
-        "Ring recall, deterministic generation of the labelled set and namespaced run "
-        "identifiers.",
-        "Parsing the language model's JSON when it echoes an example or adds prose.",
-        "Precision at realistic prevalence and its edge cases.",
-        "PaySim replay: row-to-transaction mapping and the per-rule and threshold summary."]),
-]:
-    para(heading, bold=True, align=WD_ALIGN_PARAGRAPH.LEFT, after=4).paragraph_format.keep_with_next = True
-    bullets(items)
-
 section("Appendix C — Reproducing the Results")
 code_block("""# 1. Start the stack natively with a fresh seed (or: docker compose up --build)
 ./scripts/run_local.sh --seed
