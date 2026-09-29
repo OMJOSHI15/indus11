@@ -245,7 +245,8 @@ term_table([
 ])
 
 FRONT_MATTER = ["CERTIFICATE", "ACKNOWLEDGEMENT", "ABSTRACT", "KEYWORDS",
-                "LIST OF FIGURES", "LIST OF TABLES", "LIST OF ABBREVIATIONS"]
+                "TABLE OF CONTENTS", "LIST OF FIGURES", "LIST OF TABLES",
+                "LIST OF ABBREVIATIONS"]
 start_body_numbering()
 
 # ───────────────────────── CHAPTER 1 ─────────────────────────
