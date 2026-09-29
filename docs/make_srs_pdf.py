@@ -55,13 +55,15 @@ def page_of_each_heading():
 
     found = {}
     for number, page in enumerate(text.split("\f"), start=1):
-        # The contents itself names every heading, and is the only place with
-        # dot leaders, so skipping leader pages skips exactly those pages.
-        if re.search(r"\.{5,}", page):
-            continue
+        # Every heading is also named on the contents page, and in the lists of
+        # figures and tables, always on a line of leader dots. Dropping those
+        # lines leaves the real headings; dropping the whole page would lose
+        # the headings that sit above the lists' own dotted entries.
+        body = "\n".join(line for line in page.split("\n")
+                         if not re.search(r"\.{5,}", line))
         # A long chapter title wraps onto two centred lines, so compare with
         # runs of whitespace collapsed rather than line by line.
-        flat = re.sub(r"\s+", " ", page)
+        flat = re.sub(r"\s+", " ", body)
         for h in headings:
             if h not in found and h in flat:
                 found[h] = number

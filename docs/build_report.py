@@ -329,7 +329,8 @@ table("Design questions and where they are answered",
         "Section 5.8"],
        ["Q5", "Does an identical transaction always receive an identical score?",
         "Section 5.6"]],
-      widths=[0.5, 4.3, 1.2])
+      widths=[0.5, 4.3, 1.2],
+      note="The three questions the project set out to answer, each paired with the section that reports the measurement answering it.")
 section("1.7 Contributions")
 bullets([
     "A five-layer decision pipeline in which the rule engine and graph analyzer decide "
@@ -408,7 +409,8 @@ table("Technologies and methods considered",
         "evidence", "Not used"],
        ["Retrieval + language model", "Written explanation from context", "Slow, can "
         "invent details", "Layer 4, after the decision"]],
-      size=10)
+      size=10,
+      note="The detection methods weighed for this system, what each is good and poor at, and whether Indus11 ended up using it.")
 section("2.3 Recent Research")
 para("The reviews by Motie and Raahemi [5] and by Cheng and colleagues [6] document how "
      "quickly graph neural networks have become the dominant research direction for "
@@ -442,7 +444,8 @@ table("Commercial fraud platforms compared with Indus11",
         "None for rules and graph"],
        ["Deployment", "Licensed", "Licensed", "Licensed (Visa since 2024)",
         "Open-source stack, runs locally"]],
-      size=9.5)
+      size=9.5,
+      note="Three commercial fraud platforms set against Indus11 on method, graph analysis and explainability. Their entries come from vendor material and were not measured here.")
 section("2.5 Research/Technical Gap")
 bullets([
     "Commercial explanations are reason codes from a fixed vocabulary; the analyst still has "
@@ -482,7 +485,8 @@ para("Five layers make up the system (Figure 3.1). The FastAPI gateway is Layer 
      "That leaves Layer 4, the retrieval-augmented pipeline, which runs once the response "
      "has already been sent. It sat inside the request path until the first project review, "
      "where its latency was judged incompatible with a payment decision.")
-figure("01-architecture.png", "System architecture — five-layer pipeline")
+figure("01-architecture.png", "System architecture — five-layer pipeline",
+      note="The five layers a transaction passes through. The three scoring layers run concurrently and read four separate stores; their scores meet in the decision engine, which returns the band and the explanation.")
 section("3.3 System Components")
 table("System components",
       ["Component", "Technology", "Responsibility"],
@@ -493,13 +497,15 @@ table("System components",
        ["Decision engine", "Python", "Composite score, decision band, explanation guard"],
        ["Document store", "MongoDB, Beanie", "Accounts and the audit trail of decisions"],
        ["Dashboard", "React, Vite, Recharts", "Statistics, flagged transactions, override"]],
-      size=10)
+      size=10,
+      note="Each component of the pipeline, the technology it is built on, and the single responsibility it holds.")
 section("3.4 Workflow/Data Flow")
 para("Figure 3.2 decomposes the system into seven processes and five data stores. The "
      "activity and sequence diagrams in the specification follow one transaction across the "
      "participants and show the calls in the order they occur, including the point at which "
      "the response is returned and the background work begins.")
-figure("final-dfd1.png", "Data flow diagram — Level 1")
+figure("final-dfd1.png", "Data flow diagram — Level 1",
+      note="The same pipeline seen as data rather than components: the processes that turn a submitted transaction into a stored decision, and the stores each one reads from and writes to.")
 section("3.5 Proposed Algorithm/Model")
 para("The scoring model is additive and transparent: each check that fires adds a fixed "
      "number of points and a flag that names it, and each layer is capped at its budget. "
@@ -584,7 +590,8 @@ table("Parameters and their configured values",
        ["Background concurrency and timeout", "4 tasks, 180 s", "transactions.py"],
        ["Profile cache TTL", "300 s", "transactions.py"],
        ["Rate limits", "120/min overall, 30/min on analyse", "rate_limit.py"]],
-      size=10)
+      size=10,
+      note="Every tunable value the system runs on, the setting used for the reported results, and the file or environment variable that holds it.")
 para("The 40/30/30 split follows the certainty of each layer's evidence. The rule engine "
      "checks facts, the graph layer infers from structure, and the language model infers from "
      "similarity. The rule budget sits below the block threshold on purpose: no single layer "
@@ -625,7 +632,8 @@ table("Hardware requirements and the development machine",
       [["Processor", "64-bit x86 or ARM", "Apple M4 (arm64)"],
        ["Memory", "8 GB", "16 GB"],
        ["Graphics processor", "Not required", "None used"],
-       ["Disk", "About 5 GB free", "Solid-state"]])
+       ["Disk", "About 5 GB free", "Solid-state"]],
+      note="The minimum machine the stack needs, beside the machine on which every measurement in this report was produced.")
 section("4.2 Software Requirements")
 table("Software used and versions",
       ["Software", "Version", "Purpose"],
@@ -642,7 +650,8 @@ table("Software used and versions",
        ["React / Vite / Recharts", "18.3 / 5.2 / 2.12", "Dashboard"],
        ["Node.js", "26.5.0", "Dashboard build"],
        ["pytest / httpx", "8.2.1 / 0.27.0", "Tests and evaluation client"]],
-      size=10)
+      size=10,
+      note="Every runtime and library the system depends on, pinned to the exact version the reported results were produced with.")
 para("Each of these is used as its own documentation describes. The API follows the FastAPI "
      "conventions for dependency injection and background tasks [20]; the graph queries are "
      "written against the Cypher manual [21]; the vector store follows the ChromaDB "
@@ -675,7 +684,8 @@ table("Synthetic data sources",
         f"{COUNTS['legit']} ordinary transactions", "scripts/evaluate.py"],
        ["Knowledge base", "58 fraud-pattern documents typed as synthetic identity, money mule, "
         "account takeover, wire fraud and others", "app/services/fraud_kb.py"]],
-      size=10)
+      size=10,
+      note="The three generated datasets the system was built and measured on, what each contains, and the script that produces it deterministically.")
 para("The entity relationship diagram in the specification relates the stored entities "
      "across the two stores that hold them.")
 section("4.5 Data Preprocessing")
@@ -709,7 +719,8 @@ table("Modules and responsibilities",
        ["Decision engine", "app/services/decision_engine.py", "Drashti Dedaniya"],
        ["Dashboard", "dashboard/src", "Drashti Dedaniya"],
        ["Evaluation harness", "scripts/evaluate.py", "Team"]],
-      size=10)
+      size=10,
+      note="Each module of the system, the file it lives in, and the team member who owns it.")
 sub("Rule engine")
 para("The rule engine is one asynchronous function that receives the transaction and both "
      "profiles. It returns the maximum score immediately for a blacklisted party; otherwise it "
@@ -747,7 +758,8 @@ table("Banking anomalies detected (1 to 18)",
        ['16', 'New device on an established account, ₹50,000 or more', 'Rule', '8'],
        ['17', 'New IP address on an established account, ₹50,000 or more', 'Rule', '6'],
        ['18', 'Device hopping: more than 3 devices in 24 h', 'Rule', '8']],
-      widths=[0.35, 3.4, 0.75, 0.6], size=9)
+      widths=[0.35, 3.4, 0.75, 0.6], size=9,
+      note="The first eighteen of the thirty-five banking anomalies the system detects, each with the layer that catches it and the points it contributes to the composite score.")
 table("Banking anomalies detected (19 to 35)",
       ["#", "Anomaly", "Layer", "Points"],
       [['19', 'Daily outflow over 10 × the usual payment', 'Rule', '8'],
@@ -767,7 +779,8 @@ table("Banking anomalies detected (19 to 35)",
        ['33', 'Circular flow back to the sender within 4 hops and 72 h', 'Graph', '12'],
        ['34', 'Mule chain keeping 75–100% at each hop', 'Graph', '8'],
        ['35', 'Receiver within two links of a known fraud account', 'Graph', '10']],
-      widths=[0.35, 3.4, 0.75, 0.6], size=9)
+      widths=[0.35, 3.4, 0.75, 0.6], size=9,
+      note="The remaining seventeen anomalies, with their layer and point weight. The fifteen types that are still not detected are set out in Section 6.6 with the data each would need.")
 para("The remaining fifteen need data this system never receives, and are recorded here "
      "rather than dropped. Five want channel or balance information: cash spread across "
      "branches, a deposit followed by a withdrawal in another city, an account emptied to "
@@ -832,14 +845,16 @@ para("Below them sit the charts, all of them computed over every stored transact
 para("The Analyze transaction button opens a side panel. It shows the rule-and-graph "
      "decision straight away, marks the language-model layer as still scoring, and swaps in "
      "the final score and explanation once the background task finishes.")
-figure(SHOT, "Dashboard — key figures, decisions by day, decision mix, category and signal breakdowns")
+figure(SHOT, "Dashboard — key figures, decisions by day, decision mix, category and signal breakdowns",
+      note="The analyst's opening screen: totals across the top, decisions per active day, the approve, review and block mix, and risk broken down by merchant category and by amount band.")
 para("The review queue (Figure 4.2) lists recent REVIEW and BLOCK decisions with filters, "
      "search and sorting, and shows the signals that fired as labels, with a failed layer "
      "marked in the row. Selecting a row opens a side panel with the transaction's details, its "
      "signals grouped by the layer that raised them, the model's explanation and a one-hop "
      "drawing of the sender's graph neighbourhood; a transaction under review can be approved "
      "or blocked from there. Every decision carries a text label and an icon as well as a colour.")
-figure(os.path.join(ASSETS, "dashboard-flags.png"), "Dashboard — review queue with triggered signals")
+figure(os.path.join(ASSETS, "dashboard-flags.png"), "Dashboard — review queue with triggered signals",
+       note="The queue a person works from. Every row carries the transaction, its composite score, the decision and the signals that fired, so the reason for the hold is readable without opening the record.")
 section("4.9 System Integration")
 para("The layers are integrated in the analyse route. The rule engine and graph analyzer run "
      "under asyncio.gather, so the response waits for the slower of the two rather than their "
@@ -874,7 +889,8 @@ table("Experimental setup",
                      "language-model result"],
        ["Thresholds", "REVIEW 40, BLOCK 70"],
        ["Run date", EVAL["generated_at"][:10]]],
-      widths=[1.4, 4.6])
+      widths=[1.4, 4.6],
+      note="The machine, the software stack and the labelled dataset on which every figure in this chapter was produced.")
 para("The harness posts every labelled transaction to the analyse endpoint and waits for "
      "the background layer to finish before recording a result. An earlier version recorded "
      "the immediate response instead, which omitted the language model from every "
@@ -896,7 +912,8 @@ section("5.3 Experimental Results")
 table("Confusion matrix at REVIEW 40, BLOCK 70",
       ["Decision", "Actually fraud", "Actually legitimate"],
       [[d, CONF[d]["fraud"], CONF[d]["legit"]] for d in ("APPROVE", "REVIEW", "BLOCK")],
-      widths=[1.6, 1.6, 1.8])
+      widths=[1.6, 1.6, 1.8],
+      note="Every decision on the labelled set against its true label. No fraud appears in the approved row; most of the fraud that was caught lands in review rather than block.")
 table("Headline results",
       ["Measure", "Value"],
       [["Precision (flagged)", f"{FLAGGED['precision']:.3f}"],
@@ -907,12 +924,14 @@ table("Headline results",
        ["Ring transactions flagged by the graph layer",
         f"{GRAPH['graph_flagged']} of {GRAPH['ring_transactions']}"],
        ["BLOCK decisions", f"{CONF['BLOCK']['fraud'] + CONF['BLOCK']['legit']}"]],
-      widths=[3.2, 1.8])
+      widths=[3.2, 1.8],
+      note="Precision, recall, F1 and the false-positive rate for flagged transactions, all computed from the confusion matrix above.")
 para(f"The composite scores of the two classes barely overlap (Figure 5.1). All but "
      f"{CONF['REVIEW']['legit'] + CONF['BLOCK']['legit']} legitimate transactions scored "
      f"below 40, most of them below 10, while every fraudulent transaction reached 40 or "
      f"above and {CONF['BLOCK']['fraud']} of them reached the block threshold of 70.")
-figure(os.path.join(ASSETS, "score-distribution.png"), "Composite score by true label")
+figure(os.path.join(ASSETS, "score-distribution.png"), "Composite score by true label",
+       note="How far the composite score separates fraudulent from legitimate transactions on the labelled set. The overlap near the review threshold is what sends genuine transactions to a person.")
 _by = lambda p: [r for r in LAYERS if r["pattern"] == p]
 para("Four scenarios were also run against the live system on 11 September 2026, each with "
      "account identifiers not used before (Table 5.6).")
@@ -922,7 +941,8 @@ table("Scenario tests on the running system",
        ["Blacklisted sender, ₹5,000 groceries", "40 + 0 + 28 = 68", "REVIEW"],
        ["₹7,04,000 wire into a device and IP cluster", "25 + 30 + 28 = 83", "BLOCK"],
        ["Fourth transfer around a new three-account ring", "10 + 20 + 28 = 58", "REVIEW"]],
-      widths=[3.0, 1.9, 1.1])
+      widths=[3.0, 1.9, 1.1],
+      note="Four transactions submitted to the running system, showing the points each layer contributed and the decision that came back.")
 section("5.4 Comparison with Existing/Baseline Methods")
 para("Two baselines are available. The first is the conventional approach this project "
      "started from: single-transaction rules alone. At the configured review threshold the "
@@ -934,7 +954,8 @@ table("Rule-only baseline against the full pipeline",
       [["Rules only", "0.000", "0.000", "0.000"],
        ["Full pipeline", f"{FLAGGED['precision']:.3f}", f"{FLAGGED['recall']:.3f}",
         f"{FLAGGED['f1']:.3f}"]],
-      widths=[2.0, 1.2, 1.2, 1.2])
+      widths=[2.0, 1.2, 1.2, 1.2],
+      note="The rule engine on its own against all three layers over the same data. Single-transaction rules catch none of this fraud, which is why the other two layers exist.")
 table("The pipeline at three points in its development",
       ["Measure", "Before Review 1", "Five rules", "Thirty rules"],
       [["Precision", "0.938", "0.978", f"{FLAGGED['precision']:.3f}"],
@@ -945,7 +966,8 @@ table("The pipeline at three points in its development",
        ["Ring transactions flagged", "35 of 36", "36 of 36",
         f"{GRAPH['graph_flagged']} of {GRAPH['ring_transactions']}"],
        ["Mean response time", "14,046 ms", "124 ms", "124 ms"]],
-      widths=[2.2, 1.2, 1.0, 1.1])
+      widths=[2.2, 1.2, 1.0, 1.1],
+      note="The same measurements taken at three stages: before Review 1, after five rules, and after thirty. Precision climbs as the banking anomaly rules are added.")
 para("The first column is the pipeline as it stood at Review 1, with the language model "
      "inside the decision path. The second is the same five-rule pipeline after the "
      "circular-flow query was given its time window. The third is the pipeline measured in "
@@ -971,14 +993,17 @@ table("Ablation by layer combination (REVIEW at 40)",
       ["Layers", "Precision", "Recall", "F1", "TP", "FP"],
       [[a["layers"], f"{a['precision']:.3f}", f"{a['recall']:.3f}", f"{a['f1']:.3f}",
         a["tp"], a["fp"]] for a in ABLATION],
-      widths=[1.4, 1.0, 1.0, 1.0, 0.6, 0.6])
-figure(os.path.join(ASSETS, "ablation.png"), "Precision, recall and F1 by layer combination")
+      widths=[1.4, 1.0, 1.0, 1.0, 0.6, 0.6],
+      note="Each combination of layers measured separately, with true and false positive counts, at a review threshold of 40.")
+figure(os.path.join(ASSETS, "ablation.png"), "Precision, recall and F1 by layer combination",
+       note="The ablation of Table 5.7 drawn as bars: what each combination of layers achieves alone and in company, with the review threshold held at 40.")
 para("Figure 5.3 shows where the points come from for each planted pattern. Mule-ring and "
      "shared-IP transactions receive most of their points from the graph and language-model "
      "layers. Shared-device transactions receive graph points but only two language-model "
      "points on average, which is why seven of the ten fall below 40. Legitimate traffic "
      "averages 6.4 points in total.")
-figure(os.path.join(ASSETS, "layer-points-by-pattern.png"), "Mean layer points by planted pattern")
+figure(os.path.join(ASSETS, "layer-points-by-pattern.png"), "Mean layer points by planted pattern",
+       note="The average points each layer contributes to every planted fraud pattern, showing which layer is carrying which pattern rather than assuming all three share the work.")
 _fraud = [r for r in LAYERS if r["label"] == "fraud"]
 _legit = [r for r in LAYERS if r["label"] == "legit"]
 section("5.6 Performance Analysis")
@@ -988,7 +1013,8 @@ table("Response time after the decision-path split (29 requests)",
        ["Maximum", "287 ms"], ["Within the 500 ms budget", "29 of 29"],
        ["Rule engine", "8 ms"], ["Graph analyzer", "about 20 ms"],
        ["Language-model layer (after the response)", "13–14 s"]],
-      widths=[3.2, 1.6])
+      widths=[3.2, 1.6],
+      note="Response time over 29 requests once the language-model layer was moved off the decision path, with the cost of each layer shown separately.")
 para("The response time fell from 14,046 ms to a mean of 124 ms when the language model was "
      "moved out of the request path. The graph layer's cycle query needed separate work, "
      "summarised in Table 5.12.")
@@ -997,7 +1023,8 @@ table("Circular-flow check: correctness and cost",
       [["No time window", "44.9%", "260 ms"],
        ["72 h window, counting every path", "0.0%", "1,800 ms"],
        ["72 h window, existence check", "10.3%", "about 20 ms"]],
-      widths=[2.8, 1.6, 1.3])
+      widths=[2.8, 1.6, 1.3],
+      note="Three versions of the cycle query: the time window that removes most false positives, and the existence check that makes the query affordable.")
 para("Determinism was measured by submitting one wire transfer five times. At Ollama's default "
      "temperature the language-model scores were 26, 20, 20, 21 and 22. With the temperature "
      "set to zero all five were 20.")
@@ -1207,7 +1234,8 @@ table("Deployment risks",
        ["Default credentials", "Unauthorised database access", "Set secrets per environment"],
        ["Residual prompt injection", "Distorted LLM score", "LLM capped at 30 points"],
        ["Threshold choice", "Missed fraud or blocked customers", "Tune on real data"]],
-      size=10)
+      size=10,
+      note="What could go wrong once the system is deployed, the effect of each, and the mitigation already in place or planned.")
 
 # ───────────────────────── CHAPTER 8 ─────────────────────────
 chapter("Conclusion and Future Work")

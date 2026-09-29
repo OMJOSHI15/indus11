@@ -257,7 +257,7 @@ def bullet(text, indent=0.35):
     return p
 
 
-def figure(png, title, max_h=MAX_FIG_H):
+def figure(png, title, max_h=MAX_FIG_H, note=None):
     """Embed a rendered diagram with a chapter-scoped caption. max_h lowers the
     height cap when a full-width figure would leave its section heading stranded
     on an otherwise empty page."""
@@ -276,11 +276,21 @@ def figure(png, title, max_h=MAX_FIG_H):
     pic.paragraph_format.space_before = Pt(6)
     pic.paragraph_format.space_after = Pt(2)
     para(f"{label}: {title}", size=11, bold=True,
-         align=WD_ALIGN_PARAGRAPH.CENTER, after=10, spacing=LINE)
+         align=WD_ALIGN_PARAGRAPH.CENTER, after=2 if note else 10, spacing=LINE)
+    if note:
+        _note(note)
     figures.append((label, title))
 
 
-def table(title, headers, rows, widths=None, size=10.5):
+def _note(text):
+    """One or two lines under a figure or a table saying what it shows."""
+    p = para(text, size=10.5, align=WD_ALIGN_PARAGRAPH.JUSTIFY, after=10, spacing=1.0)
+    for r in p.runs:
+        r.italic = True
+    return p
+
+
+def table(title, headers, rows, widths=None, size=10.5, note=None):
     """Caption above the table, centred bold headers, no fill, and columns sized
     to their contents so a narrow column does not hold a gap open beside it."""
     global _tbl_n
@@ -315,7 +325,10 @@ def table(title, headers, rows, widths=None, size=10.5):
             r.font.size, r.font.name = Pt(size), FONT
     _apply_widths(t, _column_widths(headers, rows, size))
     keep_on_one_page(t)
-    para("", after=10, spacing=LINE)
+    if note:
+        _note(note)          # its own space_after separates the table from the text
+    else:
+        para("", after=10, spacing=LINE)
     tables.append((label, title))
     if rows:
         # The longest word of each end row: a whole word survives the wrapping
@@ -475,9 +488,14 @@ def fill(anchor, heading_text, items):
     cursor = anchor
     for label, title in items:
         p = doc.add_paragraph()
+        p.alignment = WD_ALIGN_PARAGRAPH.LEFT
         p.paragraph_format.line_spacing = LINE
-        p.paragraph_format.space_after = Pt(2)
-        run = p.add_run(f"{label}:  {title}")
+        p.paragraph_format.space_after = Pt(4)
+        # Laid out like the contents page — leader dots running to the right
+        # margin — but the trailing tab carries no page number.
+        p.paragraph_format.tab_stops.add_tab_stop(
+            Inches(USABLE_W), WD_TAB_ALIGNMENT.RIGHT, WD_TAB_LEADER.DOTS)
+        run = p.add_run(f"{label}:  {title}\t")
         run.font.size, run.font.name = Pt(BODY), FONT
         cursor._p.addnext(p._p)
         cursor = p
