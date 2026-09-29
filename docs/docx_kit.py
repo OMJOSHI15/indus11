@@ -50,6 +50,7 @@ FONT = "Times New Roman"
 BODY, SUB, CHAP = 12, 14, 16
 LINE = 1.5                # every body paragraph, no exceptions
 CELL_LINE = 1.0           # inside tables: single, the usual convention even at 1.5
+KEEP_UP_TO = 24           # rows; a longer table may break across a page
 INK = RGBColor(0, 0, 0)
 MARGIN = 1.0               # inches; 2.54 cm on all four sides
 USABLE_W = 8.5 - 2 * MARGIN
@@ -412,10 +413,15 @@ def keep_on_one_page(t):
     """
     for row in t.rows:
         row._tr.get_or_add_trPr().append(OxmlElement("w:cantSplit"))
-    for row in t.rows[:-1]:
-        for cell in row.cells:
-            for p in cell.paragraphs:
-                p.paragraph_format.keep_with_next = True
+    # A table taller than the text area has to break somewhere. Holding its
+    # rows together only pushes the whole thing onto the next page, where it
+    # breaks anyway, leaving the page before it half empty. Past this many rows
+    # it breaks where it falls and the header row repeats on the continuation.
+    if len(t.rows) <= KEEP_UP_TO:
+        for row in t.rows[:-1]:
+            for cell in row.cells:
+                for p in cell.paragraphs:
+                    p.paragraph_format.keep_with_next = True
     t.rows[0]._tr.get_or_add_trPr().append(OxmlElement("w:tblHeader"))
 
 

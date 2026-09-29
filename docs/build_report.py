@@ -40,11 +40,18 @@ def sub(text):
     return p
 
 
-def eq(expression, number):
-    p = para("", align=WD_ALIGN_PARAGRAPH.CENTER, after=6)
-    r = p.add_run(expression)
-    r.italic, r.font.size, r.font.name = True, Pt(BODY), FONT
-    r = p.add_run(f"        ({number})")
+def eq(expression, number, size=BODY):
+    """The expression centred on the line, its number flush with the right
+    margin, so every number in the chapter lands in the same column. An
+    expression that would wrap takes a smaller size instead: a wrapped line
+    pushes its number out of that column."""
+    p = para("", align=WD_ALIGN_PARAGRAPH.LEFT, after=6)
+    stops = p.paragraph_format.tab_stops
+    stops.add_tab_stop(Inches(USABLE_W / 2), WD_TAB_ALIGNMENT.CENTER)
+    stops.add_tab_stop(Inches(USABLE_W), WD_TAB_ALIGNMENT.RIGHT)
+    r = p.add_run("\t" + expression)
+    r.italic, r.font.size, r.font.name = True, Pt(size), FONT
+    r = p.add_run(f"\t({number})")
     r.font.size, r.font.name = Pt(BODY), FONT
     return p
 
@@ -199,10 +206,6 @@ for text, stale in [
     r.font.size, r.font.name = Pt(BODY), FONT
     if stale:
         r.font.highlight_color = WD_COLOR_INDEX.YELLOW
-para("KEYWORDS", SUB, True, WD_ALIGN_PARAGRAPH.LEFT, 4)
-para("Fraud detection, explainable AI, graph analytics, retrieval-augmented generation, "
-     "risk scoring", italic=True)
-
 new_page()
 TOC_ANCHOR = doc.add_paragraph()
 new_page()
@@ -228,9 +231,8 @@ term_table([
     ("TTL", "Time To Live"), ("UML", "Unified Modeling Language"),
 ])
 
-FRONT_MATTER = ["CERTIFICATE", "ACKNOWLEDGEMENT", "ABSTRACT", "KEYWORDS",
-                "TABLE OF CONTENTS", "LIST OF FIGURES", "LIST OF TABLES",
-                "LIST OF ABBREVIATIONS"]
+FRONT_MATTER = ["CERTIFICATE", "ACKNOWLEDGEMENT", "ABSTRACT", "TABLE OF CONTENTS",
+                "LIST OF FIGURES", "LIST OF TABLES", "LIST OF ABBREVIATIONS"]
 start_body_numbering()
 
 # ───────────────────────── CHAPTER 1 ─────────────────────────
@@ -544,8 +546,8 @@ para("The banking anomaly rules use the sender's history kept in Redis: the time
      "payment t_prev, whether it has paid this receiver before, the number of distinct payees "
      "p_24 in the last day and the amount I_24 it received in the last day. With x the amount "
      "and T = ₹10,00,000 the reporting threshold, they fire when")
-eq("0.9 T ≤ x < T;   t − t_prev ≥ 180 d;   new payee ∧ x ≥ ₹50,000;   "
-   "I_24 ≥ ₹10,000 ∧ 0.8 I_24 ≤ x ≤ 1.1 I_24;   p_24 > 5", "3.5a")
+eq("0.9 T ≤ x < T;  t − t_prev ≥ 180 d;  new payee ∧ x ≥ ₹50,000;  "
+   "I_24 ≥ ₹10,000 ∧ 0.8 I_24 ≤ x ≤ 1.1 I_24;  p_24 > 5", "3.5a", size=8)
 para("A cycle of k hops with timestamps t_1 … t_k and amounts a_1 … a_k counts as circular "
      "flow, and as a mule chain, when")
 eq("2 ≤ k ≤ 4,   t − 72 h ≤ t_1 ≤ t_2 ≤ … ≤ t_k;     0.75 a_i ≤ a_(i+1) ≤ a_i", "3.6")
@@ -562,7 +564,7 @@ table("Parameters and their configured values",
       [["Review / block thresholds", "40 / 70", "REVIEW_THRESHOLD, BLOCK_THRESHOLD"],
        ["Layer budgets (rule / graph / LLM)", "40 / 30 / 30", "Layer code"],
        ["Rule weights", "Blacklist 40, velocity 15, amount 12, merchant 8, tier 5 or 2; the 25 "
-        "banking anomaly weights are listed in Tables 4.5 and 4.6", "rule_engine.py"],
+        "banking anomaly weights are listed in Table 4.5", "rule_engine.py"],
        ["Banking anomaly thresholds", "Reporting limit ₹10,00,000; UPI limit ₹1,00,000; large "
         "payment ₹50,000; dormant 180 days; 24 h history windows; impossible travel 900 km/h over "
         "at least 100 km", "rule_engine.py"],
@@ -720,10 +722,10 @@ para("The rule engine is one asynchronous function that receives the transaction
      "Redis cannot be reached, the layer is marked as failed with RULE_ENGINE_ERROR and the "
      "error, rather than failing the whole request.")
 para("Fifty banking anomalies were catalogued. Thirty-five are detected, thirty by the rule "
-     "engine and five by the graph analyzer, and are listed in Tables 4.5 and 4.6 with the "
+     "engine and five by the graph analyzer, and are listed in Table 4.5 with the "
      "points each awards. The rule engine's total stays capped at 40, so many rules firing together "
      "cannot decide a transaction on their own.")
-table("Banking anomalies detected (1 to 18)",
+table("Banking anomalies detected",
       ["#", "Anomaly", "Layer", "Points"],
       [['1', 'Blacklisted sender or receiver', 'Rule', '40'],
        ['2', 'Velocity burst, more than 5 payments in 10 min', 'Rule', '15'],
@@ -742,12 +744,8 @@ table("Banking anomalies detected (1 to 18)",
        ['15', 'Impossible travel: over 900 km/h between located payments', 'Rule', '12'],
        ['16', 'New device on an established account, ₹50,000 or more', 'Rule', '8'],
        ['17', 'New IP address on an established account, ₹50,000 or more', 'Rule', '6'],
-       ['18', 'Device hopping: more than 3 devices in 24 h', 'Rule', '8']],
-      widths=[0.35, 3.4, 0.75, 0.6], size=9,
-      note="The first eighteen of the thirty-five banking anomalies the system detects, each with the layer that catches it and the points it contributes to the composite score.")
-table("Banking anomalies detected (19 to 35)",
-      ["#", "Anomaly", "Layer", "Points"],
-      [['19', 'Daily outflow over 10 × the usual payment', 'Rule', '8'],
+       ['18', 'Device hopping: more than 3 devices in 24 h', 'Rule', '8'],
+       ['19', 'Daily outflow over 10 × the usual payment', 'Rule', '8'],
        ['20', 'Three or more round-amount payments in 24 h', 'Rule', '5'],
        ['21', 'Same amount to the same payee three or more times in 24 h', 'Rule', '8'],
        ['22', 'Back-and-forth: receiver paid the sender in the last 24 h', 'Rule', '8'],
@@ -765,7 +763,7 @@ table("Banking anomalies detected (19 to 35)",
        ['34', 'Mule chain keeping 75–100% at each hop', 'Graph', '8'],
        ['35', 'Receiver within two links of a known fraud account', 'Graph', '10']],
       widths=[0.35, 3.4, 0.75, 0.6], size=9,
-      note="The remaining seventeen anomalies, with their layer and point weight. The fifteen types that are still not detected are set out in Section 6.6 with the data each would need.")
+      note="All thirty-five banking anomalies the system detects, each with the layer that catches it and the points it contributes to the composite score. The fifteen types that are still not detected are set out in Section 6.6 with the data each would need.")
 para("The remaining fifteen need data this system never receives, and are recorded here "
      "rather than dropped. Five want channel or balance information: cash spread across "
      "branches, a deposit followed by a withdrawal in another city, an account emptied to "
@@ -1223,8 +1221,8 @@ table("Deployment risks",
       note="What could go wrong once the system is deployed, the effect of each, and the mitigation already in place or planned.")
 
 # ───────────────────────── CHAPTER 8 ─────────────────────────
-chapter("Conclusion and Future Work")
-section("8.1 Conclusion")
+chapter("Conclusion", numbered=False)
+section("Conclusion")
 para("Indus11 returns an approve, review or block decision for a financial transaction in "
      "124 ms on average by letting deterministic rules and graph queries decide, and attaches "
      "a language-model explanation afterwards that is given the evidence those layers found. "
@@ -1240,14 +1238,14 @@ para(f"The work also produced negative results that are recorded rather than hid
      f"The explanation guard withholds every explanation for transactions flagged only by "
      f"risk tier. And the 156 legitimate transactions in the set are too few to resolve a "
      f"false-alarm rate that matters at one fraud in a thousand.")
-section("8.2 Limitations")
+section("Limitations")
 bullets([
     "Evaluation on synthetic data only, with far denser fraud than a real feed.",
     "Ring closure is not detected on the closing transfer, so the cycle check under-reports.",
     "Explanation guard defect for tier-only flags; explanation accuracy not verified.",
     "Shared-key protection only; latency measured without concurrent load.",
 ])
-section("8.3 Future Work")
+section("Future Work")
 bullets([
     "Evaluate on PaySim or the IEEE-CIS dataset to obtain a realistic precision figure.",
     "Detect a ring on the transfer that closes it, and re-run the evaluation.",

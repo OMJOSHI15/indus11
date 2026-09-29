@@ -54,6 +54,7 @@ def page_of_each_heading():
                           check=True, capture_output=True, text=True).stdout
 
     found = {}
+    pages = []
     for number, page in enumerate(text.split("\f"), start=1):
         # Every heading is also named on the contents page, and in the lists of
         # figures and tables, always on a line of leader dots. Dropping those
@@ -61,9 +62,20 @@ def page_of_each_heading():
         # the headings that sit above the lists' own dotted entries.
         body = "\n".join(line for line in page.split("\n")
                          if not re.search(r"\.{5,}", line))
-        # A long chapter title wraps onto two centred lines, so compare with
-        # runs of whitespace collapsed rather than line by line.
-        flat = re.sub(r"\s+", " ", body)
+        # A heading opens its own line. Matching anywhere on the page would
+        # let "Limitations" find the "6.4 Limitations" further back, so the
+        # line-start match is tried first.
+        starts = [line.strip() for line in body.split("\n")]
+        # A long chapter title wraps onto two centred lines, so the fallback
+        # compares with runs of whitespace collapsed rather than line by line.
+        pages.append((number, starts, re.sub(r"\s+", " ", body)))
+        for h in headings:
+            if h not in found and any(line.startswith(h) for line in starts):
+                found[h] = number
+
+    # Only now, for whatever the strict pass could not place: a heading that
+    # wrapped, so it never begins a line of its own.
+    for number, _starts, flat in pages:
         for h in headings:
             if h not in found and h in flat:
                 found[h] = number
