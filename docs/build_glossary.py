@@ -22,6 +22,8 @@ with open(os.path.join(HERE, "eval-results.json")) as f:
     EVAL = json.load(f)
 CONF, FLAG = EVAL["metrics"]["confusion"], EVAL["metrics"]["flagged"]
 REAL, COUNTS = EVAL["metrics"]["realistic"], EVAL["counts"]
+# Derived, never written out: (1 - P) / P flagged items are false per true one.
+FALSE_PER_CATCH = round((1 - REAL["precision"]) / REAL["precision"])
 
 FONT = "Times New Roman"
 BODY, SUB, CHAP = 12, 14, 16
@@ -243,7 +245,8 @@ term("Prevalence-adjusted precision",
      f"What precision this same detector would show at realistic prevalence, holding "
      f"recall and false-positive rate constant: {REAL['precision']:.3f}, about "
      f"{REAL['precision']*100:.0f} per cent. Equation 3.8.",
-     "This is the honest figure. About eight false alarms for every fraud caught is "
+     f"This is the honest figure. About {FALSE_PER_CATCH} false alarms for every fraud "
+     f"caught is "
      "what a deployment would staff against, not the 96 per cent.")
 term("Ablation",
      "Switching parts off to see what each contributes. Each layer alone and each pair "
@@ -576,7 +579,7 @@ for label, value in [
     ("Recall", f"{FLAG['recall']:.3f} — no fraud was approved"),
     ("F1", f"{FLAG['f1']:.3f}"),
     ("Honest precision", f"{REAL['precision']:.3f} at one fraud in a thousand — "
-                         f"about eight false alarms per fraud caught"),
+                         f"about {FALSE_PER_CATCH} false alarms per fraud caught"),
     ("False-positive rate", f"{REAL['false_positive_rate']:.4f}"),
     ("Blocked", f"{CONF['BLOCK']['fraud']} fraud, {CONF['BLOCK']['legit']} legitimate"),
     ("Review", f"{CONF['REVIEW']['fraud']} fraud, {CONF['REVIEW']['legit']} legitimate"),

@@ -25,6 +25,9 @@ with open(os.path.join(HERE, "eval-layer-scores.json")) as f:
 with open(os.path.join(ASSETS, "ablation.json")) as f:
     ABLATION = json.load(f)
 RULE_ONLY_TP = next(a["tp"] for a in ABLATION if a["layers"] == "Rule")
+# False alarms per fraud caught, derived from the prevalence-adjusted precision
+# rather than written out, so the two can never disagree.
+FALSE_PER_CATCH = round((1 - REALISTIC["precision"]) / REALISTIC["precision"])
 SUGGESTED = EVAL["suggested_thresholds"]
 
 
@@ -1024,8 +1027,9 @@ para(f"The synthetic set is 25 per cent fraud because a test set needs enough fr
      f"measure; a payment feed is nearer one in a thousand. Holding this run's recall of "
      f"{FLAGGED['recall']:.3f} and false-positive rate of "
      f"{REALISTIC['false_positive_rate']:.4f} constant, Equation 3.8 gives a precision of "
-     f"{REALISTIC['precision']:.3f} at that prevalence: about eight false alarms for every "
-     f"fraud caught. That figure, not the synthetic one, is what a deployment would staff "
+     f"{REALISTIC['precision']:.3f} at that prevalence: about {FALSE_PER_CATCH} false alarms "
+     f"for every fraud caught. That figure, not the synthetic one, is what a deployment "
+     f"would staff "
      f"against.")
 para(f"{CONF['BLOCK']['fraud']} fraudulent transactions reached the block threshold and no "
      f"legitimate one did, so at the configured bands the system would refuse only "
