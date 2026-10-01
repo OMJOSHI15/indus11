@@ -330,7 +330,7 @@ bullets([
     "time from 260 ms to about 20 ms.",
     "An evaluation harness that replays a labelled dataset through the live API, sweeps the "
     "decision thresholds and reports precision at a realistic fraud prevalence.",
-    "An analyst dashboard and a one-command local stack, with 101 automated tests run in "
+    "An analyst dashboard and a one-command local stack, with 113 automated tests run in "
     "continuous integration.",
 ])
 section("1.8 Report Organization")
@@ -1197,7 +1197,7 @@ bullets([
     "transactions.",
     "A retried submission returns a conflict response instead of creating a duplicate decision.",
     "Scores are deterministic for identical input.",
-    "101 automated tests, which need no database or network, run on every push.",
+    "113 automated tests, which need no database or network, run on every push.",
 ])
 section("7.7 Deployment Risks")
 table("Deployment risks",
